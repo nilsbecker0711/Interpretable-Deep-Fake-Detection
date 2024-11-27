@@ -1,1 +1,133 @@
 2024-11-13 19:02:36,166 - ERROR - Dataset path does not exist: datasets\FaceForensics++
+2024-11-27 14:10:21,324 - ERROR - Dataset path does not exist: datasets/FaceForensics++
+2024-11-27 14:11:11,370 - ERROR - Dataset path does not exist: datasets/FaceForensics++
+2024-11-27 14:11:53,893 - ERROR - Dataset path does not exist: ../datasets/FaceForensics++/FaceForensics++
+2024-11-27 14:14:35,266 - ERROR - Dataset path does not exist: ../datasets/rgb/FaceForensics++
+2024-11-27 14:15:11,166 - ERROR - Dataset path does not exist: datasets/rgb/FaceForensics++
+2024-11-27 14:15:55,188 - ERROR - Dataset path does not exist: datasets/rgb/FaceForensics++
+2024-11-27 14:16:35,590 - ERROR - Dataset path does not exist: datasets/rgb/FaceForensics++
+2024-11-27 14:17:16,724 - ERROR - Dataset path does not exist: datasets/rgb/FaceForensics++
+2024-11-27 14:18:10,649 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/original_sequences/youtube/c40
+2024-11-27 14:18:26,754 - WARNING - No faces in frame 563 of ../datasets/rgb/FaceForensics++/original_sequences/youtube/c40/videos/720.mp4
+2024-11-27 14:18:26,959 - INFO - Current time: 2024-11-27 14:18:26
+2024-11-27 14:18:29,947 - INFO - Current time: 2024-11-27 14:18:29
+2024-11-27 14:18:44,884 - INFO - Current time: 2024-11-27 14:18:44
+2024-11-27 14:18:45,285 - INFO - Current time: 2024-11-27 14:18:45
+2024-11-27 14:18:45,311 - INFO - Current time: 2024-11-27 14:18:45
+2024-11-27 14:18:45,350 - INFO - Current time: 2024-11-27 14:18:45
+2024-11-27 14:18:45,721 - INFO - Current time: 2024-11-27 14:18:45
+2024-11-27 14:18:46,211 - INFO - Current time: 2024-11-27 14:18:46
+2024-11-27 14:19:00,140 - INFO - Current time: 2024-11-27 14:19:00
+2024-11-27 14:19:25,926 - INFO - Current time: 2024-11-27 14:19:25
+2024-11-27 14:19:25,927 - INFO - Total time taken: 1.25 minutes
+2024-11-27 14:19:25,928 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/original_sequences/actors/c40
+2024-11-27 14:19:29,845 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
+2024-11-27 14:19:31,373 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
+2024-11-27 14:19:32,632 - WARNING - No faces in frame 18 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
+2024-11-27 14:20:04,523 - WARNING - No faces in frame 609 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__walking_down_indoor_hall_disgust.mp4
+2024-11-27 14:20:38,887 - WARNING - No faces in frame 559 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
+2024-11-27 14:20:39,095 - INFO - Current time: 2024-11-27 14:20:39
+2024-11-27 14:20:40,174 - INFO - Current time: 2024-11-27 14:20:40
+2024-11-27 14:20:40,607 - WARNING - No faces in frame 552 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
+2024-11-27 14:20:40,619 - INFO - Current time: 2024-11-27 14:20:40
+2024-11-27 14:20:40,637 - WARNING - No faces in frame 1093 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__podium_speech_happy.mp4
+2024-11-27 14:20:40,648 - INFO - Current time: 2024-11-27 14:20:40
+2024-11-27 14:20:41,006 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
+2024-11-27 14:20:41,196 - INFO - Current time: 2024-11-27 14:20:41
+2024-11-27 14:20:41,218 - INFO - Current time: 2024-11-27 14:20:41
+2024-11-27 14:20:41,552 - INFO - Current time: 2024-11-27 14:20:41
+2024-11-27 14:20:41,987 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
+2024-11-27 14:20:42,080 - INFO - Current time: 2024-11-27 14:20:42
+2024-11-27 14:21:29,702 - WARNING - No faces in frame 802 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
+2024-11-27 14:21:29,714 - INFO - Current time: 2024-11-27 14:21:29
+2024-11-27 14:21:30,327 - WARNING - No faces in frame 535 of ../datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
+2024-11-27 14:21:30,345 - INFO - Current time: 2024-11-27 14:21:30
+2024-11-27 14:21:30,345 - INFO - Total time taken: 2.07 minutes
+2024-11-27 14:21:30,346 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40
+2024-11-27 14:21:30,348 - INFO - 10 masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
+2024-11-27 14:21:46,597 - INFO - Current time: 2024-11-27 14:21:46
+2024-11-27 14:21:49,733 - INFO - Current time: 2024-11-27 14:21:49
+2024-11-27 14:22:05,320 - INFO - Current time: 2024-11-27 14:22:05
+2024-11-27 14:22:05,629 - INFO - Current time: 2024-11-27 14:22:05
+2024-11-27 14:22:05,742 - INFO - Current time: 2024-11-27 14:22:05
+2024-11-27 14:22:05,786 - INFO - Current time: 2024-11-27 14:22:05
+2024-11-27 14:22:06,106 - INFO - Current time: 2024-11-27 14:22:06
+2024-11-27 14:22:06,770 - INFO - Current time: 2024-11-27 14:22:06
+2024-11-27 14:22:20,755 - INFO - Current time: 2024-11-27 14:22:20
+2024-11-27 14:22:46,220 - INFO - Current time: 2024-11-27 14:22:46
+2024-11-27 14:22:46,220 - INFO - Total time taken: 1.26 minutes
+2024-11-27 14:22:46,221 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40
+2024-11-27 14:22:46,221 - INFO - 10 masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
+2024-11-27 14:23:03,243 - INFO - Current time: 2024-11-27 14:23:03
+2024-11-27 14:23:05,121 - INFO - Current time: 2024-11-27 14:23:05
+2024-11-27 14:23:22,904 - INFO - Current time: 2024-11-27 14:23:22
+2024-11-27 14:23:22,992 - INFO - Current time: 2024-11-27 14:23:22
+2024-11-27 14:23:23,098 - INFO - Current time: 2024-11-27 14:23:23
+2024-11-27 14:23:23,875 - INFO - Current time: 2024-11-27 14:23:23
+2024-11-27 14:23:23,901 - INFO - Current time: 2024-11-27 14:23:23
+2024-11-27 14:23:24,140 - INFO - Current time: 2024-11-27 14:23:24
+2024-11-27 14:23:36,385 - INFO - Current time: 2024-11-27 14:23:36
+2024-11-27 14:24:06,733 - INFO - Current time: 2024-11-27 14:24:06
+2024-11-27 14:24:06,733 - INFO - Total time taken: 1.34 minutes
+2024-11-27 14:24:06,734 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40
+2024-11-27 14:24:06,734 - ERROR - No masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
+2024-11-27 14:24:06,734 - INFO - 0 masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
+2024-11-27 14:24:06,734 - ERROR - No mask for video ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/183_253.mp4
+2024-11-27 14:24:06,734 - ERROR - Mask path not found for video ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/183_253.mp4
+2024-11-27 14:24:23,142 - INFO - Current time: 2024-11-27 14:24:23
+2024-11-27 14:24:25,380 - INFO - Current time: 2024-11-27 14:24:25
+2024-11-27 14:24:40,074 - INFO - Current time: 2024-11-27 14:24:40
+2024-11-27 14:24:40,537 - INFO - Current time: 2024-11-27 14:24:40
+2024-11-27 14:24:40,595 - INFO - Current time: 2024-11-27 14:24:40
+2024-11-27 14:24:40,856 - INFO - Current time: 2024-11-27 14:24:40
+2024-11-27 14:24:41,176 - INFO - Current time: 2024-11-27 14:24:41
+2024-11-27 14:24:41,809 - INFO - Current time: 2024-11-27 14:24:41
+2024-11-27 14:24:54,724 - INFO - Current time: 2024-11-27 14:24:54
+2024-11-27 14:25:21,618 - INFO - Current time: 2024-11-27 14:25:21
+2024-11-27 14:25:21,618 - INFO - Total time taken: 1.25 minutes
+2024-11-27 14:25:21,619 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40
+2024-11-27 14:25:21,619 - ERROR - No masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
+2024-11-27 14:25:21,619 - INFO - 0 masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
+2024-11-27 14:25:21,620 - ERROR - No mask for video ../datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/183_253.mp4
+2024-11-27 14:25:21,620 - ERROR - Mask path not found for video ../datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/183_253.mp4
+2024-11-27 14:25:37,415 - INFO - Current time: 2024-11-27 14:25:37
+2024-11-27 14:25:39,724 - INFO - Current time: 2024-11-27 14:25:39
+2024-11-27 14:25:54,975 - INFO - Current time: 2024-11-27 14:25:54
+2024-11-27 14:25:54,985 - INFO - Current time: 2024-11-27 14:25:54
+2024-11-27 14:25:55,713 - INFO - Current time: 2024-11-27 14:25:55
+2024-11-27 14:25:55,753 - INFO - Current time: 2024-11-27 14:25:55
+2024-11-27 14:25:55,782 - INFO - Current time: 2024-11-27 14:25:55
+2024-11-27 14:25:57,033 - INFO - Current time: 2024-11-27 14:25:57
+2024-11-27 14:26:09,007 - INFO - Current time: 2024-11-27 14:26:09
+2024-11-27 14:26:35,862 - INFO - Current time: 2024-11-27 14:26:35
+2024-11-27 14:26:35,862 - INFO - Total time taken: 1.24 minutes
+2024-11-27 14:26:35,863 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40
+2024-11-27 14:26:52,557 - INFO - Current time: 2024-11-27 14:26:52
+2024-11-27 14:26:55,181 - INFO - Current time: 2024-11-27 14:26:55
+2024-11-27 14:27:10,037 - INFO - Current time: 2024-11-27 14:27:10
+2024-11-27 14:27:10,892 - INFO - Current time: 2024-11-27 14:27:10
+2024-11-27 14:27:10,990 - INFO - Current time: 2024-11-27 14:27:10
+2024-11-27 14:27:11,277 - INFO - Current time: 2024-11-27 14:27:11
+2024-11-27 14:27:11,533 - INFO - Current time: 2024-11-27 14:27:11
+2024-11-27 14:27:12,190 - INFO - Current time: 2024-11-27 14:27:12
+2024-11-27 14:27:25,494 - INFO - Current time: 2024-11-27 14:27:25
+2024-11-27 14:27:51,580 - INFO - Current time: 2024-11-27 14:27:51
+2024-11-27 14:27:51,580 - INFO - Total time taken: 1.26 minutes
+2024-11-27 14:27:51,581 - INFO - 10 videos found in ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40
+2024-11-27 14:27:51,582 - INFO - 10 masks found in ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
+2024-11-27 14:27:56,061 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
+2024-11-27 14:27:56,231 - WARNING - No faces in frame 0 of ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
+2024-11-27 14:28:59,920 - INFO - Current time: 2024-11-27 14:28:59
+2024-11-27 14:29:00,326 - INFO - Current time: 2024-11-27 14:29:00
+2024-11-27 14:29:00,333 - INFO - Current time: 2024-11-27 14:29:00
+2024-11-27 14:29:01,457 - WARNING - No faces in frame 649 of ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
+2024-11-27 14:29:01,468 - INFO - Current time: 2024-11-27 14:29:01
+2024-11-27 14:29:02,272 - WARNING - No faces in frame 669 of ../datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
+2024-11-27 14:29:02,284 - INFO - Current time: 2024-11-27 14:29:02
+2024-11-27 14:29:02,407 - INFO - Current time: 2024-11-27 14:29:02
+2024-11-27 14:29:02,433 - INFO - Current time: 2024-11-27 14:29:02
+2024-11-27 14:29:02,549 - INFO - Current time: 2024-11-27 14:29:02
+2024-11-27 14:29:50,641 - INFO - Current time: 2024-11-27 14:29:50
+2024-11-27 14:29:51,970 - INFO - Current time: 2024-11-27 14:29:51
+2024-11-27 14:29:51,971 - INFO - Total time taken: 2.01 minutes
+2024-11-27 14:29:51,972 - INFO - Face cropping complete!
