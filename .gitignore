@@ -5,4 +5,5 @@
 *.pth
 *.pt
 *.dat
+*.DS_Store
 datasets
