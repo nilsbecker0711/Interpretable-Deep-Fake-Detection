@@ -6,3 +6,4 @@
 *.pt
 *.dat
 datasets
+.DS_Store
