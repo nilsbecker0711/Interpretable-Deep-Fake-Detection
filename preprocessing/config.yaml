@@ -4,7 +4,7 @@ preprocess:
     default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: '../datasets/rgb'
+    default: 'datasets/rgb'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
     default: 'c40'
@@ -24,7 +24,7 @@ rearrange:
     default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: ''
+    default: 'datasets'
   output_file_path: # the json path to the dataset
     type: str
     default: '../preprocessing/dataset_json_v6'
