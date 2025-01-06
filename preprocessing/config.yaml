@@ -4,10 +4,10 @@ preprocess:
     default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: './datasets'
+    default: '/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/datasets/rgb'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
-    default: 'c23'
+    default: 'c40'
   mode: # based on the numbers of frame or skip the specific stride of frames.
     choices: ['fixed_num_frames', 'fixed_stride']
     default: 'fixed_num_frames'
@@ -24,7 +24,7 @@ rearrange:
     default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: ''
+    default: '../datasets/FaceForensics++'
   output_file_path: # the json path to the dataset
     type: str
     default: '../preprocessing/dataset_json_v6'

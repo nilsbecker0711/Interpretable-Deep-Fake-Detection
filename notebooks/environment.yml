@@ -1,0 +1,12 @@
+name: TP
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch
+  - pytorch-cuda=12.1
+  - torchaudio
+  - torchvision
+  - ipykernel
+  - scikit-learn
+prefix: C:\Users\KAI\anaconda3\envs\TP
