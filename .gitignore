@@ -2,7 +2,7 @@
 *__pycache__*
 *.vscode*
 *.pyc
-*.pth
+# *.pth
 *.pt
 *.dat
-datasets
+datasets/
