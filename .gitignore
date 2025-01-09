@@ -1,4 +1,4 @@
-*.png
+﻿*.png
 *.xlsx
 *.csv
 */.DS_Store
@@ -27,3 +27,6 @@ radar_chart
 datasets
 .DS_Store
 weights
+models
+analysis
+
