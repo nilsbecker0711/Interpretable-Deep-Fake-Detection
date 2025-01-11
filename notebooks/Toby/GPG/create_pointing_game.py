@@ -23,7 +23,7 @@ def get_all_png_files(root_folder):
                 png_files.append(os.path.join(dirpath, file))
     return png_files
 
-def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2)):
+def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2), max_grids = 20):
     """
     Create 2x2 grids with one fake image and the rest real based on preprocessed outputs.
 
@@ -43,8 +43,12 @@ def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2)):
     # Collect all image paths
     real_images = get_all_png_files(real_dir)
     fake_images = get_all_png_files(fake_dir)
+    
+    grid_count = 0
 
     for i, fake_img_path in enumerate(fake_images):
+        if grid_count >= max_grids:
+            break
         # Randomly sample 3 real images
         real_samples = random.sample(real_images, grid_size[0] * grid_size[1] - 1)
 
@@ -63,12 +67,16 @@ def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2)):
             grid.append(np.hstack(row_images))
         grid_image = np.vstack(grid)
 
-        # Save the grid
+        # Save the grid as a PNG image
         fake_index = images.index(fake_img_path)
-        grid_name = f"grid_{i}_fake_{fake_index}.npy"  # Save fake position in filename
+        grid_name = f"grid_{i}_fake_{fake_index}.png"  # Use .png as the file extension
         output_path = os.path.join(output_dir, grid_name)
-        np.save(output_path, grid_image)  # Save as NumPy array for efficient loading
+
+        # Convert NumPy array to PIL Image and save
+        grid_image = Image.fromarray(grid_image.astype(np.uint8))  # Ensure data is in uint8 format
+        grid_image.save(output_path)  # Save as a PNG file
         
+        grid_count += 1
     print(f"Grids saved in {output_dir}")
 
 
