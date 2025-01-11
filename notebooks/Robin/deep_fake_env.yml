@@ -1,0 +1,17 @@
+name: deep_fake_env
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.9
+  - pytorch
+  - torchvision
+  - scikit-learn
+  - tqdm
+  - pillow
+  - numpy
+  - matplotlib
+  -ipykernel
+
+  #conda env create -f notebooks/Toby/deep_fake_env.yml
