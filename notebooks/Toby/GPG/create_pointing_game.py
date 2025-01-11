@@ -23,7 +23,7 @@ def get_all_png_files(root_folder):
                 png_files.append(os.path.join(dirpath, file))
     return png_files
 
-def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2), max_grids = 20):
+def create_2x2_grids(real_dir, fake_dir, output_dir, grid_size=(2, 2), max_grids = 20):
     """
     Create 2x2 grids with one fake image and the rest real based on preprocessed outputs.
 
@@ -32,10 +32,6 @@ def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2), max_grids =
         output_dir (str): Path to save the generated grids.
         grid_size (tuple): Dimensions of the grid (default: 2x2).
     """
-    # Define real and fake image directories
-    real_dir = os.path.join(preprocessed_dir, "original_sequences")
-    #if only looking for fakes of certain kind move the fake root directory down to the fake method instead of being at the top root
-    fake_dir = os.path.join(preprocessed_dir, "manipulated_sequences")
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -43,6 +39,12 @@ def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2), max_grids =
     # Collect all image paths
     real_images = get_all_png_files(real_dir)
     fake_images = get_all_png_files(fake_dir)
+    
+    print(f"Real images found: {len(real_images)}")
+    print(f"Fake images found: {len(fake_images)}")
+    
+    print("Real Directory Absolute Path:", os.path.abspath(real_dir))
+    print("Fake Directory Absolute Path:", os.path.abspath(fake_dir))
     
     grid_count = 0
 
@@ -81,6 +83,7 @@ def create_2x2_grids(preprocessed_dir, output_dir, grid_size=(2, 2), max_grids =
 
 
 if __name__ == "__main__":
-    preprocessed_dir = "/Users/toby/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++"  # Preprocessed root directory with 'frames/real' and 'frames/fake'
-    output_dir = "/Users/toby/Interpretable-Deep-Fake-Detection/datasets/2x2_images"  # Directory to save 2x2 grids
-    create_2x2_grids(preprocessed_dir, output_dir)
+    real_dir = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
+    fake_dir = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"  # Preprocessed root directory with 'frames/real' and 'frames/fake'
+    output_dir = "datasets/2x2_images"  # Directory to save 2x2 grids
+    create_2x2_grids(real_dir=real_dir,fake_dir=fake_dir, output_dir=output_dir)
