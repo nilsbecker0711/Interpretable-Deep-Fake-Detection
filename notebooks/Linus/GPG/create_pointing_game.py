@@ -83,7 +83,7 @@ def create_2x2_grids(real_dir, fake_dir, output_dir, grid_size=(2, 2), max_grids
 
 
 if __name__ == "__main__":
-    real_dir = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
-    fake_dir = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"  # Preprocessed root directory with 'frames/real' and 'frames/fake'
-    output_dir = "datasets/2x2_images"  # Directory to save 2x2 grids
-    create_2x2_grids(real_dir=real_dir,fake_dir=fake_dir, output_dir=output_dir)
+    real_dir = "Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/original_sequences/actors/c40/frames"
+    fake_dir = "Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"  # Preprocessed root directory with 'frames/real' and 'frames/fake'
+    output_dir = "Interpretable-Deep-Fake-Detection/datasets/2x2_images"  # Directory to save 2x2 grids
+    create_2x2_grids(real_dir=real_dir,fake_dir=fake_dir, output_dir=output_dir)   
