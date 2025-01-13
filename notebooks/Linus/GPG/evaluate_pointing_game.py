@@ -10,7 +10,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 # Append your analysis path
-sys.path.append('/path/to/analysis')
+sys.path.append('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/analysis')
 from b_cos.resnet import resnet50
 
 # Utility functions
@@ -136,29 +136,64 @@ class DeepFakeEvaluator:
                 out = self.model(img)
                 out.backward()
 
+                # Generate the attention map
                 att = HeatmapEvaluator.grad_to_img(img[0], img.grad[0], alpha_percentile=100, smooth=5)
                 att[..., -1] *= to_numpy(out.sigmoid())
                 att = to_numpy(att)
 
+                # Convert the image to a NumPy array for visualization
                 img_np = np.array(to_numpy(img[0, :3].permute(1, 2, 0)) * 255, dtype=np.uint8)
+
+                # Get the true fake position
                 true_fake_pos = int(img_path.split('_fake_')[1].split('.')[0])
 
-                self.visualize(img_np, att, true_fake_pos)
+                # Evaluate the heatmap to find the guessed fake position
+                guess_pos, white_pixel_counts = HeatmapEvaluator.evaluate_heatmap(att)
+
+                # Visualize the results
+                self.visualize(img_np, att, true_fake_pos, guess_pos, white_pixel_counts)
 
     @staticmethod
-    def visualize(img_np, att, true_fake_pos):
+    def visualize(img_np, att, true_fake_pos, guess_pos, white_pixel_counts):
         """
-        Visualizes the image and heatmap.
+        Visualizes the image and heatmap with additional header information.
+
+        Args:
+            img_np (numpy.ndarray): Original image as a NumPy array.
+            att (numpy.ndarray): Attention map as a NumPy array.
+            true_fake_pos (int): The actual fake image position in the grid.
+            guess_pos (int): The guessed fake image position based on the heatmap.
+            white_pixel_counts (list): White pixel counts for each grid section.
         """
         fig, ax = plt.subplots(1, figsize=(8, 4))
+
+        # Show original image
         plt.imshow(img_np, extent=(0, 224, 0, 224))
+
+        # Show heatmap
         plt.imshow(att, extent=(224, 2 * 224, 0, 224), alpha=0.6)
+
+        # Add grid lines to separate heatmap sections
         plt.hlines(112, 224, 448, colors='grey', linestyles='dashed', linewidth=0.5)
         plt.vlines(336, 0, 224, colors='grey', linestyles='dashed', linewidth=0.5)
+
+        # Adjust plot settings
         plt.xlim(0, 448)
-        plt.title(f"True Fake Position: {true_fake_pos}")
+        plt.xticks([])
+        plt.yticks([])
+
+        # Add title with true fake position, guessed position, and white pixel counts
+        title = (
+            f"True Fake Position: {true_fake_pos}, "
+            f"Guessed Fake Position: {guess_pos}, "
+            f"White Pixel Distribution: {white_pixel_counts}"
+        )
+        plt.title(title)
+
+        # Remove spines for a clean look
         for spine in ax.spines.values():
             spine.set_visible(False)
+
         plt.show()
 
 
@@ -170,10 +205,10 @@ if __name__ == "__main__":
         AddInverse(dim=0),
     ])
 
-    file_path_deepfakebench = {'../../datasets/2x2_images': 1}
+    file_path_deepfakebench = {'/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/datasets/2x2_images': 1}
     dataset = CustomImageDataset(file_path_deepfakebench, transform=transform)
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model_path = "../../weights/B_cos/ResNet50/b_cos_model_1732303731.35.pth"
+    model_path = "/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/weights/B_cos/ResNet50/b_cos_model_1732594597.04.pth"
     evaluator = DeepFakeEvaluator(model_path)
     evaluator.evaluate(dataloader)

@@ -94,9 +94,9 @@ class GridGenerator:
 if __name__ == "__main__":
     # Initialize the GridGenerator class
     generator = GridGenerator(
-        real_dir="/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/original_sequences/actors/c40/frames",
-        fake_dir="/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames",
-        output_dir="/Interpretable-Deep-Fake-Detection/datasets/2x2_images",
+        real_dir="/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/original_sequences/actors/c40/frames",
+        fake_dir="/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames",
+        output_dir="/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/datasets/2x2_images",
         grid_size=(2, 2),
         max_grids=20
     )
