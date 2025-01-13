@@ -1,7 +1,7 @@
-
-from grid_creation import create_2x2_grids
-from evaluation import evaluate_bcos_resnet50
 from data_handling import get_all_png_files
+from grid_creation import create_2x2_grids
+from preprocessing import preprocess_image
+from evaluation import evaluate_bcos_resnet50
 from visualization import plot_heatmap
 
 import torch
@@ -11,30 +11,44 @@ def main():
     # Step 1: Define Paths
     real_dir = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
     fake_dir = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"
-    output_dir = "datasets/2x2_images"  # Directory to save grids
+    output_dir = "datasets/2x2_grids"
+    model_path = "../../weights/B_cos/ResNet50/b_cos_model_1732594597.04.pth"
+
     os.makedirs(output_dir, exist_ok=True)
 
-    # Step 2: Create Grids
+    # Step 2: Retrieve Data
+    real_images = get_all_png_files(real_dir)
+    fake_images = get_all_png_files(fake_dir)
+    print(f"Found {len(real_images)} real images and {len(fake_images)} fake images.")
+
+    # Step 3: Create Grids
     create_2x2_grids(real_dir=real_dir, fake_dir=fake_dir, output_dir=output_dir)
     print(f"2x2 grids created and saved in {output_dir}.")
 
-    # Step 3: Evaluate Model
-    # Load BCos ResNet50 model (replace with actual model path)
-    model = torch.load("path/to/your/bcos_resnet50.pth")
-    
-    # Collect generated grids
+    # Step 4: Retrieve Grid Paths
     grid_paths = get_all_png_files(output_dir)
-    
-    # Evaluate model on the grids
-    metrics = evaluate_bcos_resnet50(model, grid_paths)
+    print(f"Found {len(grid_paths)} grids for evaluation.")
+
+    # Step 5: Preprocess Grids
+    preprocessed_grids = [preprocess_image(grid_path) for grid_path in grid_paths]
+
+    # Step 6: Load Model and Evaluate
+    model = torch.load(model_path)
+    metrics = evaluate_bcos_resnet50(model, preprocessed_grids)
     print(f"Evaluation Metrics: {metrics}")
 
-    # Step 4: Visualize Results (Optional)
-    # Visualize a grid and its heatmap
-    sample_grid = torch.rand((128, 128, 3)).numpy()  # Replace with actual grid if needed
-    sample_heatmap = torch.rand((128, 128)).numpy()  # Replace with actual heatmap if needed
-    plot_heatmap(sample_grid, sample_heatmap)
+    # Step 7: Visualize Heatmaps
+    if preprocessed_grids and metrics.get("heatmaps"):
+        sample_grid = preprocessed_grids[0].permute(1, 2, 0).numpy()  # Convert to (H, W, C)
+        sample_heatmap = metrics["heatmaps"][0]  # Select the first heatmap
+        plot_heatmap(sample_grid, sample_heatmap)
+    else:
+        print("No heatmaps available for visualization.")
 
 if __name__ == "__main__":
     main()
 
+
+# conda env create -f deep_fake_env.yml
+# conda activate deep_fake_env
+# python GPG_pipeline.py
