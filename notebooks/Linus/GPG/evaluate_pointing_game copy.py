@@ -92,28 +92,25 @@ class HeatmapEvaluator:
         return rgb_grad.transpose((1, 2, 0))
 
     @staticmethod
-    def evaluate_heatmap(heatmap, top_percentile=99.9):
+    def evaluate_heatmap(heatmap, white_pixel_threshold=255):
         """
-        Evaluates a heatmap using intensity-weighted accuracy based on positive attributions.
+        Splits a heatmap into 4 square sections, counts the white pixels in each,
+        and calculates the accuracy score.
 
         Args:
-            heatmap (numpy.ndarray): 3D numpy array (H, W, C) representing the heatmap.
-            top_percentile (float): Percentile for capping intensity outliers (default: 99.9).
+            heatmap (numpy.ndarray): 2D numpy array representing the heatmap.
+            white_pixel_threshold (int): Threshold to classify a pixel as white (default: 255).
 
         Returns:
-            tuple: (guessed_fake_position, intensity_sums, intensity_weighted_accuracy)
+            tuple: (least_white_index, white_pixel_counts, accuracy)
         """
-        # Convert heatmap to grayscale by averaging R, G, B channels
-        heatmap_gray = np.mean(heatmap[..., :3], axis=-1)
-
-        # Normalize heatmap intensities to [0, 1]
-        if heatmap_gray.max() > 1.0:
-            heatmap_gray = heatmap_gray / 255.0
-
-        # Cap intensities at the top_percentile to handle outliers
-        intensity_cap = np.percentile(heatmap_gray, top_percentile)
-        heatmap_gray = np.clip(heatmap_gray, 0, intensity_cap) / intensity_cap
-
+        # Convert the heatmap to grayscale
+        heatmap_gray = np.mean(heatmap[..., :3], axis=-1)  # Average R, G, B channels
+        
+        # Normalize to 255 if values are in the range [0, 1]
+        if heatmap_gray.max() <= 1.0:
+            heatmap_gray = (heatmap_gray * 255).astype(np.uint8)
+        
         # Ensure the heatmap is square and divisible by 2
         rows, cols = heatmap_gray.shape
         if rows != cols or rows % 2 != 0:
@@ -127,23 +124,26 @@ class HeatmapEvaluator:
             heatmap_gray[half:, :half],  # Bottom-left (2)
             heatmap_gray[half:, half:]   # Bottom-right (3)
         ]
+        
+        # Count white pixels in each section
+        white_pixel_counts = [np.sum(section >= white_pixel_threshold) for section in sections]
 
-        # Calculate the sum of positive intensities in each section
-        intensity_sums = [np.sum(section) for section in sections]
+        # Total pixels in each section
+        total_pixels_per_section = sections[0].size  # Same for all sections since they're equally sized
 
-        # Find the section with the maximum positive attribution (guessed fake position)
-        guessed_fake_position = np.argmax(intensity_sums)
+        # Find the section with the least white pixels (guessed fake position)
+        least_white_index = np.argmin(white_pixel_counts)
 
-        # Calculate the total positive intensity across the entire heatmap
-        total_positive_intensity = np.sum(heatmap_gray)
+        # Accuracy calculation
+        fake_pixels = total_pixels_per_section  # All pixels in the fake section
+        white_pixels_fake = white_pixel_counts[least_white_index]
+        white_pixels_real = sum([white_pixel_counts[i] for i in range(4) if i != least_white_index])
+        total_pixels = total_pixels_per_section * 4
 
-        # Calculate intensity-weighted accuracy
-        if total_positive_intensity > 0:
-            intensity_weighted_accuracy = intensity_sums[guessed_fake_position] / total_positive_intensity
-        else:
-            intensity_weighted_accuracy = 0.0
+        accuracy = (fake_pixels - white_pixels_fake + white_pixels_real) / total_pixels
 
-        return guessed_fake_position, intensity_sums, intensity_weighted_accuracy
+        return least_white_index, white_pixel_counts, accuracy
+
 
 # Model and Visualization
 class DeepFakeEvaluator:
@@ -162,8 +162,7 @@ class DeepFakeEvaluator:
         """
         for img_batch, label_batch, path_batch in dataloader:
             for i, (img, label, img_path) in enumerate(zip(img_batch, label_batch, path_batch)):
-                # Ensure device is properly referenced
-                img = img.unsqueeze(0).to(self.device).requires_grad_(True)
+                img = img.unsqueeze(0).to(self.device).requires_grad_(True)  # Verwende self.device
                 self.model.zero_grad()
                 out = self.model(img)
                 out.backward()
@@ -179,17 +178,17 @@ class DeepFakeEvaluator:
                 # Get the true fake position
                 true_fake_pos = int(img_path.split('_fake_')[1].split('.')[0])
 
-                # Evaluate the heatmap to find guessed fake position and intensity-weighted accuracy
-                guess_pos, intensity_sums, accuracy = HeatmapEvaluator.evaluate_heatmap(att)
+                # Evaluate the heatmap to find the guessed fake position and accuracy
+                guess_pos, white_pixel_counts, accuracy = HeatmapEvaluator.evaluate_heatmap(att)
 
                 # Visualize the results
-                self.visualize(img_np, att, true_fake_pos, guess_pos, intensity_sums, accuracy)
+                self.visualize(img_np, att, true_fake_pos, guess_pos, white_pixel_counts, accuracy)
 
                 # Print accuracy
                 print(f"Accuracy for {img_path}: {accuracy:.4f}")
 
     @staticmethod
-    def visualize(img_np, att, true_fake_pos, guess_pos, intensity_sums, accuracy):
+    def visualize(img_np, att, true_fake_pos, guess_pos, white_pixel_counts, accuracy):
         """
         Visualizes the image and heatmap with additional header information.
 
@@ -198,8 +197,8 @@ class DeepFakeEvaluator:
             att (numpy.ndarray): Attention map as a NumPy array.
             true_fake_pos (int): The actual fake image position in the grid.
             guess_pos (int): The guessed fake image position based on the heatmap.
-            intensity_sums (list): List of positive intensity sums for each grid section.
-            accuracy (float): Intensity-weighted accuracy score for the heatmap.
+            white_pixel_counts (list): White pixel counts for each grid section.
+            accuracy (float): Accuracy score for the evaluation.
         """
         fig, ax = plt.subplots(1, figsize=(8, 4))
 
@@ -213,14 +212,24 @@ class DeepFakeEvaluator:
         plt.hlines(112, 224, 448, colors='grey', linestyles='dashed', linewidth=0.5)
         plt.vlines(336, 0, 224, colors='grey', linestyles='dashed', linewidth=0.5)
 
-        # Add title and accuracy
+        # Adjust plot settings
+        plt.xlim(0, 448)
+        plt.xticks([])
+        plt.yticks([])
+
+        # Add title with true fake position, guessed position, and white pixel counts
         title = (
             f"True Fake Position: {true_fake_pos}, "
             f"Guessed Fake Position: {guess_pos}, "
-            f"Intensity Sums: {intensity_sums}"
+            f"White Pixel Distribution: {white_pixel_counts}"
         )
         plt.title(title)
-        plt.text(224, -10, f"Intensity-Weighted Accuracy: {accuracy:.4f}", fontsize=12, ha='center', va='top')
+
+        # Add accuracy below the figure
+        plt.text(
+            224, -10, f"Accuracy: {accuracy:.4f}",
+            fontsize=12, ha='center', va='top'
+        )
 
         # Remove spines for a clean look
         for spine in ax.spines.values():
