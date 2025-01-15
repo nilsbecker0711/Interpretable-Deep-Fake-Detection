@@ -3,7 +3,9 @@ from grid_creation import create_2x2_grids
 from preprocessing import preprocess_image
 from evaluation import evaluate_bcos_resnet50
 from visualization import plot_heatmap
-
+import sys
+#i needed to append my analysis path to system to access the bcos saved models
+sys.path.append('/Users/msrobin/GitHub Repositorys/Interpretable-Deep-Fake-Detection-1/analysis')
 import torch
 import os
 
