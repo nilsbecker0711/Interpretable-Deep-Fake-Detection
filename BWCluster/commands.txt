@@ -1,0 +1,23 @@
+# moving into directory dir_name and ...
+cd dir_name
+# listing all files and folders
+ls 
+# List all files and directories with detailed information (permissions, size, timestamps)
+ls -l
+
+# queue a job 
+sbatch job.sh
+sbatch interpretable-deep-fake-detection/BWCluster_scripts/job.sh
+
+
+# watch the current queue
+squeue -l
+
+# continously monitor the command squeue -l every -n 1 second
+watch --differences -n 60 squeue -l
+
+# cancel specific job
+scancel <jobid>
+
+# cancel all queued jobs
+scancel -u <username>

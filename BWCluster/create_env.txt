@@ -1,0 +1,5 @@
+module load devel/miniconda
+
+conda env create -f environment.yml
+
+conda activate TP_linux
