@@ -9,11 +9,11 @@ from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
 
-# Append your analysis path
+# Analysis path
 sys.path.append('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/analysis')
 from b_cos.resnet import resnet50
 
-# Utility functions
+# Utility
 def to_numpy(tensor):
     """Converts a PyTorch tensor to a numpy array."""
     if not isinstance(tensor, torch.Tensor):
@@ -21,7 +21,7 @@ def to_numpy(tensor):
     return tensor.detach().cpu().numpy()
 
 
-# Transformation classes
+# Transformation
 class MyToTensor(transforms.ToTensor):
     """Custom transformation that ensures tensors are properly converted."""
     def __call__(self, input_img):
@@ -40,7 +40,7 @@ class AddInverse(nn.Module):
         return torch.cat([in_tensor, 1 - in_tensor], self.dim)
 
 
-# Custom Dataset Class
+# Custom Dataset
 class CustomImageDataset(Dataset):
     def __init__(self, folder_paths, transform=None):
         """
@@ -71,7 +71,7 @@ class CustomImageDataset(Dataset):
         return image, label, img_path
 
 
-# Heatmap Processing and Evaluation
+# Heatmap processing and evaluation
 class HeatmapEvaluator:
     @staticmethod
     def grad_to_img(img, linear_mapping, smooth=15, alpha_percentile=99.5):
@@ -209,7 +209,7 @@ class DeepFakeEvaluator:
         # Show heatmap
         plt.imshow(att, extent=(224, 2 * 224, 0, 224), alpha=0.6)
 
-        # Add grid lines to separate heatmap sections
+        # Add grid lines
         plt.hlines(112, 224, 448, colors='grey', linestyles='dashed', linewidth=0.5)
         plt.vlines(336, 0, 224, colors='grey', linestyles='dashed', linewidth=0.5)
 
@@ -222,14 +222,15 @@ class DeepFakeEvaluator:
         plt.title(title)
         plt.text(224, -10, f"Intensity-Weighted Accuracy: {accuracy:.4f}", fontsize=12, ha='center', va='top')
 
-        # Remove spines for a clean look
+        # Remove spines
         for spine in ax.spines.values():
             spine.set_visible(False)
 
         plt.show()
 
 
-# Main Execution
+
+
 if __name__ == "__main__":
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
