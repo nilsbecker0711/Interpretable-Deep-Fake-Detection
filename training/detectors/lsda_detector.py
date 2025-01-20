@@ -42,8 +42,8 @@ from collections import defaultdict
 
 
 from efficientnet_pytorch import EfficientNet
-from networks.iresnet import iresnet100
-from networks.xception import Xception
+from networks.base.iresnet import iresnet100
+from networks.base.xception import Xception
 from detectors import DETECTOR
 from sklearn import metrics
 from metrics.base_metrics_class import calculate_metrics_for_train
@@ -51,7 +51,7 @@ from .base_detector import AbstractDetector
 
 from .base_detector import AbstractDetector
 from detectors import DETECTOR
-from networks import BACKBONE
+from networks.base import BACKBONE
 from loss import LOSSFUNC
 
 

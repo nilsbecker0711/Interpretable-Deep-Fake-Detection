@@ -44,10 +44,10 @@ from torch.utils.tensorboard import SummaryWriter
 from imageio import imread
 from torchvision import transforms
 from metrics.base_metrics_class import calculate_metrics_for_train
-from networks.xception import Block, SeparableConv2d
+from networks.base.xception import Block, SeparableConv2d
 from .base_detector import AbstractDetector
 from detectors import DETECTOR
-from networks import BACKBONE
+from networks.base import BACKBONE
 from loss import LOSSFUNC
 
 import logging

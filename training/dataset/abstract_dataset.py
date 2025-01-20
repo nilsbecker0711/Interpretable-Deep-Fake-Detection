@@ -110,7 +110,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         
         self.transform = self.init_data_aug_method()
         
-    def init_data_aug_method(self):
+    def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
         trans = A.Compose([           
             A.HorizontalFlip(p=self.config['data_aug']['flip_prob']),
             A.Rotate(limit=self.config['data_aug']['rotate_limit'], p=self.config['data_aug']['rotate_prob']),
@@ -162,7 +162,13 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         if not os.path.exists(self.config['dataset_json_folder']):
             self.config['dataset_json_folder'] = self.config['dataset_json_folder'].replace('/Youtu_Pangu_Security_Public', '/Youtu_Pangu_Security/public')
         try:
-            with open(os.path.join(self.config['dataset_json_folder'], dataset_name + '.json'), 'r') as f:
+            # with open(os.path.join(self.config['dataset_json_folder'], dataset_name + '.json'), 'r') as f:
+            #     dataset_info = json.load(f)
+            # ALTERNATIVELY, IF THERE IS AN ERROR HERE
+            prefix="~/Interpretable-Deep-Fake-Detection/"
+            folder_path = os.path.join(self.config['dataset_json_folder'], dataset_name + '.json')
+            correct_path = os.path.expanduser(os.path.join(prefix, folder_path))
+            with open(correct_path, 'r') as f:
                 dataset_info = json.load(f)
         except Exception as e:
             print(e)
@@ -276,7 +282,6 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         shuffled = list(zip(label_list, frame_path_list, video_name_list))
         random.shuffle(shuffled)
         label_list, frame_path_list, video_name_list = zip(*shuffled)
-        
         return frame_path_list, label_list, video_name_list
 
      
@@ -296,7 +301,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         size = self.config['resolution'] # if self.mode == "train" else self.config['resolution']
         if not self.lmdb:
             if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                # file_path =  f'./{self.config["rgb_dir"]}\\'+file_path ----> Kai: Removed OLD IMPLEMENTATION
+                file_path = f'{self.config["rgb_dir"]}'+file_path
             assert os.path.exists(file_path), f"{file_path} does not exist"
             img = cv2.imread(file_path)
             if img is None:

@@ -225,8 +225,12 @@ def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
         config = yaml.safe_load(f)
-    with open('./training/config/train_config.yaml', 'r') as f:
-        config2 = yaml.safe_load(f)
+    try:# KAI: added this, to ensure it finds the config file
+        with open('./training/config/train_config.yaml', 'r') as f:
+            config2 = yaml.safe_load(f)
+    except FileNotFoundError:
+        with open(os.path.expanduser('~/Interpretable-Deep-Fake-Detection/training/config/train_config.yaml'), 'r') as f:
+            config2 = yaml.safe_load(f)
     if 'label_dict' in config:
         config2['label_dict']=config['label_dict']
     config.update(config2)

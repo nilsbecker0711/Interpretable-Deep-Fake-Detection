@@ -46,11 +46,11 @@ from torch.nn import DataParallel
 from torch.utils.tensorboard import SummaryWriter
 
 from metrics.base_metrics_class import calculate_metrics_for_train
-from networks.iresnet_iid import iresnet50
+from networks.base.iresnet_iid import iresnet50
 
 from detectors.base_detector import AbstractDetector
 from detectors import DETECTOR
-from networks import BACKBONE
+from networks.base import BACKBONE
 from loss import LOSSFUNC
 from .utils.iid_api import l2_norm
 
