@@ -28,7 +28,7 @@ from torch.utils import data
 from torchvision import transforms as T
 
 import albumentations as A
-
+import torch.nn as nn
 from .albu import IsotropicResize
 
 FFpp_pool=['FaceForensics++','FaceShifter','DeepFakeDetection','FF-DF','FF-F2F','FF-FS','FF-NT']#
@@ -39,6 +39,26 @@ def all_in_pool(inputs,pool):
             return False
     return True
 
+class AddInverse(nn.Module):
+    def __init__(self, dim=1):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, input_tensor):
+        # Concatenate the inverse along the specified dimension
+        inverse_tensor = 1 - input_tensor
+        return torch.cat((input_tensor, inverse_tensor), dim=self.dim)
+
+
+class AddInverseAlbumentations:
+    def __call__(self, img):
+        # Convert image to tensor if necessary
+        img_tensor = torch.tensor(img, dtype=torch.float32).permute(2, 0, 1)  # HWC to CHW
+        # Apply AddInverse
+        inverse_tensor = 1 - img_tensor
+        augmented_tensor = torch.cat((img_tensor, inverse_tensor), dim=0)
+        # Convert back to numpy for Albumentations compatibility
+        return augmented_tensor.permute(1, 2, 0).numpy()  # CHW to HWC
 
 class DeepfakeAbstractBaseDataset(data.Dataset):
     """
@@ -109,6 +129,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         }
         
         self.transform = self.init_data_aug_method()
+
         
     def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
         trans = A.Compose([           
@@ -448,6 +469,12 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         augmented_landmark = transformed.get('keypoints')
         augmented_mask = transformed.get('mask',mask)
 
+        # Apply AddInverse separately
+        # if isinstance(augmented_img, np.ndarray):
+        # augmented_img_tensor = torch.tensor(augmented_img, dtype=torch.float32).permute(2, 0, 1)  # HWC to CHW
+        # augmented_img_tensor = AddInverse(dim=0)(augmented_img_tensor)  # Apply AddInverse
+        # augmented_img = augmented_img_tensor.permute(1, 2, 0).numpy()  # CHW to HWC
+
         # Convert the augmented landmark to a numpy array
         if augmented_landmark is not None:
             augmented_landmark = np.array(augmented_landmark)
@@ -515,15 +542,29 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 image_trans, landmarks_trans, mask_trans = self.data_aug(image, landmarks, mask, augmentation_seed)
             else:
                 image_trans, landmarks_trans, mask_trans = deepcopy(image), deepcopy(landmarks), deepcopy(mask)
-            
 
             # To tensor and normalize
             if not no_norm:
                 image_trans = self.normalize(self.to_tensor(image_trans))
+                # image_trans = self.normalize(image_trans)
                 if self.config['with_landmark']:
                     landmarks_trans = torch.from_numpy(landmarks)
                 if self.config['with_mask']:
                     mask_trans = torch.from_numpy(mask_trans)
+            
+            # Add inverse channels if needed (this would be done before normalization)
+            if self.config.get('add_inverse_channels', False):  # Check if inverse channels should be added
+                if no_norm:
+                    image_trans =  self.to_tensor(image_trans)
+                # Ensure image has 3 channels (RGB)
+                if image_trans.shape[0] == 3:
+                    # Create the inverse image by subtracting the original image from 1 (for each channel)
+                    inverse_image = 1 - image_trans  # This assumes image is in range [0, 1]
+
+                    # Concatenate the original image and the inverse image along the channel dimension (dim=0)
+                    image_trans = torch.cat((image_trans, inverse_image), dim=0)  # Shape: [6, H, W]
+                else:
+                    raise ValueError("Image does not have 3 channels for RGB.")
 
             image_tensors.append(image_trans)
             landmark_tensors.append(landmarks_trans)

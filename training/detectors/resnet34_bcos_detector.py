@@ -65,12 +65,26 @@ class ResnetBcosDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
+        #TODO: maybe do the weight loading here
         #FIXME: current load pretrained weights only from the backbone, not here
         # # if donot load the pretrained weights, fail to get good results
-        # state_dict = torch.load(config['pretrained'])
+        state_dict = torch.load(config['pretrained'])
         # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
         # backbone.load_state_dict(state_dict, False)
-        # logger.info('Load pretrained model successfully!')
+        if 'resnet34-333f7ec4.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 
+            adapted_state_dict = {}
+            for key, value in state_dict.items():
+                new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
+                if new_key in backbone.state_dict() and backbone.state_dict()[new_key].shape == value.shape:
+                    adapted_state_dict[new_key] = value
+            backbone.load_state_dict(advanced_state_dict, strict=False)
+            # handle the prediction head, which is not inititalized otherwise
+            nn.init.kaiming_normal_(backbone.fc.linear.weight)
+            if backbone.fc.linear.bias is not None:
+                backbone.fc.linear.bias.data.zero_()
+        else:
+            backbone.load_state_dict(state_dict, strict=False)
+        logger.info('Load pretrained model successfully!')
         return backbone
     
     def build_loss(self, config):

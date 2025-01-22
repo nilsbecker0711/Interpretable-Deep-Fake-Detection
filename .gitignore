@@ -6,3 +6,5 @@
 *.pt
 *.dat
 datasets/
+BWCluster/logs/
+BWCluster/*.out
