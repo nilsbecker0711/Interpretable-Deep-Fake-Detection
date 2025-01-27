@@ -45,9 +45,11 @@ parser.add_argument("--test_dataset", nargs="+")
 parser.add_argument('--no-save_ckpt', dest='save_ckpt', action='store_false', default=True)
 parser.add_argument('--no-save_feat', dest='save_feat', action='store_false', default=True)
 parser.add_argument("--ddp", action='store_true', default=False)
-parser.add_argument('--local_rank', type=int, default=0)
+# parser.add_argument('--local_rank', type=int, default=0)
 parser.add_argument('--task_target', type=str, default="", help='specify the target of current training task')
 args = parser.parse_args()
+local_rank = int(os.environ.get('LOCAL_RANK', 0))  # Default to 0 if not set
+args.local_rank = local_rank
 torch.cuda.set_device(args.local_rank)
 
 
@@ -225,8 +227,12 @@ def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
         config = yaml.safe_load(f)
-    with open('./training/config/train_config.yaml', 'r') as f:
-        config2 = yaml.safe_load(f)
+    try:# KAI: added this, to ensure it finds the config file
+        with open('./training/config/train_config.yaml', 'r') as f:
+            config2 = yaml.safe_load(f)
+    except FileNotFoundError:
+        with open(os.path.expanduser('~/Interpretable-Deep-Fake-Detection/training/config/train_config.yaml'), 'r') as f:
+            config2 = yaml.safe_load(f)
     if 'label_dict' in config:
         config2['label_dict']=config['label_dict']
     config.update(config2)
@@ -283,6 +289,8 @@ def main():
     # prepare the model (detector)
     model_class = DETECTOR[config['model_name']]
     model = model_class(config)
+
+    print(f"Model is on device: {next(model.parameters()).device}")
 
     # prepare the optimizer
     optimizer = choose_optimizer(model, config)

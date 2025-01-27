@@ -1,0 +1,26 @@
+2025-01-20 14:47:25,194 INFO    MainThread:520904 [wandb_setup.py:_flush():68] Current SDK version is 0.19.4
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_setup.py:_flush():68] Configure stats pid to 520904
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_setup.py:_flush():68] Loading settings from /home/ma/ma_ma/ma_kreffert/.config/wandb/settings
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_setup.py:_flush():68] Loading settings from /pfs/data5/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/wandb/settings
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_setup.py:_flush():68] Loading settings from environment variables
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_init.py:setup_run_log_directory():624] Logging user logs to /pfs/data5/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/wandb/run-20250120_144725-afr4hvs3/logs/debug.log
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_init.py:setup_run_log_directory():625] Logging internal logs to /pfs/data5/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/wandb/run-20250120_144725-afr4hvs3/logs/debug-internal.log
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_init.py:init():743] calling init triggers
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_init.py:init():748] wandb.init called with sweep_config: {}
+config: {}
+2025-01-20 14:47:25,195 INFO    MainThread:520904 [wandb_init.py:init():776] starting backend
+2025-01-20 14:47:25,403 INFO    MainThread:520904 [wandb_init.py:init():780] sending inform_init request
+2025-01-20 14:47:25,407 INFO    MainThread:520904 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2025-01-20 14:47:25,407 INFO    MainThread:520904 [wandb_init.py:init():795] backend started and connected
+2025-01-20 14:47:25,408 INFO    MainThread:520904 [wandb_init.py:init():888] updated telemetry
+2025-01-20 14:47:25,416 INFO    MainThread:520904 [wandb_init.py:init():915] communicating run to backend with 90.0 second timeout
+2025-01-20 14:47:25,681 ERROR   MainThread:520904 [wandb_init.py:init():944] encountered error: failed to upsert bucket: returned error 403 Forbidden: {"errors":[{"message":"permission denied","path":["upsertBucket"],"extensions":{"code":"PERMISSION_ERROR"}}],"data":{"upsertBucket":null}}
+2025-01-20 14:47:25,681 ERROR   MainThread:520904 [wandb_init.py:init():1454] error in wandb.init()
+Traceback (most recent call last):
+  File "/home/ma/ma_ma/ma_kreffert/.conda/envs/TP_linux/lib/python3.12/site-packages/wandb/sdk/wandb_init.py", line 1444, in init
+    return wi.init(run_settings, run_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ma/ma_ma/ma_kreffert/.conda/envs/TP_linux/lib/python3.12/site-packages/wandb/sdk/wandb_init.py", line 950, in init
+    raise error
+wandb.errors.errors.CommError: failed to upsert bucket: returned error 403 Forbidden: {"errors":[{"message":"permission denied","path":["upsertBucket"],"extensions":{"code":"PERMISSION_ERROR"}}],"data":{"upsertBucket":null}}
+2025-01-20 14:47:25,687 WARNING MsgRouterThr:520904 [router.py:message_loop():75] message_loop has been closed

@@ -49,7 +49,7 @@ from metrics.base_metrics_class import calculate_metrics_for_train
 
 from detectors.base_detector import AbstractDetector
 from detectors import DETECTOR
-from networks import BACKBONE
+from networks.base import BACKBONE
 from loss import LOSSFUNC
 from .utils.sladd_api import synthesizer
 

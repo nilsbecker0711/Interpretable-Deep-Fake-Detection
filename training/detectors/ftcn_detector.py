@@ -104,7 +104,7 @@ from metrics.base_metrics_class import calculate_metrics_for_train
 
 from .base_detector import AbstractDetector
 from detectors import DETECTOR
-from networks import BACKBONE
+from networks.base import BACKBONE
 from loss import LOSSFUNC
 
 
@@ -121,7 +121,7 @@ from .utils.slowfast.models.video_model_builder import ResNet as ResNetOri
 from .utils.slowfast.config.defaults import get_cfg
 from torch import nn
 from inspect import signature
-from networks.time_transformer import TimeTransformer
+from networks.base.time_transformer import TimeTransformer
 import random
 
 
