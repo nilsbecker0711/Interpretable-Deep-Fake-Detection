@@ -1,0 +1,17 @@
+{"time":"2025-01-20T14:47:25.410537896+01:00","level":"INFO","msg":"stream: starting","core version":"0.19.4","symlink path":"/pfs/data5/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/wandb/run-20250120_144725-afr4hvs3/logs/debug-core.log"}
+{"time":"2025-01-20T14:47:25.518535436+01:00","level":"INFO","msg":"created new stream","id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.518575368+01:00","level":"INFO","msg":"stream: started","id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.51859672+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.518608238+01:00","level":"INFO","msg":"sender: started","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.518625652+01:00","level":"INFO","msg":"handler: started","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.680518614+01:00","level":"ERROR","msg":"HTTP error","status":403,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2025-01-20T14:47:25.680577564+01:00","level":"ERROR","msg":"sender: upsertRun:","error":"failed to upsert bucket: returned error 403 Forbidden: {\"errors\":[{\"message\":\"permission denied\",\"path\":[\"upsertBucket\"],\"extensions\":{\"code\":\"PERMISSION_ERROR\"}}],\"data\":{\"upsertBucket\":null}}"}
+{"time":"2025-01-20T14:47:25.687468485+01:00","level":"INFO","msg":"stream: closing","id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.687721226+01:00","level":"ERROR","msg":"sender: upsertConfig: RunRecord is nil"}
+{"time":"2025-01-20T14:47:25.864168311+01:00","level":"ERROR","msg":"HTTP error","status":404,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2025-01-20T14:47:25.864309468+01:00","level":"ERROR","msg":"runfiles: CreateRunFiles returned error: returned error 404 Not Found: {\"errors\":[{\"message\":\"project kai/Interpretable-Deep-Fake-Detection not found during createRunFiles\",\"path\":[\"createRunFiles\"]}],\"data\":{\"createRunFiles\":null}}"}
+{"time":"2025-01-20T14:47:25.865539871+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-01-20T14:47:25.865642512+01:00","level":"INFO","msg":"handler: closed","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.865710707+01:00","level":"INFO","msg":"sender: closed","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.865733832+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"afr4hvs3"}
+{"time":"2025-01-20T14:47:25.866655218+01:00","level":"INFO","msg":"stream: closed","id":"afr4hvs3"}

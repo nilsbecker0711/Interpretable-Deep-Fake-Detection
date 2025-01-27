@@ -48,7 +48,8 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 # Define face detector and predictor models
 face_detector = dlib.get_frontal_face_detector()
-predictor_path = 'preprocessing/dlib_tools/shape_predictor_81_face_landmarks.dat'
+predictor_path = '~/Interpretable-Deep-Fake-Detection/preprocessing/dlib_tools/shape_predictor_81_face_landmarks.dat'
+predictor_path = os.path.expanduser(predictor_path) # Note Kai: I added this line, so it finds the correct path
 face_predictor = dlib.shape_predictor(predictor_path)
 
 
