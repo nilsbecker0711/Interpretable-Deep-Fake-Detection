@@ -199,7 +199,7 @@ class ResNet34_bcos(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         # self.fc = BcosConv2d(512 * block.expansion, num_classes)
-        self.fc = BcosConv2d(512 * block.expansion, self.num_classes, kernel_size=1, max_out=1)  # Adjusted for classification
+        self.fc = BcosConv2d(512 * block.expansion, self.num_classes, kernel_size=1, max_out=2)  # Adjusted for classification
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -245,12 +245,17 @@ class ResNet34_bcos(nn.Module):
         '''Kai: Basically the forward implementation up to the point of the avgpool and fc layer.'''
         # See note [TorchScript super()]
         x = self.conv1(x)
+        print(x.shape)
         x = self.avgpool(x)
-
+        print(x.shape)
         x = self.layer1(x)
+        print(x.shape)
         x = self.layer2(x)
+        print(x.shape)
         x = self.layer3(x)
+        print(x.shape)
         x = self.layer4(x)
+        print(x.shape)
         return x
 
 
@@ -264,9 +269,10 @@ class ResNet34_bcos(nn.Module):
         # x = self.avgpool(features)
         # x = x.view(x.size(0), -1)
         # x = self.fc(x)
-        x = F.adaptive_avg_pool2d(features, (1, 1))  # Global average pooling
-        x = self.fc(x)
-        x = x.squeeze()
+
+        # x = F.adaptive_avg_pool2d(features, (1, 1))  # Global average pooling
+        x = self.fc(features)
+        # x = x.squeeze()
         # x = x.view(x.size(0), -1)  # Flatten the tensor
         if self.num_classes == 1:
             x = x.squeeze()  # Removes dimensions of size 1, resulting in shape [16]

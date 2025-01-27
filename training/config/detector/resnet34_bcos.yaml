@@ -1,8 +1,9 @@
 # log dir 
 log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet
 
-# model setting
-pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ckpt_best_01_22_15_59_epoch_1.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+# model setting -> old
+# pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ckpt_best_01_23_13_epoch_8.pth
+pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 from_url: true
 model_name: resnet34_bcos   # model name
 backbone_name: resnet34_bcos  # backbone name
@@ -31,7 +32,7 @@ train_batchSize: 32   # training batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+resolution: 224   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
@@ -69,13 +70,16 @@ optimizer:
     weight_decay: 0.0005  # weight decay for regularization
     amsgrad: false
   sgd:
-    lr: 0.0002  # learning rate
+    lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
+  gradient_clipping: true
 
 # training config
-lr_scheduler: null   # learning rate scheduler
-nEpochs: 10   # number of epochs to train for
+lr_scheduler: step   # learning rate scheduler
+lr_step: 4
+lr_gamma: 0.2
+nEpochs: 15   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
@@ -91,6 +95,6 @@ losstype: null
 metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 
 # cuda
-
+ddp: true   # Kai: unnecessary, since it is overwritten anyway in train.py-> main() -> config['ddp']= args.ddp
 cuda: true   # whether to use CUDA acceleration
 cudnn: true   # whether to use CuDNN for convolution operations

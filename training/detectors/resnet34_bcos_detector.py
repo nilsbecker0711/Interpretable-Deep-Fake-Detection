@@ -77,7 +77,7 @@ class ResnetBcosDetector(AbstractDetector):
                 new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
                 if new_key in backbone.state_dict() and backbone.state_dict()[new_key].shape == value.shape:
                     adapted_state_dict[new_key] = value
-            backbone.load_state_dict(advanced_state_dict, strict=False)
+            backbone.load_state_dict(adapted_state_dict, strict=False)
             # handle the prediction head, which is not inititalized otherwise
             nn.init.kaiming_normal_(backbone.fc.linear.weight)
             if backbone.fc.linear.bias is not None:
@@ -120,6 +120,7 @@ class ResnetBcosDetector(AbstractDetector):
         # get the prediction by classifier
         pred = self.classifier(features)
         # get the probability of the pred
+        pred = torch.clamp(pred, min=-100, max=100)
         prob = torch.softmax(pred, dim=1)[:, 1]
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
