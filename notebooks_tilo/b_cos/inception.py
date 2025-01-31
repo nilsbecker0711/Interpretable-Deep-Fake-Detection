@@ -251,10 +251,10 @@ class Inception3(nn.Module):
         # self.print("Mixed_7a", x)
         # N x 1280 x 8 x 8
         x = self.Mixed_7b(x)
-        # self.print("Mixed_7b", x)
+        self.print("Mixed_7b", x)
         # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
-        # self.print("Mixed_7c", x)
+        self.print("Mixed_7c", x)
         # N x 2048 x 8 x 8
         # N x 2048 x 1 x 1
         # x = self.dropout(x)
@@ -262,7 +262,7 @@ class Inception3(nn.Module):
         x = self.fc(x)
         x = self.global_avg_pool(x)  # Shape: (N, 1, 1, 1)
         x = self.flatten(x)          # Shape: (N, 1)
-        #self.print("fc", x)
+        self.print("fc", x)
         # N x 1000 (num_classes)
         return x
 
