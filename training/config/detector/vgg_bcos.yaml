@@ -1,0 +1,92 @@
+# Log directory
+log_dir: /home/ma/ma_ma/ma_nilbecke/Interpretable-Deep-Fake-Detection/logs/vgg_bcos
+
+# Model settings
+#pretrained: /home/ma/ma_ma/nilbecke/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/vgg16-bcos.pth  # Path to a pre-trained model, if using one
+from_url: true
+model_name: vgg19_bcos  # Model name
+backbone_name: vgg19_bcos  # Backbone name
+
+# Backbone configuration
+backbone_config:
+  name: "vgg19_bcos"
+  mode: "default"  # Adjust this based on your specific use case
+  num_classes: 2  # Change according to your dataset (e.g., 10 for CIFAR-10, 1000 for ImageNet)
+  batch_norm: True  # VGG typically includes batch normalization
+  pretrained: False  # Set to True if using pretrained weights
+  input_channels: 3  # Standard RGB images
+  max_out: 2  # Used in BcosConv2d classification layer
+
+# Dataset settings
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
+train_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++]
+compression: c40
+train_batchSize: 32
+test_batchSize: 32
+workers: 8
+frame_num: {'train': 32, 'test': 32}
+resolution: 224
+with_mask: false
+with_landmark: false
+save_ckpt: true
+save_feat: true
+add_inverse_channels: true
+
+# Data augmentation
+use_data_augmentation: true
+data_aug:
+  flip_prob: 0.5
+  rotate_prob: 0.5
+  rotate_limit: [-10, 10]
+  blur_prob: 0.5
+  blur_limit: [3, 7]
+  brightness_prob: 0.5
+  brightness_limit: [-0.1, 0.1]
+  contrast_limit: [-0.1, 0.1]
+  quality_lower: 40
+  quality_upper: 100
+
+# Normalization
+mean: [0.5, 0.5, 0.5]
+std: [0.5, 0.5, 0.5]
+
+# Optimizer configuration
+optimizer:
+  type: adam
+  adam:
+    lr: 0.0002
+    beta1: 0.9
+    beta2: 0.999
+    eps: 0.00000001
+    weight_decay: 0.0005
+    amsgrad: false
+  sgd:
+    lr: 0.0002
+    momentum: 0.9
+    weight_decay: 0.0005
+  gradient_clipping: true
+
+# Training settings
+lr_scheduler: step
+lr_step: 4
+lr_gamma: 0.2
+nEpochs: 15
+start_epoch: 0
+save_epoch: 1
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+save_ckpt: false
+
+# Loss function
+loss_func: cross_entropy
+losstype: null
+
+# Metrics
+metric_scoring: auc
+
+# CUDA settings
+ddp: true
+cuda: true
+cudnn: true
