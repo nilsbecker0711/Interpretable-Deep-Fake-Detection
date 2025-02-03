@@ -1,0 +1,29 @@
+Running on uc2n637.localdomain
+Date: Sun Jan 19 12:53:41 CET 2025
+Python version: Python 3.9.18
+Environment: # conda environments:
+#
+new_env                  /home/ma/ma_ma/ma_tischuet/.conda/envs/new_env
+base                     /opt/bwhpc/common/devel/miniconda/23.9.0-py3.9.15
+                         /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_backup
+                      *  /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
+Finish writing FF-DF.json
+Finish writing FF-FS.json
+Finish writing FF-F2F.json
+Finish writing FF-NT.json
+FaceForensics++.json generated successfully.
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n[637-640]
+Job ID: 25158060
+Cluster: uc2
+User/Group: ma_tischuet/ma_ma
+State: COMPLETED (exit code 0)
+Nodes: 4
+Cores per node: 128
+CPU Utilized: 00:00:07
+CPU Efficiency: 0.02% of 12:39:28 core-walltime
+Job Wall-clock time: 00:01:29
+Memory Utilized: 153.99 MB
+Memory Efficiency: 0.04% of 390.62 GB

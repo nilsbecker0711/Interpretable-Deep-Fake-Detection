@@ -6,3 +6,5 @@
 *.pt
 *.dat
 datasets/
+datasets/rgb
+.DS_Store
