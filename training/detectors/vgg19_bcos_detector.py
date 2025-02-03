@@ -12,6 +12,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.nn import DataParallel
 from torch.utils.tensorboard import SummaryWriter
+from torch.hub import load_state_dict_from_url
 
 from metrics.base_metrics_class import calculate_metrics_for_train
 
@@ -38,7 +39,8 @@ class VGGBcosDetector(AbstractDetector):
         #TODO: maybe do the weight loading here
         #FIXME: current load pretrained weights only from the backbone, not here
         # # if donot load the pretrained weights, fail to get good results
-        state_dict = torch.load(config['pretrained'])
+        state_dict = load_state_dict_from_url('https://download.pytorch.org/models/vgg19-dcbb9e9d.pth')
+        #state_dict = torch.load(config['pretrained'])
         # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
         # backbone.load_state_dict(state_dict, False)
         if 'resnet34-333f7ec4.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 

@@ -117,6 +117,9 @@ class ResnetBcosDetector(AbstractDetector):
     def forward(self, data_dict: dict, inference=False) -> dict:
         # get the features by backbone
         features = self.features(data_dict)
+        features = F.adaptive_avg_pool2d(features, (1, 1))
+        features = torch.flatten(features, 1)
+        features = features[..., None, None]
         # get the prediction by classifier
         pred = self.classifier(features)
         # get the probability of the pred

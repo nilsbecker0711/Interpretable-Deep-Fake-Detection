@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> BcosConv2d:
     """3x3 convolution with padding"""
+    #print(in_planes)
     return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1)
 
 
@@ -62,6 +63,7 @@ class VGG19_Bcos(nn.Module):
 
     def forward(self, inp):
         x = self._vgg_impl(inp)
+        # Adds spatial dimensions for BCosConv2d compatibility
         out = self.classifier_head(x)
         return out
 
