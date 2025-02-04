@@ -55,10 +55,17 @@ class VGG19_Bcos(nn.Module):
         print(x.shape)
         return x
 
-    def classifier_head(self, features):
+    def classifier_head2(self, features):
         x = self.classifier(features)
         if self.num_classes == 1:
             x = x.squeeze()
+        return x
+
+    def classifier_head(self, features):
+        x = self.classifier(features)  # [batch_size, num_classes, 7, 7]
+        (print(f'in classifier head {x}'))
+        x = F.adaptive_avg_pool2d(x, 1)  # Pool to [batch_size, num_classes, 1, 1]
+        x = x.squeeze(-1).squeeze(-1)  # Remove last two dimensions -> [batch_size, num_classes]
         return x
 
     def forward(self, inp):

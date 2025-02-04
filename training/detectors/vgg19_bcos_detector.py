@@ -68,12 +68,19 @@ class VGGBcosDetector(AbstractDetector):
     def features(self, data_dict: dict) -> torch.tensor:
         return self.backbone.features(data_dict['image'])
 
-    def classifier(self, features: torch.tensor) -> torch.tensor:
+    def classifier2(self, features: torch.tensor) -> torch.tensor:
         return self.backbone.classifier(features)
     
+    def classifier(self, features: torch.tensor) -> torch.tensor:
+        pred = self.backbone.classifier(features)  # [32, 2, 7, 7]
+        pred = F.adaptive_avg_pool2d(pred, 1)  # Pool to [32, 2, 1, 1]
+        pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
+        return pred
+        
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
         pred = pred_dict['cls']
+        print(f"Pred shape: {pred.shape}, Label shape: {label.shape}")
         loss = self.loss_func(pred, label)
         loss_dict = {'overall': loss}
         return loss_dict
