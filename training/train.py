@@ -50,7 +50,8 @@ parser.add_argument('--task_target', type=str, default="", help='specify the tar
 args = parser.parse_args()
 local_rank = int(os.environ.get('LOCAL_RANK', 0))  # Default to 0 if not set
 args.local_rank = local_rank
-torch.cuda.set_device(args.local_rank)
+if torch.cuda.is_available():
+    torch.cuda.set_device(args.local_rank)
 
 
 def init_seed(config):
@@ -85,6 +86,8 @@ def prepare_training_data(config):
         train_set = I2GDataset(config, mode='train')
     elif 'dataset_type' in config and config['dataset_type'] == 'lrl':
         train_set = LRLDataset(config, mode='train')
+    elif 'dataset_type' in config and config['dataset_type'] == 'bcos':
+        train_set = DeepfakeBcosDataset(config, mode='train')
     else:
         train_set = DeepfakeAbstractBaseDataset(
                     config=config,
@@ -128,15 +131,21 @@ def prepare_testing_data(config):
         # update the config dictionary with the specific testing dataset
         config = config.copy()  # create a copy of config to avoid altering the original one
         config['test_dataset'] = test_name  # specify the current test dataset
-        if not config.get('dataset_type', None) == 'lrl':
-            test_set = DeepfakeAbstractBaseDataset(
-                    config=config,
-                    mode='test',
-            )
-        else:
+        if config.get('dataset_type', None) == 'lrl':
             test_set = LRLDataset(
                 config=config,
                 mode='test',
+            )
+        elif not config.get('dataset_type', None) == 'bcos':
+            test_set = DeepfakeBcosDataset(
+                    config=config,
+                    mode='test',
+            )
+        
+        else:
+            test_set = DeepfakeAbstractBaseDataset(
+                    config=config,
+                    mode='test',
             )
 
         test_data_loader = \

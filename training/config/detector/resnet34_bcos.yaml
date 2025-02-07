@@ -3,8 +3,8 @@ log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resne
 
 # model setting -> old
 # pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ckpt_best_01_23_13_epoch_8.pth
-pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
-from_url: true
+pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_2025-02-07-09-30-34/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+from_url: false
 model_name: resnet34_bcos   # model name
 backbone_name: resnet34_bcos  # backbone name
 
@@ -28,8 +28,8 @@ train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c40  # compression-level for videos
-train_batchSize: 32   # training batch size
-test_batchSize: 32   # test batch size
+train_batchSize: 64   # training batch size
+test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 224   # resolution of output image to network
@@ -41,6 +41,7 @@ add_inverse_channels: true
 
 
 # data augmentation
+dataset_type: 'bcos'
 use_data_augmentation: true  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
@@ -63,20 +64,20 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0002  # learning rate
-    beta1: 0.9  # beta1 for Adam optimizer
+    lr: 0.0003  # learning rate
+    beta1: 0.8  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
-    eps: 0.00000001  # epsilon for Adam optimizer
-    weight_decay: 0.0005  # weight decay for regularization
-    amsgrad: false
+    eps: 0.000001  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
+    weight_decay: 0  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
+    amsgrad: true
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
-  gradient_clipping: true
+  gradient_clipping: false
 
 # training config
-lr_scheduler: step   # learning rate scheduler
+lr_scheduler: # step   # learning rate scheduler
 lr_step: 4
 lr_gamma: 0.2
 nEpochs: 15   # number of epochs to train for
@@ -95,6 +96,6 @@ losstype: null
 metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 
 # cuda
-ddp: true   # Kai: unnecessary, since it is overwritten anyway in train.py-> main() -> config['ddp']= args.ddp
-cuda: true   # whether to use CUDA acceleration
-cudnn: true   # whether to use CuDNN for convolution operations
+ddp: false   # Kai: unnecessary, since it is overwritten anyway in train.py-> main() -> config['ddp']= args.ddp
+cuda: false   # whether to use CUDA acceleration
+cudnn: false   # whether to use CuDNN for convolution operations
