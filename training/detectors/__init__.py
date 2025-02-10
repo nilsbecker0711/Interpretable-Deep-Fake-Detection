@@ -14,6 +14,7 @@ from .xception_detector import XceptionDetector
 from .efficientnetb4_detector import EfficientDetector
 from .resnet34_detector import ResnetDetector
 from .resnet34_bcos_detector import ResnetBcosDetector
+from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2
 from .f3net_detector import F3netDetector
 from .meso4_detector import Meso4Detector
 from .meso4Inception_detector import Meso4InceptionDetector
