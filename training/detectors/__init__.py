@@ -9,12 +9,13 @@ sys.path.append(project_root_dir)
 from metrics.registry import DETECTOR
 from .utils import slowfast
 
-from .facexray_detector import FaceXrayDetector
+""" from .facexray_detector import FaceXrayDetector
 from .xception_detector import XceptionDetector
 from .efficientnetb4_detector import EfficientDetector
-from .resnet34_detector import ResnetDetector
-from .resnet34_bcos_detector import ResnetBcosDetector
-from .f3net_detector import F3netDetector
+from .resnet34_detector import ResnetDetector """
+#from .resnet34_bcos_detector import ResnetBcosDetector
+from .inception_bcos_detector import InceptionBcosDetector
+""" from .f3net_detector import F3netDetector
 from .meso4_detector import Meso4Detector
 from .meso4Inception_detector import Meso4InceptionDetector
 from .spsl_detector import SpslDetector
@@ -44,3 +45,4 @@ from .uia_vit_detector import UIAViTDetector
 from .multi_attention_detector import MultiAttentionDetector
 from .sia_detector import SIADetector
 from .tall_detector import TALLDetector
+ """
