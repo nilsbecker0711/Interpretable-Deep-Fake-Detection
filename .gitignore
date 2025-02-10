@@ -6,9 +6,6 @@
 *.pt
 *.dat
 datasets/
-<<<<<<< HEAD
 BWCluster/logs/
 BWCluster/*.out
-=======
 .DS_Store
->>>>>>> 52a4a16c99652390344195bcb34ee538f4f78f6e

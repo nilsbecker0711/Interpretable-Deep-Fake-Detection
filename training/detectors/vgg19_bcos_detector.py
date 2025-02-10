@@ -79,8 +79,7 @@ class VGGBcosDetector(AbstractDetector):
         
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
-        pred = pred_dict['cls']
-        print(f"Pred shape: {pred.shape}, Label shape: {label.shape}")
+        pred = pred_dict['cls'] 
         loss = self.loss_func(pred, label)
         loss_dict = {'overall': loss}
         return loss_dict

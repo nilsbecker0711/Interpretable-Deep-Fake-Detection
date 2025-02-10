@@ -322,8 +322,8 @@ class Trainer(object):
 
             # Compute gradient norm
             grad_norm = None
-            if self.config['local_rank'] == 0:  # Only log on rank 0 if using DDP
-                grad_norm = clip_grad_norm_(self.model.parameters(), max_norm=float('inf'))
+            #if self.config['local_rank'] == 0:  # Only log on rank 0 if using DDP #Nils: Grad Fix?
+            grad_norm = clip_grad_norm_(self.model.parameters(), max_norm=float('inf'))
             
             # Log gradient norm using tqdm
             tqdm_str = f"Iter: {step_cnt}, GradNorm: {grad_norm:.4f}" if grad_norm is not None else "Iter: {step_cnt}"
