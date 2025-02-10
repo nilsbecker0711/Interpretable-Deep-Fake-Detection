@@ -17,3 +17,7 @@ from .pair_dataset import pairDataset
 from .sbi_dataset import SBIDataset
 from .lsda_dataset import LSDADataset
 from .tall_dataset import TALLDataset """
+from .abstract_dataset import DeepfakeAbstractBaseDataset
+from .tall_dataset import TALLDataset
+from .b_cos_pp import DeepfakeBcosDataset
+

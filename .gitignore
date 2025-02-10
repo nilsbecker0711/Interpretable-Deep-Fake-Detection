@@ -10,3 +10,6 @@ BWCluster/logs/
 BWCluster/*.out
 .DS_Store
 training/logs
+*.out
+logs/
+.ipynb_checkpoints/
