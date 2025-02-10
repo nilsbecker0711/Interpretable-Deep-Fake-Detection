@@ -8,10 +8,11 @@ sys.path.append(project_root_dir)
 
 from metrics.registry import BACKBONE
 
-from .xception import Xception
+""" from .xception import Xception
 from .mesonet import Meso4, MesoInception4
 from .resnet34 import ResNet34
 from .resnet34_bcos import ResNet34_bcos
 from .resnet34_bcos_v2 import ResNet34_bcos_v2
 from .efficientnetb4 import EfficientNetB4
-from .xception_sladd import Xception_SLADD
+from .xception_sladd import Xception_SLADD """
+from .inception_bcos import Inception3

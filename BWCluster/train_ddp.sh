@@ -9,7 +9,7 @@
 
 module load devel/miniconda
 
-conda activate TP_linux
+conda activate TP_main
 
 echo "Running on $(hostname)"
 echo "Date: $(date)"
@@ -25,4 +25,5 @@ export MASTER_ADDR="localhost"  # The master node's address (typically localhost
 export MASTER_PORT=29500    # The port for communication (can be any available port)
 
 # Launch the training with two GPUs
+
 torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29500 ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos.yaml --ddp
