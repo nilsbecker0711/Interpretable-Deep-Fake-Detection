@@ -3,7 +3,7 @@ log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resne
 
 # model setting -> old
 # pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ckpt_best_01_23_13_epoch_8.pth
-pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_2025-02-07-09-30-34/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/resnet_from_scratch_runs/logs/resnet34_bcos_2025-02-08-09-15-43/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: resnet34_bcos   # model name
 backbone_name: resnet34_bcos  # backbone name
@@ -80,7 +80,7 @@ optimizer:
 lr_scheduler: # step   # learning rate scheduler
 lr_step: 4
 lr_gamma: 0.2
-nEpochs: 15   # number of epochs to train for
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

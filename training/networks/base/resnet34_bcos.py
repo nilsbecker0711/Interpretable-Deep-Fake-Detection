@@ -263,7 +263,6 @@ class ResNet34_bcos(nn.Module):
         # x = self.avgpool(features)
         # x = x.view(x.size(0), -1)
         # x = self.fc(x)
-
         x = self.fc(features)
         x = F.adaptive_avg_pool2d(x, (1, 1))  # Global average pooling
         x = x.squeeze()

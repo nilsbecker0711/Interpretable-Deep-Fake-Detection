@@ -140,6 +140,7 @@ class ResnetBcosDetector(AbstractDetector):
         pred = self.classifier(features)
         # get the probability of the pred
         # pred = torch.clamp(pred, min=-100, max=100)
+        # print(pred)
         prob = torch.softmax(pred, dim=1)[:, 1]
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
