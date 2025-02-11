@@ -103,6 +103,8 @@ if __name__ == "__main__":
         default=224,
         help="Target width for evaluation images."
     )
+
+    ### doesnt work####
     parser.add_argument(
         "--grid_split",
         type=int,
