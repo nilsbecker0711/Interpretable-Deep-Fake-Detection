@@ -16,7 +16,8 @@ import torch.nn.functional as F
 from metrics.registry import BACKBONE
 
 
-from networks.bcos.bcosconv2d import BcosConv2d
+from bcos.bcosconv2d import BcosConv2d
+from bcos.detector_utils import MyAdaptiveAvgPool2d, FinalLayer
 import numpy as np
 import torch
 from torch import Tensor
@@ -176,6 +177,8 @@ class ResNet34_bcos(nn.Module):
         self._norm_layer = nn.BatchNorm2d
         self.inplanes = 64
         self.dilation = 1
+        self.log_temperature: int = resnet_config["log_temperature"]
+        self.bias: float = np.log(resnet_config["bias"][0]/resnet_config["bias"][1])
         # if resnet_config["replace_stride_with_dilation"] is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
@@ -252,6 +255,13 @@ class ResNet34_bcos(nn.Module):
         x = self.layer4(x)
         return x
 
+    def freeze(self):
+        # Freeze all layers except the fc layer
+        for param in self.parameters():
+            param.requires_grad = False  # Freeze all parameters
+
+        for param in self.fc.parameters():
+            param.requires_grad = True  # Unfreeze the fc layer
 
     def features(self, inp):
         x = self._resnet_impl(inp)
@@ -264,8 +274,12 @@ class ResNet34_bcos(nn.Module):
         # x = x.view(x.size(0), -1)
         # x = self.fc(x)
         x = self.fc(features)
-        x = F.adaptive_avg_pool2d(x, (1, 1))  # Global average pooling
-        x = x.squeeze()
+        pooling = MyAdaptiveAvgPool2d((1, 1))
+        x = pooling.forward(in_tensor = x)
+        final = FinalLayer(bias = self.bias, norm = self.log_temperature)
+        x = final.forward(x)
+        # x = F.adaptive_avg_pool2d(x, (1, 1))  # Global average pooling
+        # x = x.squeeze()
         # x = x.view(x.size(0), -1)  # Flatten the tensor
         if self.num_classes == 1:
             x = x.squeeze()  # Removes dimensions of size 1, resulting in shape [16]

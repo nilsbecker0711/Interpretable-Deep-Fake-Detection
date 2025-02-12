@@ -6,10 +6,10 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 from torch.hub import load_state_dict_from_url
 from typing import Callable, Any, Optional, Tuple, List
-from networks.bcos.bcosconv2d import BcosConv2d
+from bcos.bcosconv2d import BcosConv2d
 from metrics.registry import BACKBONE
 import logging
-from training.detectors.utils.detector_utils import MyAdaptiveAvgPool2d, FinalLayer
+from bcos.detector_utils import MyAdaptiveAvgPool2d, FinalLayer
 
 logger = logging.getLogger(__name__) 
 

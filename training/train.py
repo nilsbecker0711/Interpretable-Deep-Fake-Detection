@@ -168,10 +168,16 @@ def prepare_testing_data(config):
 
 
 def choose_optimizer(model, config):
+    if config['freeze']:
+        model.backbone.freeze()
+        params = model.backbone.fc.parameters()
+    else:
+        params= model.parameters()
+
     opt_name = config['optimizer']['type']
     if opt_name == 'sgd':
         optimizer = optim.SGD(
-            params=model.parameters(),
+            params=params,
             lr=config['optimizer'][opt_name]['lr'],
             momentum=config['optimizer'][opt_name]['momentum'],
             weight_decay=config['optimizer'][opt_name]['weight_decay']
@@ -179,7 +185,7 @@ def choose_optimizer(model, config):
         return optimizer
     elif opt_name == 'adam':
         optimizer = optim.Adam(
-            params=model.parameters(),
+            params=params,
             lr=config['optimizer'][opt_name]['lr'],
             weight_decay=config['optimizer'][opt_name]['weight_decay'],
             betas=(config['optimizer'][opt_name]['beta1'], config['optimizer'][opt_name]['beta2']),
@@ -189,7 +195,7 @@ def choose_optimizer(model, config):
         return optimizer
     elif opt_name == 'sam':
         optimizer = SAM(
-            model.parameters(), 
+            params, 
             optim.SGD, 
             lr=config['optimizer'][opt_name]['lr'],
             momentum=config['optimizer'][opt_name]['momentum'],
