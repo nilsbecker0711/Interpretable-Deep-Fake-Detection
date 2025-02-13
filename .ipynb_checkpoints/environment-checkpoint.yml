@@ -165,4 +165,4 @@ dependencies:
       - scikit-image==0.24.0
       - scipy==1.14.1
       - tifffile==2024.9.20
-prefix: /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/shared_env
+prefix: /home/ma/ma_ma/ma_kreffert/.conda/envs/TP_linux
