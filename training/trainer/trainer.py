@@ -186,8 +186,8 @@ class Trainer(object):
             for i in range(2):
                 predictions = self.model(data_dict)
                 # Kai: add clamping to stabilize the results
-                eps = 1e-4
-                predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
+                # eps = 1e-4
+                # predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
 
                 losses = self.model.get_losses(data_dict, predictions)
                 if i == 0:
@@ -227,18 +227,19 @@ class Trainer(object):
                     # else:# issue does not come from predictions
                     #     losses['overall'] = torch.clamp(losses['overall'], min=1e-12, max=1e6)
                     #     losses['overall'].backward()
-                if self.config['optimizer']['gradient_clipping']:
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=5.0)
+                # if self.config['optimizer']['gradient_clipping']:
+                #     torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=5.0)
                 if i == 0:
                     self.optimizer.first_step(zero_grad=True)
                 else:
                     self.optimizer.second_step(zero_grad=True)
             return losses_first, pred_first
         else:
+            _threw_an_error = False
             predictions = self.model(data_dict)
             # add clamping to stabilize the results
-            eps = 1e-4
-            predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
+            # eps = 1e-4
+            # predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
 
             if type(self.model) is DDP:
                 losses = self.model.module.get_losses(data_dict, predictions)
@@ -247,40 +248,18 @@ class Trainer(object):
             self.optimizer.zero_grad()
             try: #@Kai
                 losses['overall'].backward()
+                # self.model.debug_weights_and_features(data_dict)
             except RuntimeError as e:
-                self.logger.info(f"Error during backward pass: {e}")
-                self.logger.info(f"Loss value: {losses['overall']}")
+                self.logger.info(f"\n Error during backward pass: {e}")
+                self.logger.info(f"\n Loss value: {losses['overall']}")
                 if not torch.isfinite(predictions['cls']).all():
                     self.logger.info(f"Predictions are not finite: {predictions['cls']}")
                 if not torch.isfinite(losses['overall']).all():
                     self.logger.info(f"Losses are not finite: {losses['overall']}")
                     # then clamp the losses
                     losses['overall'] = torch.clamp(losses['overall'], min=1e-6, max=1e6)
+                self.model.debug_weights_and_features(data_dict)
                 losses['overall'].backward(retain_graph=True)
-                # # OLD check if the issue comes from the predictions
-                # if not torch.isfinite(predictions['cls']).all():
-                #     self.logger.info("Predictions contains NaN or inf values. Fixing it.")
-                #     # Create a mask for invalid values
-                #     invalid_mask = ~torch.isfinite(predictions['cls'])
-                #     # Replace invalid values with the mean of valid values, or zero if none are valid
-                #     valid_values = predictions['cls'][~invalid_mask]
-                #     replacement = valid_values.mean() if valid_values.numel() > 0 else 0.0
-                #     predictions['cls'][invalid_mask] = replacement
-                #     # recompute the losses
-                #     losses = self.model.get_losses(data_dict, predictions)
-                #     try:
-                #         losses['overall'].backward()
-                #         return losses, predictions
-                #     except RuntimeError as e:
-                #         self.logger.info(f"Error AGAIN during backward pass: {e}")
-                #         self.logger.info(f"Loss value: {losses['overall']}")
-                #         return {'overall': torch.tensor(0.0)}, predictions
-                # else:# issue does not come from predictions
-                #     losses['overall'] = torch.clamp(losses['overall'], min=1e-12, max=1e6)
-                #     losses['overall'].backward()
-                # losses['overall'].backward()            
-            if self.config['optimizer']['gradient_clipping']:
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=5.0)
             self.optimizer.step()
             return losses,predictions
 
@@ -313,21 +292,22 @@ class Trainer(object):
 
         for iteration, data_dict in tqdm(enumerate(train_data_loader),total=len(train_data_loader)):
             self.setTrain()
-            # more elegant and more scalable way of moving data to GPU
-            for key in data_dict.keys():
-                if data_dict[key]!=None and key!='name':
-                    data_dict[key]=data_dict[key].cuda()
+            if torch.cuda.is_available():
+                # more elegant and more scalable way of moving data to GPU
+                for key in data_dict.keys():
+                    if data_dict[key]!=None and key!='name':
+                        data_dict[key]=data_dict[key].cuda()
 
             losses,predictions=self.train_step(data_dict)
 
             # Compute gradient norm
-            grad_norm = None
-            #if self.config['local_rank'] == 0:  # Only log on rank 0 if using DDP #Nils: Grad Fix?
-            grad_norm = clip_grad_norm_(self.model.parameters(), max_norm=float('inf'))
+            # grad_norm = None
+            # if self.config['local_rank'] == 0:  # Only log on rank 0 if using DDP
+            #     grad_norm = clip_grad_norm_(self.model.parameters(), max_norm=float('inf'))
             
             # Log gradient norm using tqdm
-            tqdm_str = f"Iter: {step_cnt}, GradNorm: {grad_norm:.4f}" if grad_norm is not None else "Iter: {step_cnt}"
-            tqdm.write(tqdm_str)
+            # tqdm_str = f"Iter: {step_cnt}, GradNorm: {grad_norm:.4f}" if grad_norm is not None else "Iter: {step_cnt}"
+            # tqdm.write(tqdm_str)
 
             # update learning rate
 
@@ -498,6 +478,7 @@ class Trainer(object):
             writer.add_scalar(f'test_metrics/acc_real', acc_real, global_step=step)
             writer.add_scalar(f'test_metrics/acc_fake', acc_fake, global_step=step)
         self.logger.info(metric_str)
+
     def test_epoch(self, epoch, iteration, test_data_loaders, step):
         # set model to eval mode
         self.setEval()

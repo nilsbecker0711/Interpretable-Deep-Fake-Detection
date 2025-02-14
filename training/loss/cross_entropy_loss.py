@@ -21,8 +21,6 @@ class CrossEntropyLoss(AbstractLossClass):
             A scalar tensor representing the cross-entropy loss.
         """
         # Compute the cross-entropy loss
-        print(inputs.shape)
-        print(targets.shape)
         loss = self.loss_fn(inputs, targets)
 
         return loss

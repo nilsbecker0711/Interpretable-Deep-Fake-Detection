@@ -7,13 +7,17 @@ sys.path.append(parent_dir)
 sys.path.append(project_root_dir)
 
 
-#from .I2G_dataset import I2GDataset
-#from .iid_dataset import IIDDataset
+""" from .I2G_dataset import I2GDataset
+from .iid_dataset import IIDDataset
 from .abstract_dataset import DeepfakeAbstractBaseDataset
-#from .ff_blend import FFBlendDataset
-#from .fwa_blend import FWABlendDataset
-#from .lrl_dataset import LRLDataset
-#from .pair_dataset import pairDataset
-#from .sbi_dataset import SBIDataset
-#from .lsda_dataset import LSDADataset
-#from .tall_dataset import TALLDataset
+from .ff_blend import FFBlendDataset
+from .fwa_blend import FWABlendDataset
+from .lrl_dataset import LRLDataset
+from .pair_dataset import pairDataset
+from .sbi_dataset import SBIDataset
+from .lsda_dataset import LSDADataset
+from .tall_dataset import TALLDataset """
+from .abstract_dataset import DeepfakeAbstractBaseDataset
+from .tall_dataset import TALLDataset
+from .b_cos_pp import DeepfakeBcosDataset
+

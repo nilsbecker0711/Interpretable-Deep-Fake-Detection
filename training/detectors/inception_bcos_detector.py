@@ -1,0 +1,114 @@
+'''
+# description: Class for the InceptionNetDetector
+
+Functions in the Class are summarized as:
+1. __init__: Initialization
+2. build_backbone: Backbone-building
+3. build_loss: Loss-function-building
+4. features: Feature-extraction
+5. classifier: Classification
+6. get_losses: Loss-computation
+7. get_train_metrics: Training-metrics-computation
+8. get_test_metrics: Testing-metrics-computation
+9. forward: Forward-propagation
+
+'''
+
+import os
+import datetime
+import logging
+import numpy as np
+from sklearn import metrics
+from typing import Union
+from collections import defaultdict
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.nn import DataParallel
+from torch.utils.tensorboard import SummaryWriter
+
+from metrics.base_metrics_class import calculate_metrics_for_train
+
+from .base_detector import AbstractDetector
+from detectors import DETECTOR
+from networks.base import BACKBONE
+from loss import LOSSFUNC
+
+logger = logging.getLogger(__name__)
+
+@DETECTOR.register_module(module_name='inception_bcos_detector')
+class InceptionBcosDetector(AbstractDetector):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        self.backbone = self.build_backbone(config)
+        self.loss_func = self.build_loss(config)
+        
+    def build_backbone(self, config):
+        # prepare the backbone
+        backbone_class = BACKBONE[config['backbone_name']]
+        model_config = config['backbone_config']
+        backbone = backbone_class(inceptionnet_config = model_config) # tilo: model does not accept dict as input
+        #TODO: maybe do the weight loading here
+        #FIXME: current load pretrained weights only from the backbone, not here
+        # # if donot load the pretrained weights, fail to get good results
+        state_dict = torch.load(config['pretrained'])
+        # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
+        # backbone.load_state_dict(state_dict, False)
+        if 'inception_v3_google-1a9a5a14.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 
+            adapted_state_dict = {}
+            for key, value in state_dict.items():
+                new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
+                if new_key in backbone.state_dict() and backbone.state_dict()[new_key].shape == value.shape:
+                    adapted_state_dict[new_key] = value
+            backbone.load_state_dict(adapted_state_dict, strict=False)
+            # handle the prediction head, which is not inititalized otherwise
+            nn.init.kaiming_normal_(backbone.fc.linear.weight)
+            if backbone.fc.linear.bias is not None:
+                backbone.fc.linear.bias.data.zero_()
+        else:
+            backbone.load_state_dict(state_dict, strict=False)
+        logger.info('Load pretrained model successfully!')
+        return backbone
+    
+    def build_loss(self, config):
+        # prepare the loss function
+        loss_class = LOSSFUNC[config['loss_func']]
+        loss_func = loss_class()
+        return loss_func
+    
+    def features(self, data_dict: dict) -> torch.tensor:
+        return self.backbone.features(data_dict['image'])
+
+    def classifier(self, features: torch.tensor) -> torch.tensor:
+        return self.backbone.classifier(features)
+    
+    def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
+        label = data_dict['label']
+        pred = pred_dict['cls']
+        loss = self.loss_func(pred, label)
+        loss_dict = {'overall': loss}
+        return loss_dict
+    
+    def get_train_metrics(self, data_dict: dict, pred_dict: dict) -> dict:
+        label = data_dict['label']
+        pred = pred_dict['cls']
+        # compute metrics for batch data
+        auc, eer, acc, ap = calculate_metrics_for_train(label.detach(), pred.detach())
+        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap}
+        return metric_batch_dict
+
+    def forward(self, data_dict: dict, inference=False) -> dict:
+        # get the features by backbone
+        features = self.features(data_dict)
+        # get the prediction by classifier
+        pred = self.classifier(features)
+        # get the probability of the pred
+        pred = torch.clamp(pred, min=-100, max=100)
+        prob = torch.softmax(pred, dim=1)[:, 1]
+        # build the prediction dict for each output
+        pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
+        return pred_dict
+
