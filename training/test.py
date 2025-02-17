@@ -30,7 +30,7 @@ from dataset.pair_dataset import pairDataset
 from trainer.trainer import Trainer
 from detectors import DETECTOR
 from metrics.base_metrics_class import Recorder
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 import argparse
 from logger import create_logger
@@ -149,8 +149,12 @@ def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
         config = yaml.safe_load(f)
-    with open('./training/config/test_config.yaml', 'r') as f:
-        config2 = yaml.safe_load(f)
+    try:# KAI: added this, to ensure it finds the config file
+        with open('./training/config/test_config.yaml', 'r') as f:
+            config2 = yaml.safe_load(f)
+    except FileNotFoundError:
+        with open(os.path.expanduser('~/Interpretable-Deep-Fake-Detection/training/config/test_config.yaml'), 'r') as f:
+                config2 = yaml.safe_load(f)
     config.update(config2)
     if 'label_dict' in config:
         config2['label_dict']=config['label_dict']
@@ -182,7 +186,12 @@ def main():
         except:
             epoch = 0
         ckpt = torch.load(weights_path, map_location=device)
-        model.load_state_dict(ckpt, strict=True)
+        # Remove 'module.' prefix
+        new_ckpt = OrderedDict()
+        for k, v in ckpt.items():
+            new_key = k.replace("module.", "")  # Remove "module." prefix
+            new_ckpt[new_key] = v
+        model.load_state_dict(new_ckpt, strict=True)
         print('===> Load checkpoint done!')
     else:
         print('Fail to load the pre-trained weights')
