@@ -34,7 +34,10 @@ from metrics.utils import get_test_metrics
 
 FFpp_pool=['FaceForensics++','FF-DF','FF-F2F','FF-FS','FF-NT']#
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
 
+import wandb
+os.environ["WANDB_API_KEY"] = "bcd0e878ee944f48096df279bea051e62defbb36"
 
 class Trainer(object):
     def __init__(
@@ -67,6 +70,17 @@ class Trainer(object):
         )
         self.speed_up()  # move model to GPU
         self.logger.info(f'Running model on {self.model.device}, since device={device} available.')
+        
+        if self.config['ddp'] == False:
+            wandb.init(project="deepfake_training", config=self.config)
+        elif IS_MAIN_PROCESS:
+            wandb.init(project="deepfake_training",  
+            group="DDP_training",
+            name=f"rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
+            config=self.config)
+
+        
+        
         # get current time
         self.timenow = time_now
         # create directory path
@@ -185,81 +199,25 @@ class Trainer(object):
         if self.config['optimizer']['type']=='sam':
             for i in range(2):
                 predictions = self.model(data_dict)
-                # Kai: add clamping to stabilize the results
-                # eps = 1e-4
-                # predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
-
                 losses = self.model.get_losses(data_dict, predictions)
                 if i == 0:
                     pred_first = predictions
                     losses_first = losses
                 self.optimizer.zero_grad()
-                try: # @Kai
-                    losses['overall'].backward()
-                except RuntimeError as e:
-                    self.logger.info(f"Error during backward pass: {e}")
-                    self.logger.info(f"Loss value: {losses['overall']}")
-                    if not torch.isfinite(predictions['cls']).all():
-                        self.logger.info(f"Predictions are not finite: {predictions['cls']}")
-                    if not torch.isfinite(losses['overall']).all():
-                        self.logger.info(f"Losses are not finite: {losses['overall']}")
-                        # then clamp the losses
-                        losses['overall'] = torch.clamp(losses['overall'], min=1e-12, max=1e6)
-                    losses['overall'].backward()
-                    # # OLD check if the issue comes from the predictions
-                    # if not torch.isfinite(predictions['cls']).all():
-                    #     self.logger.info("Predictions contains NaN or inf values. Fixing it.")
-                    #     # Create a mask for invalid values
-                    #     invalid_mask = ~torch.isfinite(predictions['cls'])
-                    #     # Replace invalid values with the mean of valid values, or zero if none are valid
-                    #     valid_values = predictions['cls'][~invalid_mask]
-                    #     replacement = valid_values.mean() if valid_values.numel() > 0 else 0.0
-                    #     predictions['cls'][invalid_mask] = replacement
-                    #     # recompute the losses
-                    #     losses = self.model.get_losses(data_dict, predictions)
-                    #     try:
-                    #         losses['overall'].backward()
-                    #         return losses, predictions
-                    #     except RuntimeError as e:
-                    #         self.logger.info(f"Error AGAIN during backward pass: {e}")
-                    #         self.logger.info(f"Loss value: {losses['overall']}")
-                    #         return {'overall': torch.tensor(0.0)}, predictions
-                    # else:# issue does not come from predictions
-                    #     losses['overall'] = torch.clamp(losses['overall'], min=1e-12, max=1e6)
-                    #     losses['overall'].backward()
-                # if self.config['optimizer']['gradient_clipping']:
-                #     torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=5.0)
+                losses['overall'].backward()
                 if i == 0:
                     self.optimizer.first_step(zero_grad=True)
                 else:
                     self.optimizer.second_step(zero_grad=True)
             return losses_first, pred_first
         else:
-            _threw_an_error = False
             predictions = self.model(data_dict)
-            # add clamping to stabilize the results
-            # eps = 1e-4
-            # predictions['cls'] = torch.clamp(predictions['cls'], min=eps, max=1 - eps)
-
             if type(self.model) is DDP:
                 losses = self.model.module.get_losses(data_dict, predictions)
             else:
                 losses = self.model.get_losses(data_dict, predictions)
             self.optimizer.zero_grad()
-            try: #@Kai
-                losses['overall'].backward()
-                # self.model.debug_weights_and_features(data_dict)
-            except RuntimeError as e:
-                self.logger.info(f"\n Error during backward pass: {e}")
-                self.logger.info(f"\n Loss value: {losses['overall']}")
-                if not torch.isfinite(predictions['cls']).all():
-                    self.logger.info(f"Predictions are not finite: {predictions['cls']}")
-                if not torch.isfinite(losses['overall']).all():
-                    self.logger.info(f"Losses are not finite: {losses['overall']}")
-                    # then clamp the losses
-                    losses['overall'] = torch.clamp(losses['overall'], min=1e-6, max=1e6)
-                self.model.debug_weights_and_features(data_dict)
-                losses['overall'].backward(retain_graph=True)
+            losses['overall'].backward()
             self.optimizer.step()
             return losses,predictions
 
@@ -300,15 +258,6 @@ class Trainer(object):
 
             losses,predictions=self.train_step(data_dict)
 
-            # Compute gradient norm
-            # grad_norm = None
-            # if self.config['local_rank'] == 0:  # Only log on rank 0 if using DDP
-            #     grad_norm = clip_grad_norm_(self.model.parameters(), max_norm=float('inf'))
-            
-            # Log gradient norm using tqdm
-            # tqdm_str = f"Iter: {step_cnt}, GradNorm: {grad_norm:.4f}" if grad_norm is not None else "Iter: {step_cnt}"
-            # tqdm.write(tqdm_str)
-
             # update learning rate
 
             if 'SWA' in self.config and self.config['SWA'] and epoch>self.config['swa_start']:
@@ -343,6 +292,8 @@ class Trainer(object):
                     # tensorboard-1. loss
                     writer = self.get_writer('train', ','.join(self.config['train_dataset']), k)
                     writer.add_scalar(f'train_loss/{k}', v_avg, global_step=step_cnt)
+                    # also log to wandb
+                    wandb.log({f'train_loss/{k}': v_avg, 'step': step_cnt})
                 self.logger.info(loss_str)
                 # info for metric
                 metric_str = f"Iter: {step_cnt}    "
@@ -355,6 +306,8 @@ class Trainer(object):
                     # tensorboard-2. metric
                     writer = self.get_writer('train', ','.join(self.config['train_dataset']), k)
                     writer.add_scalar(f'train_metric/{k}', v_avg, global_step=step_cnt)
+                    # also log to wandb
+                    wandb.log({f'train_metric/{k}': v_avg, 'step': step_cnt})
                 self.logger.info(metric_str)
 
 
@@ -461,6 +414,8 @@ class Trainer(object):
                     continue
                 # tensorboard-1. loss
                 writer.add_scalar(f'test_losses/{k}', v_avg, global_step=step)
+                # also log to wandb
+                wandb.log({f'test_losses/{k}': v_avg, 'step': step})
                 loss_str += f"testing-loss, {k}: {v_avg}    "
             self.logger.info(loss_str)
         # tqdm.write(loss_str)
@@ -472,11 +427,16 @@ class Trainer(object):
             # tensorboard-2. metric
             writer = self.get_writer('test', key, k)
             writer.add_scalar(f'test_metrics/{k}', v, global_step=step)
+            # also log to wandb
+            wandb.log({f'test_metrics/{k}': v, 'step': step})
         if 'pred' in metric_one_dataset:
             acc_real, acc_fake = self.get_respect_acc(metric_one_dataset['pred'], metric_one_dataset['label'])
             metric_str += f'testing-metric, acc_real:{acc_real}; acc_fake:{acc_fake}'
             writer.add_scalar(f'test_metrics/acc_real', acc_real, global_step=step)
             writer.add_scalar(f'test_metrics/acc_fake', acc_fake, global_step=step)
+            # also log to wandb
+            wandb.log({f'test_metrics/acc_real': acc_real, 'step': step})
+            wandb.log({f'test_metrics/acc_fake': acc_fake, 'step': step})
         self.logger.info(metric_str)
 
     def test_epoch(self, epoch, iteration, test_data_loaders, step):
