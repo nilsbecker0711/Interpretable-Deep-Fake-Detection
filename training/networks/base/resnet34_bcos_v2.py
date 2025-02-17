@@ -17,8 +17,8 @@ import torch.nn.functional as F
 from metrics.registry import BACKBONE
 
 
-from networks.bcos.modules import BcosConv2d, LogitLayer, norms
-from networks.bcos.common import BcosUtilMixin
+from bcos.modules import BcosConv2d, LogitLayer, norms
+from bcos.common import BcosUtilMixin
 import numpy as np
 import torch
 from torch import Tensor

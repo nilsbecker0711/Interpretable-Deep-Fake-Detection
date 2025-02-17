@@ -80,7 +80,7 @@ manualSeed: 1024
 save_ckpt: false
 
 # Loss function
-loss_func: cross_entropy
+loss_func: vgg_loss
 losstype: null
 
 # Metrics

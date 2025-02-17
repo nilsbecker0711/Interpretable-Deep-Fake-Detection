@@ -32,6 +32,7 @@ class VGGBcosDetector(AbstractDetector):
         self.loss_func = self.build_loss(config)
         
     def build_backbone(self, config):
+        print("Registrierte Backbones:", BACKBONE.data.keys())
         # prepare the backbone
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']

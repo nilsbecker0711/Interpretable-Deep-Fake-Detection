@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from metrics.registry import BACKBONE
 
 
-from networks.bcos.bcosconv2d import BcosConv2d
+from bcos.bcosconv2d import BcosConv2d
 import numpy as np
 import torch
 from torch import Tensor

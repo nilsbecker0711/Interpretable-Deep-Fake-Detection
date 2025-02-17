@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from metrics.registry import BACKBONE
-from networks.bcos.bcosconv2d import BcosConv2d
+from bcos.bcosconv2d import BcosConv2d
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> BcosConv2d:
 
 class VGG19_Bcos(nn.Module):
     def __init__(self, vgg_config):
+        
         super(VGG19_Bcos, self).__init__()
         """ Constructor
         Args:
@@ -76,4 +77,5 @@ class VGG19_Bcos(nn.Module):
 
 @BACKBONE.register_module(module_name="vgg19_bcos")
 def build_vgg19_bcos(vgg_config):
+    print("vgg init")
     return VGG19_Bcos(vgg_config)
