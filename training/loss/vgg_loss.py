@@ -134,7 +134,7 @@ class VGGLoss(AbstractLossClass):
     def train(self, mode=True):
         self.training = mode
 
-    def forward(self, input, target, target_is_features=False):
+    def forward(self, input, target, target_is_features=True):
         if target_is_features:
             input_feats = self.get_features(input)
             target_feats = target

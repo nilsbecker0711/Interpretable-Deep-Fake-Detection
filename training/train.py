@@ -236,6 +236,7 @@ def choose_metric(config):
 def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
+        print(f) #Nils: Ensure right detector path
         config = yaml.safe_load(f)
     try:# KAI: added this, to ensure it finds the config file
         with open('./training/config/train_config.yaml', 'r') as f:
