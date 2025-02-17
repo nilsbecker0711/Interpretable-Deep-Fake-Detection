@@ -62,7 +62,7 @@ std: [0.5, 0.5, 0.5]
 optimizer:
   type: adam
   adam:
-    lr: 0.000002
+    lr: 0.001
     beta1: 0.9
     beta2: 0.999
     eps: 0.00000001
