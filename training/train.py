@@ -222,6 +222,27 @@ def choose_scheduler(config, optimizer):
             config['nEpochs'],
             int(config['nEpochs']/4),
         )
+    elif config['lr_scheduler'] == 'warmup_cosine':
+        warmup_epochs = 5  # Adjust as needed
+        total_epochs = config['nEpochs']
+        
+        warmup_scheduler = optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=0.1,  # Gradually increase LR from 10% to full
+            total_iters=warmup_epochs
+        )
+        
+        cosine_scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=total_epochs - 5,
+            eta_min=config['lr_eta_min'],  # Default eta_min=0
+        )
+        
+        return optim.lr_scheduler.SequentialLR(
+            optimizer,
+            schedulers=[warmup_scheduler, cosine_scheduler],
+            milestones=[warmup_epochs]
+        )
     else:
         raise NotImplementedError('Scheduler {} is not implemented'.format(config['lr_scheduler']))
 
