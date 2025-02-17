@@ -111,7 +111,7 @@ class BcosConv2d(nn.Module):
         norm = (F.avg_pool2d((in_tensor ** 2).sum(1, keepdim=True), self.kernel_size, padding=self.padding,
                                     stride=self.stride) * self.kssq + 1e-6  # stabilising term
                 ).sqrt_()
-
+        print(norm)
         # In order to compute the explanations, we detach the dynamically calculated scaling from the graph.
         if self.detach:
             out = (out * out.abs().detach())

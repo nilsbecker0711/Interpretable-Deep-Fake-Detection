@@ -4,6 +4,9 @@ from collections import defaultdict
 import torch
 import torch.nn as nn
 
+#Nils: NaN Debugging logger
+import logging
+logger = logging.getLogger(__name__)
 
 def get_accracy(output, label):
     _, prediction = torch.max(output, 1)    # argmax
@@ -35,6 +38,8 @@ def calculate_metrics_for_train(label, output):
     # Average Precision
     y_true = label.cpu().detach().numpy()
     y_pred = prob.cpu().detach().numpy()
+    #Nils: Debug outputs to fight NaN Problem:
+    #logger.info(f'accuracy: {accuracy}, y_true: {y_true}, y_pred: {y_pred}')
     ap = metrics.average_precision_score(y_true, y_pred)
 
     # AUC and EER
