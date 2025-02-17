@@ -14,7 +14,7 @@ from .mesonet import Meso4, MesoInception4
 from .efficientnetb4 import EfficientNetB4
 from .xception_sladd import Xception_SLADD """
 from .inception_bcos import Inception3
-from .xception import Xception
+""" from .xception import Xception
 from .resnet34 import ResNet34
 from .resnet34_bcos import ResNet34_bcos
-from .resnet34_bcos_v2 import ResNet34_bcos_v2
+from .resnet34_bcos_v2 import ResNet34_bcos_v2 """
