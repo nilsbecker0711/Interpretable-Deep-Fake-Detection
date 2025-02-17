@@ -5,6 +5,7 @@ log_dir: /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/inception_b
 pretrained: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/training/pretrained/inception_v3_google-1a9a5a14.pth   # path to a pre-trained model, if using one
 model_name: inception_bcos_detector   # model name; tilo: this is the name of the detector
 backbone_name: inception_bcos  # backbone name
+get_pretrained: False
 
 #backbone setting
 backbone_config:
@@ -18,6 +19,7 @@ backbone_config:
   init_weights: # default from network
   log_temperature: 1 # T^{-1}
   bias: [0.5, 0.5] # based on number of classes: in case of 10 classes it was 0.1, 0.9
+  b: 1.25
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -39,7 +41,8 @@ add_inverse_channels: true
 
 
 # data augmentation
-use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+dataset_type: bcos
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -61,7 +64,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0002  # learning rate
+    lr: 0.00025  # learning rate
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer
@@ -74,8 +77,9 @@ optimizer:
   gradient_clipping: True
 
 # training config
-lr_scheduler: null   # learning rate scheduler
-nEpochs: 10   # number of epochs to train for
+lr_scheduler: warmup_cosine
+lr_eta_min: 0   # learning rate scheduler
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
