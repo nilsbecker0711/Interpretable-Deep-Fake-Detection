@@ -18,8 +18,4 @@ echo "Environment: $(conda info --envs)"
 
 module load devel/cuda/12.4
 
-<<<<<<< HEAD
-python ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/inception_bcos.yaml
-=======
 python ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/vgg_bcos.yaml
->>>>>>> 5b7494376295a2c6e7ae0be818f167fdba1b5501
