@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from detectors.multi_attention_detector import AttentionPooling
+# from detectors.old.multi_attention_detector import AttentionPooling
 from .abstract_loss_func import AbstractLossClass
 from metrics.registry import LOSSFUNC
 

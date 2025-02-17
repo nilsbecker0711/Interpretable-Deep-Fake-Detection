@@ -22,8 +22,12 @@ export RANK=0                  # Set the rank of the current process (0 for firs
 export WORLD_SIZE=2            # Set the total number of processes (2 for two GPUs)
 # export LOCAL_RANK=0            # Local rank (used by DDP for each process)
 export MASTER_ADDR="localhost"  # The master node's address (typically localhost for single-node)
-export MASTER_PORT=29500    # The port for communication (can be any available port)
+export MASTER_PORT=29200    # The port for communication (can be any available port)
 
 # Launch the training with two GPUs
+<<<<<<< HEAD
 
 torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29500 ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/inception_bcos.yaml --ddp
+=======
+torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29200 ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos.yaml --ddp
+>>>>>>> Kai_Dev

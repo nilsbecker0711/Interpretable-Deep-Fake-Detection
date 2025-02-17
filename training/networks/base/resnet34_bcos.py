@@ -17,6 +17,7 @@ from metrics.registry import BACKBONE
 
 
 from bcos.bcosconv2d import BcosConv2d
+from bcos.detector_utils import MyAdaptiveAvgPool2d, FinalLayer
 import numpy as np
 import torch
 from torch import Tensor
@@ -35,14 +36,14 @@ from typing import Type, Any, Callable, Union, List, Optional
 logger = logging.getLogger(__name__)
 
 
-def conv3x3(in_planes: int, out_planes: int, stride: int = 1, dilation: int = 1) -> BcosConv2d:
+def conv3x3(in_planes: int, out_planes: int, stride: int = 1, dilation: int = 1, b: int=2) -> BcosConv2d:
     """3x3 convolution with padding"""
-    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1)
+    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, b=b)
 
 
-def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> BcosConv2d:
+def conv1x1(in_planes: int, out_planes: int, stride: int = 1, b: int=2) -> BcosConv2d:
     """1x1 convolution"""
-    return BcosConv2d(in_planes, out_planes, kernel_size=1, stride=stride)
+    return BcosConv2d(in_planes, out_planes, kernel_size=1, stride=stride, b=b)
 
 
 class BasicBlock(nn.Module):
@@ -58,15 +59,16 @@ class BasicBlock(nn.Module):
         base_width: int = 64,
         dilation: int = 1,
         norm_layer: Optional[Callable[..., nn.Module]] = None,
-        short_cat=False
+        short_cat=False,
+        b: int=2
     ) -> None:
         super(BasicBlock, self).__init__()
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.conv2 = conv3x3(planes, planes)
+        self.conv1 = conv3x3(inplanes, planes, stride, b=b)
+        self.conv2 = conv3x3(planes, planes, b=b)
         self.downsample = downsample
         self.stride = stride
-        self.short_cat = BcosConv2d(2 * planes, planes) if short_cat else None
+        self.short_cat = BcosConv2d(2 * planes, planes, b=b) if short_cat else None
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -104,17 +106,18 @@ class Bottleneck(nn.Module):
         base_width: int = 64,
         dilation: int = 1,
         norm_layer: Optional[Callable[..., nn.Module]] = None,
-        short_cat = False
+        short_cat = False, 
+        b: int=2
     ) -> None:
         super(Bottleneck, self).__init__()
         width = int(planes * (base_width / 64.)) * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv1x1(inplanes, width)
-        self.conv2 = conv3x3(width, width, stride)
-        self.conv3 = conv1x1(width, planes * self.expansion)
+        self.conv1 = conv1x1(inplanes, width, b=b)
+        self.conv2 = conv3x3(width, width, stride, b=b)
+        self.conv3 = conv1x1(width, planes * self.expansion, b=b)
         self.downsample = downsample
         self.stride = stride
-        self.short_cat = BcosConv2d(2 * planes * self.expansion, planes * self.expansion) if short_cat else None
+        self.short_cat = BcosConv2d(2 * planes * self.expansion, planes * self.expansion, b=b) if short_cat else None
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -176,6 +179,9 @@ class ResNet34_bcos(nn.Module):
         self._norm_layer = nn.BatchNorm2d
         self.inplanes = 64
         self.dilation = 1
+        self.log_temperature: int = resnet_config["log_temperature"]
+        self.bias: float = np.log(resnet_config["bias"][0]/resnet_config["bias"][1])
+        self.b = resnet_config["b"]
         # if resnet_config["replace_stride_with_dilation"] is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
@@ -189,7 +195,7 @@ class ResNet34_bcos(nn.Module):
         self.short_cat = resnet_config["short_cat"]
         self.base_width = resnet_config["base_width"]
 
-        self.conv1 = BcosConv2d(6, self.inplanes, kernel_size=7, stride=2, padding=3)
+        self.conv1 = BcosConv2d(6, self.inplanes, kernel_size=7, stride=2, padding=3, b=self.b)
         self.avgpool = nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2,
@@ -199,7 +205,7 @@ class ResNet34_bcos(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         # self.fc = BcosConv2d(512 * block.expansion, num_classes)
-        self.fc = BcosConv2d(512 * block.expansion, self.num_classes, kernel_size=1, max_out=2)  # Adjusted for classification
+        self.fc = BcosConv2d(512 * block.expansion, self.num_classes, kernel_size=1, max_out=2, b=self.b)  # Adjusted for classification
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -227,17 +233,17 @@ class ResNet34_bcos(nn.Module):
             stride = 1
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride),
+                conv1x1(self.inplanes, planes * block.expansion, stride, b=self.b),
             )
 
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer, self.short_cat))
+                            self.base_width, previous_dilation, norm_layer, self.short_cat, b=self.b))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes, groups=self.groups,
                                 base_width=self.base_width, dilation=self.dilation,
-                                norm_layer=norm_layer))
+                                norm_layer=norm_layer, b=self.b))
         return nn.Sequential(*layers)
 
 
@@ -252,6 +258,13 @@ class ResNet34_bcos(nn.Module):
         x = self.layer4(x)
         return x
 
+    def freeze(self):
+        # Freeze all layers except the fc layer
+        for param in self.parameters():
+            param.requires_grad = False  # Freeze all parameters
+
+        for param in self.fc.parameters():
+            param.requires_grad = True  # Unfreeze the fc layer
 
     def features(self, inp):
         x = self._resnet_impl(inp)
@@ -264,8 +277,12 @@ class ResNet34_bcos(nn.Module):
         # x = x.view(x.size(0), -1)
         # x = self.fc(x)
         x = self.fc(features)
-        x = F.adaptive_avg_pool2d(x, (1, 1))  # Global average pooling
-        x = x.squeeze()
+        pooling = MyAdaptiveAvgPool2d((1, 1))
+        x = pooling.forward(in_tensor = x)
+        final = FinalLayer(bias = self.bias, norm = self.log_temperature)
+        x = final.forward(x)
+        # x = F.adaptive_avg_pool2d(x, (1, 1))  # Global average pooling
+        # x = x.squeeze()
         # x = x.view(x.size(0), -1)  # Flatten the tensor
         if self.num_classes == 1:
             x = x.squeeze()  # Removes dimensions of size 1, resulting in shape [16]
