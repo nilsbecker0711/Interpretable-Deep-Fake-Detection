@@ -44,21 +44,21 @@ class VGGBcosDetector(AbstractDetector):
             backbone_class = BACKBONE[config['backbone_name']]
             model_config = config['backbone_config']
             backbone = backbone_class(model_config)
-
-        #TODO: maybe do the weight loading here
-        #FIXME: current load pretrained weights only from the backbone, not here
-        # # if donot load the pretrained weights, fail to get good results
-        return backbone
-        state_dict = load_state_dict_from_url('https://download.pytorch.org/models/vgg19-dcbb9e9d.pth')
-        del state_dict["classifier.6.weight"]
-        del state_dict["classifier.6.bias"]
-       
-        backbone.load_state_dict(state_dict, strict=False)
-        logger.info('Load pretrained model successfully!')
-        return backbone
+        pretrained = config["pretrained"]
+        
+        if pretrained:
+            state_dict = load_state_dict_from_url('https://download.pytorch.org/models/vgg19-dcbb9e9d.pth')
+            del state_dict["classifier.6.weight"]
+            del state_dict["classifier.6.bias"]
+        
+            backbone.load_state_dict(state_dict, strict=False)
+            logger.info('Load pretrained model successfully!')
+            return backbone
+        else:
+            return backbone
+        
     
     def build_loss(self, config):
-        # prepare the loss function
         loss_class = LOSSFUNC[config['loss_func']]
         loss_func = loss_class()
         return loss_func
@@ -93,11 +93,8 @@ class VGGBcosDetector(AbstractDetector):
         return metric_batch_dict
 
     def forward(self, data_dict: dict, inference=False) -> dict:
-        # get the features by backbone
         features = self.features(data_dict)
-        # get the prediction by classifier
         pred = self.classifier2(features)
-        # get the probability of the pred
         pred = torch.clamp(pred, min=-100, max=100)
         prob = torch.softmax(pred, dim = 1)[:, 1]
         #prob = torch.sigmoid(pred)

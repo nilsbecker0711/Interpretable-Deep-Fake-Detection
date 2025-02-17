@@ -16,9 +16,10 @@ backbone_config:
   pretrained: False  # Set to True if using pretrained weights
   input_channels: 6  # Standard RGB images
   max_out: 2  # Used in BcosConv2d classification layer
-  bias : -5
-  temperature : 1 
+  bias : -1.9956351945975
+  temperature : -1 
   b : 1.25
+  pretrained_weights: False
 
 
 

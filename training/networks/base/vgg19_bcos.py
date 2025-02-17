@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> BcosConv2d:
     """3x3 convolution with padding"""
     #print(in_planes)
-    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, b = 1.25)
+    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, b = 1.25, scale_fact=1000)
 
 
 class VGG19_Bcos(nn.Module):
@@ -36,7 +36,7 @@ class VGG19_Bcos(nn.Module):
         #MyAdaptiveAvgPool2d((1, 1)),
         #FinalLayer(bias=self.bias, norm=self.temperature)
         self.classifier = nn.Sequential(
-            BcosConv2d(512, self.num_classes, kernel_size=1, max_out=2, b = self.b),
+            BcosConv2d(512, self.num_classes, kernel_size=1, max_out=2, b = self.b, scale_fact=1000),
             MyAdaptiveAvgPool2d((1, 1)),
             FinalLayer(bias=self.bias, norm=self.temperature)
         )
