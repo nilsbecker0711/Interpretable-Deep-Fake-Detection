@@ -39,7 +39,7 @@ def calculate_metrics_for_train(label, output):
     y_true = label.cpu().detach().numpy()
     y_pred = prob.cpu().detach().numpy()
     #Nils: Debug outputs to fight NaN Problem:
-    logger.info(f'accuracy: {accuracy}, y_true: {y_true}, y_pred: {y_pred}')
+    #logger.info(f'accuracy: {accuracy}, y_true: {y_true}, y_pred: {y_pred}')
     ap = metrics.average_precision_score(y_true, y_pred)
 
     # AUC and EER

@@ -16,8 +16,14 @@ backbone_config:
   pretrained: False  # Set to True if using pretrained weights
   input_channels: 6  # Standard RGB images
   max_out: 2  # Used in BcosConv2d classification layer
+  bias : -5
+  temperature : 1 
+  b : 1.25
+
+
 
 # Dataset settings
+dataset_type: bcos 
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
 train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++]
@@ -55,7 +61,7 @@ std: [0.5, 0.5, 0.5]
 optimizer:
   type: adam
   adam:
-    lr: 0.0002
+    lr: 0.000002
     beta1: 0.9
     beta2: 0.999
     eps: 0.00000001
@@ -80,7 +86,7 @@ manualSeed: 1024
 save_ckpt: false
 
 # Loss function
-loss_func: vgg_loss
+loss_func: cross_entropy
 losstype: null
 
 # Metrics

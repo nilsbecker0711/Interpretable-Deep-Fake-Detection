@@ -5,6 +5,7 @@ import numpy as np
 from sklearn import metrics
 from typing import Union
 from collections import defaultdict
+from networks.base.vgg19_bcos import build_vgg19_bcos
 
 import torch
 import torch.nn as nn
@@ -34,29 +35,25 @@ class VGGBcosDetector(AbstractDetector):
     def build_backbone(self, config):
         print("Registrierte Backbones:", BACKBONE.data.keys())
         # prepare the backbone
-        backbone_class = BACKBONE[config['backbone_name']]
-        model_config = config['backbone_config']
-        backbone = backbone_class(model_config)
+        try:
+            backbone_class = BACKBONE[config['backbone_name']]
+            model_config = config['backbone_config']
+            backbone = backbone_class(model_config)
+        except KeyError:
+            build_vgg19_bcos(config)
+            backbone_class = BACKBONE[config['backbone_name']]
+            model_config = config['backbone_config']
+            backbone = backbone_class(model_config)
+
         #TODO: maybe do the weight loading here
         #FIXME: current load pretrained weights only from the backbone, not here
         # # if donot load the pretrained weights, fail to get good results
+        return backbone
         state_dict = load_state_dict_from_url('https://download.pytorch.org/models/vgg19-dcbb9e9d.pth')
-        #state_dict = torch.load(config['pretrained'])
-        # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
-        # backbone.load_state_dict(state_dict, False)
-        if 'resnet34-333f7ec4.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 
-            adapted_state_dict = {}
-            for key, value in state_dict.items():
-                new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
-                if new_key in backbone.state_dict() and backbone.state_dict()[new_key].shape == value.shape:
-                    adapted_state_dict[new_key] = value
-            backbone.load_state_dict(adapted_state_dict, strict=False)
-            # handle the prediction head, which is not inititalized otherwise
-            nn.init.kaiming_normal_(backbone.fc.linear.weight)
-            if backbone.fc.linear.bias is not None:
-                backbone.fc.linear.bias.data.zero_()
-        else:
-            backbone.load_state_dict(state_dict, strict=False)
+        del state_dict["classifier.6.weight"]
+        del state_dict["classifier.6.bias"]
+       
+        backbone.load_state_dict(state_dict, strict=False)
         logger.info('Load pretrained model successfully!')
         return backbone
     
@@ -70,9 +67,11 @@ class VGGBcosDetector(AbstractDetector):
         return self.backbone.features(data_dict['image'])
 
     def classifier2(self, features: torch.tensor) -> torch.tensor:
+        #print(features.shape)
         return self.backbone.classifier(features)
     
-    def classifier(self, features: torch.tensor) -> torch.tensor:
+    def classifier(self, features: torch.tensor) -> torch.tensor: #UNUSED!!!
+        print(features.shape)
         pred = self.backbone.classifier(features)  # [32, 2, 7, 7]
         pred = F.adaptive_avg_pool2d(pred, 1)  # Pool to [32, 2, 1, 1]
         pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
@@ -97,10 +96,11 @@ class VGGBcosDetector(AbstractDetector):
         # get the features by backbone
         features = self.features(data_dict)
         # get the prediction by classifier
-        pred = self.classifier(features)
+        pred = self.classifier2(features)
         # get the probability of the pred
         pred = torch.clamp(pred, min=-100, max=100)
-        prob = torch.softmax(pred, dim=1)[:, 1]
+        prob = torch.softmax(pred, dim = 1)[:, 1]
+        #prob = torch.sigmoid(pred)
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
         return pred_dict

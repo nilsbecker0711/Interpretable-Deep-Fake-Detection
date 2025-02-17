@@ -6,14 +6,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from metrics.registry import BACKBONE
 from bcos.bcosconv2d import BcosConv2d
-
+from bcos.utils import MyAdaptiveAvgPool2d, FinalLayer
 logger = logging.getLogger(__name__)
 
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> BcosConv2d:
     """3x3 convolution with padding"""
     #print(in_planes)
-    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1)
+    return BcosConv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, b = 1.25)
 
 
 class VGG19_Bcos(nn.Module):
@@ -26,10 +26,20 @@ class VGG19_Bcos(nn.Module):
         """
         self.mode = vgg_config["mode"]
         self.num_classes = vgg_config["num_classes"]
+        self.bias = vgg_config["bias"]
+        self.temperature = vgg_config["temperature"]
+        self.b = vgg_config["b"]
         self.config = vgg_config
 
         self.features = self._make_layers()
-        self.classifier = BcosConv2d(512, self.num_classes, kernel_size=1, max_out=2)
+        #self.classifier = BcosConv2d(512, self.num_classes, kernel_size=1, max_out=2)
+        #MyAdaptiveAvgPool2d((1, 1)),
+        #FinalLayer(bias=self.bias, norm=self.temperature)
+        self.classifier = nn.Sequential(
+            BcosConv2d(512, self.num_classes, kernel_size=1, max_out=2, b = self.b),
+            MyAdaptiveAvgPool2d((1, 1)),
+            FinalLayer(bias=self.bias, norm=self.temperature)
+        )
         
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -57,6 +67,7 @@ class VGG19_Bcos(nn.Module):
         return x
 
     def classifier_head(self, features):
+        print(features.shape)
         x = self.classifier(features)
         if self.num_classes == 1:
             x = x.squeeze()
@@ -72,7 +83,7 @@ class VGG19_Bcos(nn.Module):
     def forward(self, inp):
         x = self._vgg_impl(inp)
         # Adds spatial dimensions for BCosConv2d compatibility
-        out = self.classifier_head(x)
+        out = self.classifier_head2(x)
         return out
 
 @BACKBONE.register_module(module_name="vgg19_bcos")
