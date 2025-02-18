@@ -7,13 +7,13 @@ import argparse
 import matplotlib.pyplot as plt
 from PIL import Image
 from B_COS_eval import BCOSEvaluator, preprocess_image
-#from LIME_eval import LimeEvaluator  # NEW: Import LimeEvaluator
-#from GRADCAM_eval import GradCamEvaluator  # NEW: Import GradCamEvaluator
+#from LIME_eval import LimeEvaluator
+#from GRADCAM_eval import GradCamEvaluator
 
 
 sys.path.append('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/analysis')
 
-from b_cos.resnet import resnet50 as model
+from b_cos.resnet import resnet50 as model #change the model depending on the one you want to use !!!!!!!!!!!!!
 
 
 def parse_arguments():
@@ -22,7 +22,7 @@ def parse_arguments():
     
     defaults = {
         "xai_method": "bcos",
-        "base_output_dir": "datasets/2x2_grids",
+        "base_output_dir": "datasets/GPG_grids",
         "model_path": "/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/weights/B_cos/ResNet50/b_cos_model_1732594597.04.pth",
         "target_height": 224,
         "target_width": 224,

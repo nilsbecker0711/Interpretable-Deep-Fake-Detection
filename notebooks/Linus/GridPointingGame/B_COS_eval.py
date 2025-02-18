@@ -193,10 +193,31 @@ class BCOSEvaluator:
             x_pos = x_min + (j / grid_split) * (x_max - x_min)
             plt.vlines(x_pos, y_min, y_max, colors='grey', linestyles='dashed', linewidth=0.5)
 
-        title = f"True Fake Pos: {true_fake_pos}, Guessed: {guessed_fake_position}, Intensity Sums: {intensity_sums}"
-        plt.title(title)
-        plt.text((x_min + x_max) / 2, -10, f"Intensity-Weighted Accuracy: {intensity_weighted_accuracy:.4f}",
-                fontsize=12, ha='center', va='top')
+        # Add title and other text elements
+        title_x_pos = x_min - 220  # Shift further left
+        title_y_pos = y_max + 20  # Higher up
+
+        plt.text(title_x_pos, title_y_pos, f"True Fake Pos: {true_fake_pos}, Guessed: {guessed_fake_position}",
+                fontsize=12, ha='left', va='center', fontweight="bold")
+
+        plt.text(title_x_pos, title_y_pos - 260, f"Intensity Sums: {intensity_sums}",
+                fontsize=10, ha='left', va='center')
+
+        plt.text(title_x_pos, title_y_pos - 10, f"Intensity-Weighted Accuracy: {intensity_weighted_accuracy:.4f}",
+                fontsize=10, ha='left', va='center')
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_frame_on(False)
+
+        # Optionally remove axes spines.
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+
+        #title = f"True Fake Pos: {true_fake_pos}, Guessed: {guessed_fake_position}, Intensity Sums: {intensity_sums}"
+        #plt.title(title)
+        #plt.text((x_min + x_max) / 2, -10, f"Intensity-Weighted Accuracy: {intensity_weighted_accuracy:.4f}",
+                #fontsize=12, ha='center', va='top')
 
         # Optionally remove axes spines.
         for spine in ax.spines.values():

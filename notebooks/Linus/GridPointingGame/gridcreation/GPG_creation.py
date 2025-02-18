@@ -24,7 +24,7 @@ def get_all_png_files(root_folder, filter_keyword=None):
                 png_files.append(os.path.join(dirpath, file))
     return png_files
 
-def create_2x2_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_grids=500, target_grid_size=(224,224)):
+def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_grids=500, target_grid_size=(224,224)):
     """
     Create grids with one fake image and the rest real.
     For each generated grid, resize it to the target_grid_size and then save both:
@@ -39,6 +39,7 @@ def create_2x2_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
         max_grids (int): Maximum number of grids to create.
         target_grid_size (tuple): Desired final size of the grid (height, width).
     """
+
     # Create subfolders for 3-channel and 6-channel outputs.
     output_dir_3ch = os.path.join(base_output_dir, "3ch")
     output_dir_6ch = os.path.join(base_output_dir, "6ch")
@@ -83,7 +84,6 @@ def create_2x2_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
         current_size = grid_image.shape[:2]  # (height, width)
         if current_size != target_grid_size:
             pil_grid = Image.fromarray(grid_image.astype(np.uint8))
-            # Note: PIL expects size as (width, height)
             pil_grid = pil_grid.resize((target_grid_size[1], target_grid_size[0]), Image.LANCZOS)
             grid_image = np.array(pil_grid)
         
@@ -107,74 +107,26 @@ def create_2x2_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
     
     print(f"{grid_count} grids saved in {base_output_dir}")
 
-
-
-
-
-
-
-
     
 
 def main(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_grid_size):
-    # Ensure the base output directory exists.
     os.makedirs(base_output_dir, exist_ok=True)
     
     # Create grids using the updated function that performs resizing.
-    create_2x2_grids(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_grid_size)
+    create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_grid_size)
     
     print("Grid creation complete.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create evaluation grids with resizing.")
-    parser.add_argument(
-        "--real_dir",
-        type=str,
-        default="datasets/FaceForensics++/original_sequences/actors/c40/frames",
-        help="Directory containing real images."
-    )
-    parser.add_argument(
-        "--fake_dir",
-        type=str,
-        default="datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames",
-        help="Directory containing fake images."
-    )
-    parser.add_argument(
-        "--base_output_dir",
-        type=str,
-        default="datasets/2x2_grids",
-        help="Base output directory to save grids."
-    )
-    parser.add_argument(
-        "--grid_rows",
-        type=int,
-        default=3,
-        help="Number of rows in the grid."
-    )
-    parser.add_argument(
-        "--grid_cols",
-        type=int,
-        default=3,
-        help="Number of columns in the grid."
-    )
-    parser.add_argument(
-        "--max_grids",
-        type=int,
-        default=500,
-        help="Maximum number of grids to create."
-    )
-    parser.add_argument(
-        "--target_height",
-        type=int,
-        default=224,
-        help="Target height for the grid image."
-    )
-    parser.add_argument(
-        "--target_width",
-        type=int,
-        default=224,
-        help="Target width for the grid image."
-    )
+    parser.add_argument("--real_dir", type=str, default="datasets/FaceForensics++/original_sequences/actors/c40/frames", help="Directory containing real images.")
+    parser.add_argument("--fake_dir", type=str, default="datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames", help="Directory containing fake images.")
+    parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids", help="Base output directory to save grids.")
+    parser.add_argument("--grid_rows", type=int, default=3, help="Number of rows in the grid.")
+    parser.add_argument("--grid_cols", type=int, default=3, help="Number of columns in the grid.")
+    parser.add_argument("--max_grids", type=int, default=500, help="Maximum number of grids to create.")
+    parser.add_argument("--target_height", type=int, default=224, help="Target height for the grid image.")
+    parser.add_argument("--target_width", type=int, default=224, help="Target width for the grid image.")
     
     args = parser.parse_args()
     
@@ -192,4 +144,4 @@ if __name__ == "__main__":
     )
 
 
-# python notebooks/Linus/Pipeline/gridcreation/GPG_creation.py --grid_rows 3 --grid_cols 3 --max_grid --real_dir "/new/real/path" --fake_dir "/new/fake/path" --base_output_dir "/output/path" --max_grids 100 --target_height 224 --target_width 224
+# python notebooks/Linus/GridPointingGame/gridcreation/GPG_creation.py --grid_rows 3 --grid_cols 3 --max_grid --real_dir "/new/real/path" --fake_dir "/new/fake/path" --base_output_dir "/output/path" --max_grids 100 --target_height 224 --target_width 224
