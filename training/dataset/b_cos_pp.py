@@ -30,6 +30,7 @@ from torchvision import transforms as T
 import albumentations as A
 import torch.nn as nn
 from .albu import IsotropicResize
+from bcos.augmentations.rand_augment import RandAugment, Lighting
 
 FFpp_pool=['FaceForensics++','FaceShifter','DeepFakeDetection','FF-DF','FF-F2F','FF-FS','FF-NT']#
 
@@ -60,6 +61,23 @@ class MyToTensor(T.ToTensor):
         if not isinstance(input_img, torch.Tensor):
             return super().__call__(input_img)
         return input_img
+
+def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
+    return T.Compose([
+                *([RandAugment(n=n, m=m)] if n > 1 else []),
+                T.RandomResizedCrop(s, scale=(min_scale, 1.0)),
+                T.RandomHorizontalFlip(),
+                *([T.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4)]
+                  if n > 0 else []
+                  ),
+                T.ToTensor(),
+                # Note KAI: The following lines need PCA Values, which we haven't computed yet 
+                # *([Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])]
+                #   if n > 0 else []
+                #   )
+                # Kai: added this
+                AddInverse(dim=0)
+            ])
 
 
 # class AddInverseAlbumentations:
@@ -162,10 +180,11 @@ class DeepfakeBcosDataset(data.Dataset):
         # ], 
         #     keypoint_params=A.KeypointParams(format='xy') if self.config['with_landmark'] else None
         # )
-        trans = T.Compose([#transforms.Resize((224, 224)),
-                # MyToTensor(),            # Converts image to tensor if not already
-                AddInverse(dim=0),            # Adds the inverse channels
-            ])
+        # trans = T.Compose([#transforms.Resize((224, 224)),
+        #         # MyToTensor(),            # Converts image to tensor if not already
+        #         AddInverse(dim=0),            # Adds the inverse channels
+        #     ])
+        trans = get_aug_trans(m=9, s=224)
         return trans
 
     def rescale_landmarks(self, landmarks, original_size=256, new_size=224):
@@ -539,7 +558,6 @@ class DeepfakeBcosDataset(data.Dataset):
                 print(f"Error loading image at index {index}: {e}")
                 return self.__getitem__(0)
                 
-            image = np.array(image)  # Convert to numpy array for data augmentation
 
             # Load mask and landmark (if needed)
             if self.config['with_mask']:
@@ -551,13 +569,15 @@ class DeepfakeBcosDataset(data.Dataset):
             else:
                 landmarks = None
 
-            image = self.to_tensor(image)
+            # image = np.array(image)  # Convert to numpy array for data augmentation
             # Do Data Augmentation
             if self.mode == 'train' and self.config['use_data_augmentation']:
                 image_trans, landmarks_trans, mask_trans = self.data_aug(image, landmarks, mask, augmentation_seed)
+                # print(image_trans.shape)
             else:
-                image_trans, landmarks_trans, mask_trans = deepcopy(image), deepcopy(landmarks), deepcopy(mask)
-
+                image = self.to_tensor(image)
+                trans = T.Compose([AddInverse(dim=0)])# also add the inverse channels in test
+                image_trans, landmarks_trans, mask_trans = trans(deepcopy(image)), deepcopy(landmarks), deepcopy(mask)
             
             if self.config['with_landmark']:
                 landmarks_trans = torch.from_numpy(landmarks)
@@ -656,24 +676,24 @@ class DeepfakeBcosDataset(data.Dataset):
         return len(self.image_list)
 
 
-if __name__ == "__main__":
-    with open('/data/home/zhiyuanyan/DeepfakeBench/training/config/detector/video_baseline.yaml', 'r') as f:
-        config = yaml.safe_load(f)
-    train_set = DeepfakeAbstractBaseDataset(
-                config = config,
-                mode = 'train', 
-            )
-    train_data_loader = \
-        torch.utils.data.DataLoader(
-            dataset=train_set,
-            batch_size=config['train_batchSize'],
-            shuffle=True, 
-            num_workers=0,
-            collate_fn=train_set.collate_fn,
-        )
-    from tqdm import tqdm
-    for iteration, batch in enumerate(tqdm(train_data_loader)):
-        # print(iteration)
-        ...
-        # if iteration > 10:
-        #     break
+# if __name__ == "__main__":
+#     with open('/data/home/zhiyuanyan/DeepfakeBench/training/config/detector/video_baseline.yaml', 'r') as f:
+#         config = yaml.safe_load(f)
+#     train_set = DeepfakeAbstractBaseDataset(
+#                 config = config,
+#                 mode = 'train', 
+#             )
+#     train_data_loader = \
+#         torch.utils.data.DataLoader(
+#             dataset=train_set,
+#             batch_size=config['train_batchSize'],
+#             shuffle=True, 
+#             num_workers=0,
+#             collate_fn=train_set.collate_fn,
+#         )
+#     from tqdm import tqdm
+#     for iteration, batch in enumerate(tqdm(train_data_loader)):
+#         # print(iteration)
+#         ...
+#         # if iteration > 10:
+#         #     break
