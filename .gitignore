@@ -1,4 +1,4 @@
-﻿.idea
+.idea
 *__pycache__*
 *.vscode*
 *.pyc
@@ -6,8 +6,15 @@
 *.pt
 *.dat
 datasets/
+BWCluster/logs/
+BWCluster/*.out
 .DS_Store
+training/logs
 *.out
 logs/
 .ipynb_checkpoints/
+<<<<<<< HEAD
 BWCluster/
+=======
+BWCluster/
+>>>>>>> a3101e099accd67c5f3a6a0e15eedfeb2be43d81

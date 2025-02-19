@@ -34,6 +34,7 @@ from detectors import DETECTOR
 from dataset import *
 from metrics.utils import parse_metric_for_print
 from logger import create_logger, RankFilter
+from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
 parser = argparse.ArgumentParser(description='Process some paths.')
@@ -167,10 +168,17 @@ def prepare_testing_data(config):
 
 
 def choose_optimizer(model, config):
+    if 'freeze' in config.keys():
+        if config['freeze']:
+            model.backbone.freeze()
+            params = model.backbone.fc.parameters()
+    else:
+        params= model.parameters()
+
     opt_name = config['optimizer']['type']
     if opt_name == 'sgd':
         optimizer = optim.SGD(
-            params=model.parameters(),
+            params=params,
             lr=config['optimizer'][opt_name]['lr'],
             momentum=config['optimizer'][opt_name]['momentum'],
             weight_decay=config['optimizer'][opt_name]['weight_decay']
@@ -178,7 +186,7 @@ def choose_optimizer(model, config):
         return optimizer
     elif opt_name == 'adam':
         optimizer = optim.Adam(
-            params=model.parameters(),
+            params=params,
             lr=config['optimizer'][opt_name]['lr'],
             weight_decay=config['optimizer'][opt_name]['weight_decay'],
             betas=(config['optimizer'][opt_name]['beta1'], config['optimizer'][opt_name]['beta2']),
@@ -188,7 +196,7 @@ def choose_optimizer(model, config):
         return optimizer
     elif opt_name == 'sam':
         optimizer = SAM(
-            model.parameters(), 
+            params, 
             optim.SGD, 
             lr=config['optimizer'][opt_name]['lr'],
             momentum=config['optimizer'][opt_name]['momentum'],
@@ -221,6 +229,27 @@ def choose_scheduler(config, optimizer):
             config['nEpochs'],
             int(config['nEpochs']/4),
         )
+    elif config['lr_scheduler'] == 'warmup_cosine':
+        warmup_epochs = 5  # Adjust as needed
+        total_epochs = config['nEpochs']
+        
+        warmup_scheduler = optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=0.1,  # Gradually increase LR from 10% to full
+            total_iters=warmup_epochs
+        )
+        
+        cosine_scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=total_epochs - 5,
+            eta_min=config['lr_eta_min'],  # Default eta_min=0
+        )
+        
+        return optim.lr_scheduler.SequentialLR(
+            optimizer,
+            schedulers=[warmup_scheduler, cosine_scheduler],
+            milestones=[warmup_epochs]
+        )
     else:
         raise NotImplementedError('Scheduler {} is not implemented'.format(config['lr_scheduler']))
 
@@ -235,6 +264,7 @@ def choose_metric(config):
 def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
+        print(f) #Nils: Ensure right detector path
         config = yaml.safe_load(f)
     try:# KAI: added this, to ensure it finds the config file
         with open('./training/config/train_config.yaml', 'r') as f:
