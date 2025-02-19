@@ -72,7 +72,7 @@ class Trainer(object):
         self.logger.info(f'Running model on {self.model.device}, since device={device} available.')
         
         if self.config['ddp'] == False:
-            wandb.init(project="deepfake_training", config=self.config)
+            wandb.init(project="deepfake_training", name=f"ResNet_wandb.run.id", config=self.config)
         elif IS_MAIN_PROCESS:
             wandb.init(project="deepfake_training",  
             group="DDP_training",

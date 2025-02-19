@@ -137,18 +137,16 @@ def prepare_testing_data(config):
                 config=config,
                 mode='test',
             )
-        elif not config.get('dataset_type', None) == 'bcos':
+        elif config.get('dataset_type', None) == 'bcos':
             test_set = DeepfakeBcosDataset(
                     config=config,
                     mode='test',
             )
-        
         else:
             test_set = DeepfakeAbstractBaseDataset(
                     config=config,
                     mode='test',
             )
-
         test_data_loader = \
             torch.utils.data.DataLoader(
                 dataset=test_set,
@@ -321,9 +319,14 @@ def main():
         logger.addFilter(RankFilter(0))
     # prepare the training data loader
     train_data_loader = prepare_training_data(config)
+    # log the type
+    logger.info(f"Train set type for '{config['train_dataset']}': {str(type(train_data_loader.dataset))}")
 
     # prepare the testing data loader
     test_data_loaders = prepare_testing_data(config)
+    # log the type
+    for test_name, data_loader in test_data_loaders.items():
+        logger.info(f"Test set type for '{test_name}': {str(type(data_loader.dataset))}")
 
     # prepare the model (detector)
     model_class = DETECTOR[config['model_name']]

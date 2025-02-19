@@ -13,4 +13,8 @@ training/logs
 *.out
 logs/
 .ipynb_checkpoints/
+<<<<<<< HEAD
 BWCluster/
+=======
+BWCluster/
+>>>>>>> a3101e099accd67c5f3a6a0e15eedfeb2be43d81
