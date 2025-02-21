@@ -170,8 +170,10 @@ def choose_optimizer(model, config):
         if config['freeze']:
             model.backbone.freeze()
             params = model.backbone.fc.parameters()
+        else:
+            params = model.parameters()
     else:
-        params= model.parameters()
+        params = model.parameters()
 
     opt_name = config['optimizer']['type']
     if opt_name == 'sgd':
@@ -331,8 +333,6 @@ def main():
     # prepare the model (detector)
     model_class = DETECTOR[config['model_name']]
     model = model_class(config)
-
-    print(f"Model is on device: {next(model.parameters()).device}")
 
     # prepare the optimizer
     optimizer = choose_optimizer(model, config)
