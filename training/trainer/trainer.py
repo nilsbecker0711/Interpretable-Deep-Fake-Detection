@@ -71,12 +71,13 @@ class Trainer(object):
         self.speed_up()  # move model to GPU
         self.logger.info(f'Running model on {self.model.device}, since device={device} available.')
         
+        timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
         if self.config['ddp'] == False:
-            wandb.init(project="deepfake_training", name=f"ResNet_wandb.run.id", config=self.config)
+            wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", config=self.config)
         elif IS_MAIN_PROCESS:
             wandb.init(project="deepfake_training",  
-            group="DDP_training",
-            name=f"rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
+            group=f"DDP_{config['model_name']}_{timestamp}",
+            name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
             config=self.config)
 
         

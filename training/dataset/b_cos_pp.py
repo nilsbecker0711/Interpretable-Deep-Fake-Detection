@@ -573,7 +573,6 @@ class DeepfakeBcosDataset(data.Dataset):
             # Do Data Augmentation
             if self.mode == 'train' and self.config['use_data_augmentation']:
                 image_trans, landmarks_trans, mask_trans = self.data_aug(image, landmarks, mask, augmentation_seed)
-                # print(image_trans.shape)
             else:
                 image = self.to_tensor(image)
                 trans = T.Compose([AddInverse(dim=0)])# also add the inverse channels in test
