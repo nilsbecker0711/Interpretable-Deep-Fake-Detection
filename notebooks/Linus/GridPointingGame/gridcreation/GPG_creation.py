@@ -7,13 +7,6 @@ from PIL import Image
 def get_all_png_files(root_folder, filter_keyword=None):
     """
     Recursively collects all .png file paths from a given root folder.
-
-    Args:
-        root_folder (str): Path to the root folder to search.
-        filter_keyword (str, optional): Only include paths with this keyword. Defaults to None.
-
-    Returns:
-        list: List of paths to all .png files found within the folder hierarchy.
     """
     png_files = []
     for dirpath, _, filenames in os.walk(root_folder):
@@ -24,23 +17,17 @@ def get_all_png_files(root_folder, filter_keyword=None):
                 png_files.append(os.path.join(dirpath, file))
     return png_files
 
-def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_grids=500, target_grid_size=(224,224)):
+def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_grids=500, target_image_size=(224,224)):
     """
     Create grids with one fake image and the rest real.
-    For each generated grid, resize it to the target_grid_size and then save both:
+    For each generated grid, save as:
       - A 3-channel version (saved as a PNG) in a subfolder "3ch"
       - A 6-channel version (RGB + inverse, saved as a NumPy file) in a subfolder "6ch"
     
-    Args:
-        real_dir (str): Directory with real images.
-        fake_dir (str): Directory with fake images.
-        base_output_dir (str): Base directory to save the grids.
-        grid_size (tuple): Dimensions of the grid (e.g., (3, 3)).
-        max_grids (int): Maximum number of grids to create.
-        target_grid_size (tuple): Desired final size of the grid (height, width).
+    The resizing process remains as in your original code.
     """
-
-    # Create subfolders for 3-channel and 6-channel outputs.
+    
+    # Create output directories.
     output_dir_3ch = os.path.join(base_output_dir, "3ch")
     output_dir_6ch = os.path.join(base_output_dir, "6ch")
     os.makedirs(output_dir_3ch, exist_ok=True)
@@ -49,8 +36,12 @@ def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
     # Set a fixed seed for reproducibility.
     random.seed(42)
     
+    # Get images.
     real_images = get_all_png_files(real_dir)
     fake_images = get_all_png_files(fake_dir)
+    
+    print(f"[DEBUG] Found {len(real_images)} real images in '{real_dir}'.")
+    print(f"[DEBUG] Found {len(fake_images)} fake images in '{fake_dir}'.")
     
     required_real = grid_size[0] * grid_size[1] - 1
     if len(real_images) < required_real:
@@ -62,13 +53,15 @@ def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
     for fake_img_path in fake_images:
         if grid_count >= max_grids:
             break
+
+        print(f"[DEBUG] Creating grid {grid_count} using fake image: {fake_img_path}")
         
         # Randomly sample real images and add the fake image.
         real_samples = random.sample(real_images, required_real)
         images = real_samples + [fake_img_path]
-        random.shuffle(images)  # Shuffle once per grid.
+        random.shuffle(images)
         
-        # Build the grid by horizontally stacking each row and then vertically stacking the rows.
+        # Build the grid by stacking rows.
         grid_rows = []
         for row in range(grid_size[0]):
             row_images = []
@@ -76,16 +69,19 @@ def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
                 idx = row * grid_size[1] + col
                 with Image.open(images[idx]) as img:
                     img = img.convert('RGB')
+                    img = img.resize(target_image_size, Image.LANCZOS)  # Resize here
                     row_images.append(np.array(img))
             grid_rows.append(np.hstack(row_images))
-        grid_image = np.vstack(grid_rows)  # This is the base 3-channel grid.
+        grid_image = np.vstack(grid_rows)  # Base 3-channel grid.
         
-        # Resize the grid to the desired target_grid_size.
+        # Check and resize grid to the desired target_image_size if needed.
         current_size = grid_image.shape[:2]  # (height, width)
-        if current_size != target_grid_size:
+        print(f"[DEBUG] Grid {grid_count} size before final resize: {current_size}.")
+        if current_size != target_image_size:
             pil_grid = Image.fromarray(grid_image.astype(np.uint8))
-            pil_grid = pil_grid.resize((target_grid_size[1], target_grid_size[0]), Image.LANCZOS)
+            pil_grid = pil_grid.resize((target_image_size[1], target_image_size[0]), Image.LANCZOS)
             grid_image = np.array(pil_grid)
+            print(f"[DEBUG] Grid {grid_count} resized to: {target_image_size}.")
         
         # Determine fake image position for naming.
         fake_index = images.index(fake_img_path)
@@ -94,28 +90,22 @@ def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
         # Save the 3-channel version.
         path_3ch = os.path.join(output_dir_3ch, base_name + ".png")
         Image.fromarray(grid_image.astype(np.uint8)).save(path_3ch)
+        print(f"[DEBUG] Saved 3-channel grid to: {path_3ch}.")
         
-        # Create the 6-channel version:
-        # Normalize to [0,1], compute the inverse, and then concatenate.
+        # Create the 6-channel version (RGB + inverse).
         grid_float = grid_image.astype(np.float32) / 255.0
         inverse = 1 - grid_float
         grid_image_6 = np.concatenate([grid_float, inverse], axis=-1)
         path_6ch = os.path.join(output_dir_6ch, base_name + ".npy")
         np.save(path_6ch, grid_image_6)
+        print(f"[DEBUG] Saved 6-channel grid to: {path_6ch}.")
         
         grid_count += 1
     
-    print(f"{grid_count} grids saved in {base_output_dir}")
-
-    
-
-def main(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_grid_size):
+def main(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_image_size):
     os.makedirs(base_output_dir, exist_ok=True)
-    
-    # Create grids using the updated function that performs resizing.
-    create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_grid_size)
-    
-    print("Grid creation complete.")
+    create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size, max_grids, target_image_size)
+    print("[DEBUG] Grid creation complete.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create evaluation grids with resizing.")
@@ -132,7 +122,7 @@ if __name__ == "__main__":
     
     # Create tuples for grid dimensions and target size.
     grid_size_tuple = (args.grid_rows, args.grid_cols)
-    target_grid_size_tuple = (args.target_height, args.target_width)
+    target_image_size_tuple = (args.target_height, args.target_width)
     
     main(
         real_dir=args.real_dir,
@@ -140,8 +130,8 @@ if __name__ == "__main__":
         base_output_dir=args.base_output_dir,
         grid_size=grid_size_tuple,
         max_grids=args.max_grids,
-        target_grid_size=target_grid_size_tuple
+        target_image_size=target_image_size_tuple
     )
 
 
-# python notebooks/Linus/GridPointingGame/gridcreation/GPG_creation.py --grid_rows 3 --grid_cols 3 --max_grid --real_dir "/new/real/path" --fake_dir "/new/fake/path" --base_output_dir "/output/path" --max_grids 100 --target_height 224 --target_width 224
+# python notebooks/Linus/GridPointingGame/gridcreation/GPG_creation.py --grid_rows 3 --grid_cols 3 --max_grid 1
