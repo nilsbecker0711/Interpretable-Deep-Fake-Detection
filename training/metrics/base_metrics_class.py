@@ -38,9 +38,12 @@ def calculate_metrics_for_train(label, output):
     # Average Precision
     y_true = label.cpu().detach().numpy()
     y_pred = prob.cpu().detach().numpy()
-    #Nils: Debug outputs to fight NaN Problem:
-    #logger.info(f'accuracy: {accuracy}, y_true: {y_true}, y_pred: {y_pred}')
+    if np.isnan(y_pred):  #Nils: Dont let training crash if NaN
+        return None, None, None, None, None, None
+
     ap = metrics.average_precision_score(y_true, y_pred)
+    rc = metrics.recall_score(y_true, y_pred)
+    f1 = metrics.f1_score(y_true, y_pred)
 
     # AUC and EER
     try:
@@ -59,7 +62,7 @@ def calculate_metrics_for_train(label, output):
         fnr = 1 - tpr
         eer = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
 
-    return auc, eer, accuracy, ap
+    return auc, eer, accuracy, ap, rc, f1
 
 
 # ------------ compute average metrics of batches---------------------
