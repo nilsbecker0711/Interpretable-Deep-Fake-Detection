@@ -79,7 +79,7 @@ optimizer:
 # training config
 lr_scheduler: warmup_cosine
 lr_eta_min: 0   # learning rate scheduler
-nEpochs: 100   # number of epochs to train for
+nEpochs: 60   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

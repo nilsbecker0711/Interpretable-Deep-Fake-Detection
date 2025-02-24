@@ -98,6 +98,17 @@ class Trainer(object):
             )
         os.makedirs(self.log_dir, exist_ok=True)
 
+    def print_gradient_stats(self, model):
+        """
+        Prints the mean and standard deviation of gradients for all parameters
+        that require gradients. tilo: for debugging the gradient flow
+        """
+        for name, param in model.named_parameters():
+            if param.requires_grad and param.grad is not None:
+                grad_mean = param.grad.mean().item()
+                grad_std = param.grad.std().item()
+                print(f"{name}: grad mean = {grad_mean:.6f}, grad std = {grad_std:.6f}")
+
     def get_writer(self, phase, dataset_key, metric_key):
         writer_key = f"{phase}-{dataset_key}-{metric_key}"
         if writer_key not in self.writers:
@@ -206,6 +217,22 @@ class Trainer(object):
                     losses_first = losses
                 self.optimizer.zero_grad()
                 losses['overall'].backward()
+
+                # For Distributed Data Parallel, print only on one process (e.g., rank 0)
+                if torch.distributed.is_initialized():
+                    if torch.distributed.get_rank() == 0:
+                        print("Gradient stats for backbone:")
+                        if isinstance(self.model, DDP):
+                            self.print_gradient_stats(self.model.module.backbone)
+                        else:
+                            self.print_gradient_stats(self.model.backbone)
+                else:
+                    print("Gradient stats for backbone:")
+                    if isinstance(self.model, DDP):
+                        self.print_gradient_stats(self.model.module.backbone)
+                    else:
+                        self.print_gradient_stats(self.model.backbone)
+
                 if i == 0:
                     self.optimizer.first_step(zero_grad=True)
                 else:
@@ -219,6 +246,26 @@ class Trainer(object):
                 losses = self.model.get_losses(data_dict, predictions)
             self.optimizer.zero_grad()
             losses['overall'].backward()
+
+            # tilo: apply gradient clipping to migitate exploding gradient problem
+            clip_grad_norm_(self.model.parameters(), max_norm=6.0)
+            print("Gradients have been clipped successfully!")
+
+            # For Distributed Data Parallel, print only on one process (e.g., rank 0)
+            if torch.distributed.is_initialized():
+                if torch.distributed.get_rank() == 0:
+                    print("Gradient stats for backbone:")
+                    if isinstance(self.model, DDP):
+                        self.print_gradient_stats(self.model.module.backbone)
+                    else:
+                        self.print_gradient_stats(self.model.backbone)
+            else:
+                print("Gradient stats for backbone:")
+                if isinstance(self.model, DDP):
+                    self.print_gradient_stats(self.model.module.backbone)
+                else:
+                    self.print_gradient_stats(self.model.backbone)
+
             self.optimizer.step()
             return losses,predictions
 
