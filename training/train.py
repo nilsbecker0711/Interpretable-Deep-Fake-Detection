@@ -256,7 +256,7 @@ def choose_scheduler(config, optimizer):
 
 def choose_metric(config):
     metric_scoring = config['metric_scoring']
-    if metric_scoring not in ['eer', 'auc', 'acc', 'ap']:
+    if metric_scoring not in ['eer', 'auc', 'acc', 'ap', 'rc', 'f1']:
         raise NotImplementedError('metric {} is not implemented'.format(metric_scoring))
     return metric_scoring
 

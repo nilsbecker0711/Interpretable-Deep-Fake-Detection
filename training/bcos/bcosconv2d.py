@@ -11,7 +11,7 @@ class NormedConv2d(nn.Conv2d):
     def forward(self, in_tensor):
         shape = self.weight.shape
         w = self.weight.view(shape[0], -1)
-        w = w/(w.norm(p=2, dim=1, keepdim=True))
+        w = w/(w.norm(p=2, dim=1, keepdim=True)+1e-10)
         return F.conv2d(in_tensor, w.view(shape),
                         self.bias, self.stride, self.padding, self.dilation, self.groups)
 
