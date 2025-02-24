@@ -248,8 +248,8 @@ class Trainer(object):
             losses['overall'].backward()
 
             # tilo: apply gradient clipping to migitate exploding gradient problem
-            clip_grad_norm_(self.model.parameters(), max_norm=6.0)
-            print("Gradients have been clipped successfully!")
+            #clip_grad_norm_(self.model.parameters(), max_norm=8.0)
+            #print("Gradients have been clipped successfully!")
 
             # For Distributed Data Parallel, print only on one process (e.g., rank 0)
             if torch.distributed.is_initialized():
