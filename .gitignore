@@ -8,10 +8,11 @@
 datasets/
 BWCluster/logs/
 BWCluster/*.out
+BWCluster/*.sh
 .DS_Store
 training/logs
 *.out
 logs/
 .ipynb_checkpoints/
 BWCluster/
-weights/wetransfer_b_cos_model_1732303731-35-pth_2025-01-07_1438.zip
+BWCluster/

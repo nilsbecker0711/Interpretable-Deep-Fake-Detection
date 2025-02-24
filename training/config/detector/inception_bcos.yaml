@@ -20,6 +20,7 @@ backbone_config:
   log_temperature: 1 # T^{-1}
   bias: [0.5, 0.5] # based on number of classes: in case of 10 classes it was 0.1, 0.9
   b: 1.25
+  scale_fact: 65 # based on experimentation the optimal factor is between 50 and 70 for a b=1.25
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -79,7 +80,7 @@ optimizer:
 # training config
 lr_scheduler: warmup_cosine
 lr_eta_min: 0   # learning rate scheduler
-nEpochs: 100   # number of epochs to train for
+nEpochs: 60   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

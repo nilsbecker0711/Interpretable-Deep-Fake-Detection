@@ -3,13 +3,17 @@
 #SBATCH -n 1                   # Number of tasks (1 for single node)
 #SBATCH -t 06:00:00            # Time limit (10 minutes for debugging purposes)
 #SBATCH --mem=60000             # Memory request (adjust as needed)
+<<<<<<< HEAD
 #SBATCH --gres=gpu:4          # Request 1 GPU (adjust if you need more)
+=======
+#SBATCH --gres=gpu:4           # Request 1 GPU (adjust if you need more)
+>>>>>>> 9be4f264f00c6fc74996ae5e07c5823f990f3f52
 #SBATCH --cpus-per-task=16     # Number of CPUs per GPU (16 for A100)
 #SBATCH --ntasks-per-node=1    # Number of tasks per node (1 in this case)
 
 module load devel/miniconda
 
-conda activate /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
+conda activate TP_linux
 
 echo "Running on $(hostname)"
 echo "Date: $(date)"
@@ -25,4 +29,8 @@ export MASTER_ADDR="localhost"  # The master node's address (typically localhost
 export MASTER_PORT=29300    # The port for communication (can be any available port)
 
 # Launch the training with two GPUs
+<<<<<<< HEAD
 torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29300 ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos.yaml --ddp
+=======
+torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29300 ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/vgg_bcos.yaml --ddp
+>>>>>>> 9be4f264f00c6fc74996ae5e07c5823f990f3f52

@@ -48,10 +48,10 @@ class InceptionBcosDetector(AbstractDetector):
         
     def build_backbone(self, config):
         # prepare the backbone
-        torch.cuda.empty_cache()
+        #torch.cuda.empty_cache()
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
-        backbone = backbone_class(inceptionnet_config = model_config) # tilo: model does not accept dict as input
+        backbone = backbone_class(inceptionnet_config=model_config) # tilo: model does not accept dict as input
         #TODO: maybe do the weight loading here
         #FIXME: current load pretrained weights only from the backbone, not here
         # # if donot load the pretrained weights, fail to get good results
@@ -74,6 +74,7 @@ class InceptionBcosDetector(AbstractDetector):
                 backbone.load_state_dict(state_dict, strict=False)
             logger.info('Load pretrained model successfully!')
         else: print("Model loaded without pretrained weights!")
+
         return backbone
     
     def build_loss(self, config):
@@ -91,6 +92,9 @@ class InceptionBcosDetector(AbstractDetector):
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
         pred = pred_dict['cls']
+        #print("Logits shape:", pred.shape)  # Should be (batch_size, 2) for CrossEntropyLoss
+        #print("Labels shape:", label.shape)  # Should be (batch_size,)
+        #print("Unique labels:", label.unique())  # Should be {0,1}
         loss = self.loss_func(pred, label)
         loss_dict = {'overall': loss}
         return loss_dict
@@ -109,9 +113,10 @@ class InceptionBcosDetector(AbstractDetector):
         # get the prediction by classifier
         pred = self.classifier(features)
         # get the probability of the pred
-        pred = torch.clamp(pred, min=-100, max=100)
+        # pred = torch.clamp(pred, min=-100, max=100)
         prob = torch.softmax(pred, dim=1)[:, 1]
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
+        #print(pred_dict)
         return pred_dict
 

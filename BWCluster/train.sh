@@ -19,3 +19,4 @@ echo "Environment: $(conda info --envs)"
 module load devel/cuda/12.4
 
 python ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos.yaml
+
