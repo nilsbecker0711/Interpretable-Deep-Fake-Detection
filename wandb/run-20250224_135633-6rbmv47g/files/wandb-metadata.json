@@ -1,0 +1,105 @@
+{
+  "os":  "Linux-4.18.0-477.70.1.el8_8.x86_64-x86_64-with-glibc2.28",
+  "python":  "CPython 3.9.18",
+  "startedAt":  "2025-02-24T12:56:33.818013Z",
+  "args":  [
+    "--detector_path",
+    "/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos.yaml"
+  ],
+  "program":  "/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/hp_tuning.py",
+  "git":  {
+    "remote":  "https://github.com/nilsbecker0711/Interpretable-Deep-Fake-Detection.git",
+    "commit":  "360fdd203b2de5037347eb349fdecfca96c296d9"
+  },
+  "email":  "schuetz.tilo@gmail.com",
+  "root":  "/pfs/data5/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection",
+  "host":  "uc2n510.localdomain",
+  "executable":  "/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/bin/python",
+  "cpu_count":  40,
+  "cpu_count_logical":  80,
+  "gpu":  "Tesla V100-SXM2-32GB",
+  "gpu_count":  2,
+  "disk":  {
+    "/":  {
+      "total":  "99880501248",
+      "used":  "75916181504"
+    }
+  },
+  "memory":  {
+    "total":  "811256602624"
+  },
+  "cpu":  {
+    "count":  40,
+    "countLogical":  80
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "Tesla V100-SXM2-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta"
+    },
+    {
+      "name":  "Tesla V100-SXM2-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta"
+    }
+  ],
+  "slurm":  {
+    "cluster_name":  "uc2",
+    "conf":  "/etc/slurm/slurm.conf",
+    "cpus_on_node":  "20",
+    "gpus_on_node":  "2",
+    "gtids":  "0",
+    "job_account":  "ma",
+    "job_cpus_per_node":  "20",
+    "job_end_time":  "1740406026",
+    "job_gid":  "500002",
+    "job_gpus":  "1,3",
+    "job_id":  "25322790",
+    "job_name":  "interactive",
+    "job_nodelist":  "uc2n510",
+    "job_num_nodes":  "1",
+    "job_partition":  "gpu_8",
+    "job_qos":  "normal",
+    "job_start_time":  "1740398826",
+    "job_uid":  "986183",
+    "job_user":  "ma_kreffert",
+    "jobid":  "25322790",
+    "launch_node_ipaddr":  "10.0.3.228",
+    "localid":  "0",
+    "mem_per_node":  "50000",
+    "mpi_type":  "pmi2",
+    "nnodes":  "1",
+    "nodeid":  "0",
+    "nodelist":  "uc2n510",
+    "nprocs":  "1",
+    "ntasks":  "1",
+    "pmi2_proc_mapping":  "(vector,(0,1,1))",
+    "pmi2_srun_port":  "45645",
+    "pmi2_step_nodes":  "uc2n510",
+    "prio_process":  "0",
+    "procid":  "0",
+    "pty_port":  "33765",
+    "pty_win_col":  "128",
+    "pty_win_row":  "24",
+    "script_context":  "prolog_task",
+    "srun_comm_host":  "10.0.3.228",
+    "srun_comm_port":  "41525",
+    "step_id":  "4294967290",
+    "step_launcher_port":  "41525",
+    "step_nodelist":  "uc2n510",
+    "step_num_nodes":  "1",
+    "step_num_tasks":  "1",
+    "step_tasks_per_node":  "1",
+    "stepid":  "4294967290",
+    "submit_dir":  "/pfs/data5/home/ma/ma_ma/ma_kreffert",
+    "submit_host":  "uc2n996.localdomain",
+    "task_pid":  "379760",
+    "tasks_per_node":  "1",
+    "topology_addr":  "VirtualInterconnnect.uc2ibbr.uc2ibbe14.uc2n510",
+    "topology_addr_pattern":  "switch.switch.switch.node"
+  },
+  "cudaVersion":  "12.4"
+}
