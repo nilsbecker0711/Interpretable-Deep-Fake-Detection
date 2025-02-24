@@ -71,7 +71,7 @@ def set_wandb_config(config):
     print(wandb_config)
 
     # general parameters
-    config['freeze'] = wandb_config.freeze
+    # config['freeze'] = wandb_config.freeze
     config['train_batchSize'] = wandb_config.batchSize
     config['test_batchSize'] = wandb_config.batchSize
     config['nEpochs'] = wandb_config.nEpochs
@@ -107,25 +107,41 @@ def set_wandb_config(config):
      
     config["use_data_augmentation"] = wandb_config.use_data_augmentation
     return config
-    
+
+
+def broadcast_config(config):
+    """Broadcast config from rank 0 to all other processes."""
+    if dist.is_initialized():
+        for key, value in config.items():
+            if isinstance(value, (int, float)):  
+                value_tensor = torch.tensor(value, dtype=torch.float32).cuda()
+                dist.broadcast(value_tensor, src=0)
+                config[key] = value_tensor.item()  
+    return config   
+
 def train():
     """Main training function, called per W&B Sweep run."""
     config = load_config()
 
     timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
-    if config['ddp'] == False:
-        wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
-        group="HP_tuning",  # Same group for all agents
-        #config=self.config
-        dir=None
+    is_main_process = (not config["ddp"]) or (dist.is_initialized() and dist.get_rank() == 0)
+
+    if is_main_process:  
+        wandb.init(
+            project="deepfake_training",  
+            group="HP_tuning",  
+            name=f"{config['model_name']}_{timestamp}" if not config["ddp"] else f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}",
+            dir=None
         )
-    elif IS_MAIN_PROCESS:
-        wandb.init(project="deepfake_training",  
-        group="HP_tuning",  # Same group for all agents
-        name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
-        #config=self.config
-        dir=None
-        )
+        # Fetch WandB config only in the main process
+        config = set_wandb_config(config)
+
+    if config["ddp"]:
+        dist.barrier()  # Ensure all processes wait for W&B to initialize
+    
+    # Now broadcast config from rank 0 to all other processes
+    if config["ddp"]:
+        config = broadcast_config(config)
     
     # Update config with WandB Sweep parameters
     config = set_wandb_config(config)
@@ -138,15 +154,15 @@ def train():
     logger = create_logger(os.path.join(logger_path, "training.log"))
     logger.info(f"Save log to {logger_path}")
 
-    # Distributed Training
     if config["ddp"]:
         dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
         logger.addFilter(RankFilter(0))
 
-    # Print Configuration
-    logger.info("--------------- Configuration ---------------")
-    for key, value in config.items():
-        logger.info(f"{key}: {value}")
+    # Print Configuration (Only rank 0)
+    if is_main_process:
+        logger.info("--------------- Configuration ---------------")
+        for key, value in config.items():
+            logger.info(f"{key}: {value}")
 
     # Initialize Seed
     init_seed(config)
@@ -193,14 +209,15 @@ def train():
     for writer in trainer.writers.values():
         writer.close()
 
-    wandb.finish()  # Mark WandB run as complete
+    if is_main_process:
+        wandb.finish()  # Mark WandB run as complete
 
 sweep_config = {
     'method': 'random',  # You can also use 'bayes' here
     'metric': {'name': 'test_metrics/auc', 'goal': 'maximize'},  # Set the metric for optimization
     'parameters': {
         # general parameters
-        'freeze':{'values': [True, False]},
+        #'freeze':{'values': [True, False]},
         'batchSize': {'values': [16, 32, 64, 128]},
         'nEpochs': {'values': [10, 15, 20, 35]},
         'manualSeed': {'values': [1, 10, 1024],},
@@ -309,7 +326,6 @@ sweep_config = {
 
 
 if __name__ == "__main__":
-    sweep_id = 'interpretable_deefake_detection/deepfake_training/ie7eh0l1' #
+    sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
     # sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
-
-    wandb.agent(sweep_id, function=train, count=1)  # Run one sweep at a time
+    wandb.agent(sweep_id, function=train, count=4)  # Run one sweep at a time
