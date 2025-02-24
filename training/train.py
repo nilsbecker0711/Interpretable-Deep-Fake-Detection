@@ -319,6 +319,21 @@ def main():
             timeout=timedelta(minutes=30)
         )
         logger.addFilter(RankFilter(0))
+
+    timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
+    if config['ddp'] == False:
+        wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
+        group="HP_tuning",  # Same group for all agents
+        #config=self.config
+        dir=None
+        )
+    elif IS_MAIN_PROCESS:
+        wandb.init(project="deepfake_training",  
+        group="HP_tuning",  # Same group for all agents
+        name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
+        #config=self.config
+        dir=None
+        )
     # prepare the training data loader
     train_data_loader = prepare_training_data(config)
     # log the type
