@@ -2,8 +2,8 @@
 log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet
 
 # model setting -> old
-freeze: true
-pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+freeze: false
+pretrained: # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 # pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_2025-02-12-17-52-32/test/avg/ckpt_best.pth
 # pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/resnet_from_scratch_runs/logs/resnet34_bcos_2025-02-08-09-15-43/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 from_url: false
