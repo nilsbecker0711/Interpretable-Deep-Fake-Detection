@@ -253,7 +253,7 @@ class Trainer(object):
             #print("Gradients have been clipped successfully!")
 
             # For Distributed Data Parallel, print only on one process (e.g., rank 0)
-           """  if torch.distributed.is_initialized():
+            """  if torch.distributed.is_initialized():
                 if torch.distributed.get_rank() == 0:
                     print("Gradient stats for backbone:")
                     if isinstance(self.model, DDP):
