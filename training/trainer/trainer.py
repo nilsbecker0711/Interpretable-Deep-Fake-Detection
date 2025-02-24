@@ -72,13 +72,13 @@ class Trainer(object):
         self.logger.info(f'Running model on {self.model.device}, since device={device} available.')
         
         timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
-        if self.config['ddp'] == False:
-            wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", config=self.config)
-        elif IS_MAIN_PROCESS:
-            wandb.init(project="deepfake_training",  
-            group=f"DDP_{config['model_name']}_{timestamp}",
-            name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
-            config=self.config)
+        # if self.config['ddp'] == False:
+        #     wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", config=self.config)
+        # elif IS_MAIN_PROCESS:
+        #     wandb.init(project="deepfake_training",  
+        #     group=f"DDP_{config['model_name']}_{timestamp}",
+        #     name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
+        #     config=self.config)
 
         
         
@@ -245,6 +245,7 @@ class Trainer(object):
             else:
                 losses = self.model.get_losses(data_dict, predictions)
             self.optimizer.zero_grad()
+
             losses['overall'].backward()
 
             # tilo: apply gradient clipping to migitate exploding gradient problem
@@ -267,7 +268,7 @@ class Trainer(object):
                     self.print_gradient_stats(self.model.backbone) """
 
             self.optimizer.step()
-            return losses,predictions
+            return losses, predictions
 
 
     def train_epoch(
@@ -304,10 +305,63 @@ class Trainer(object):
                     if data_dict[key]!=None and key!='name':
                         data_dict[key]=data_dict[key].cuda()
 
-            losses,predictions=self.train_step(data_dict)
+            losses, predictions = self.train_step(data_dict)
+
+            # compute the gradient norms
+            if (iteration in [0, 1, 2, 3, 4, 6]) or (iteration % 300 == 0):  # Log gradient norms every _ iterations (or adjust as needed)
+                grads = []
+                for param in self.model.parameters():
+                    if param.grad is not None:
+                        grad_norm = param.grad.norm().item()
+                        grads.append(grad_norm)
+
+                # Compute statistics
+                grad_norms = torch.tensor(grads)
+                grad_norm_min = grad_norms.min().item()
+                grad_norm_max = grad_norms.max().item()
+                grad_norm_mean = grad_norms.mean().item()
+                grad_norm_std = grad_norms.std().item()
+
+                logits = predictions['cls']
+                class_shares = (predictions['cls'] > 0.5).long().sum().float() / predictions['cls'].size(0)
+
+                # Collect all parameters into a single list
+                all_params = []
+                for param in self.model.parameters():
+                    if param.requires_grad:
+                        all_params.append(param.view(-1))  # Flatten each parameter
+
+                # Concatenate all parameters into a single tensor
+                all_params = torch.cat(all_params)
+
+                # Calculate aggregate statistics
+                param_min = all_params.min().item()
+                param_max = all_params.max().item()
+                param_mean = all_params.mean().item()
+                param_std = all_params.std().item()
+
+                lr = self.optimizer.param_groups[0]['lr']  # assuming you have a single optimizer
+
+                weight_decay = self.optimizer.param_groups[0].get('weight_decay', 0)
+
+                # Log to WandB
+                wandb.log({
+                    'other/grad_norm_min': grad_norm_min,
+                    'other/grad_norm_max': grad_norm_max,
+                    'other/grad_norm_mean': grad_norm_mean,
+                    'other/grad_norm_std': grad_norm_std,
+                    'other/class_shares':class_shares,
+                    # 'other/class_counts': class_counts,
+                    'other/param_min': param_min,
+                    'other/param_max': param_max,
+                    'other/param_mean': param_mean,
+                    'other/param_std': param_std,
+                    'other/learning_rate': lr,
+                    'other/weight_decay':weight_decay,
+                    'step': step_cnt
+                })
 
             # update learning rate
-
             if 'SWA' in self.config and self.config['SWA'] and epoch>self.config['swa_start']:
                 self.swa_model.update_parameters(self.model)
 

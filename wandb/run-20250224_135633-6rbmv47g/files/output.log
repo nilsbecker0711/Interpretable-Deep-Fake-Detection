@@ -1,0 +1,679 @@
+{'amsgrad': True, 'b': 1.9676853448613216, 'batchSize': 32, 'beta1': 0.9324785183031292, 'beta2': 0.8971826216093396, 'bias': [0.5, 0.5], 'eps': 4.609497209984396e-06, 'freeze': True, 'log_temperature': 9.988595673660008e-11, 'lr': 0.0005743564511697709, 'lr_T_max': 113.37134517027496, 'lr_eta_min': 4.090763972545404e-10, 'lr_gamma': 0.40509776231407146, 'lr_scheduler': 'cosine', 'lr_step': 7, 'manualSeed': 10, 'momentum': 0.8769214158784808, 'nEpochs': 15, 'optimizer': 'adam', 'use_data_augmentation': False, 'weight_decay': 0.0004062610756247765}
+2025-02-24 13:56:34,519 - INFO - Save log to ./logs/training/resnet34_bcos_2025-02-24-13-56-34
+2025-02-24 13:56:34,519 - INFO - --------------- Configuration ---------------
+2025-02-24 13:56:34,519 - INFO - log_dir: ./logs/training/
+2025-02-24 13:56:34,520 - INFO - freeze: True
+2025-02-24 13:56:34,520 - INFO - pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth
+2025-02-24 13:56:34,520 - INFO - from_url: False
+2025-02-24 13:56:34,520 - INFO - model_name: resnet34_bcos
+2025-02-24 13:56:34,520 - INFO - backbone_name: resnet34_bcos
+2025-02-24 13:56:34,520 - INFO - backbone_config: {'num_classes': 2, 'inc': 3, 'dropout': False, 'pretrained': True, 'groups': 1, 'base_width': 64, 'zero_init_residual': False, 'replace_stride_with_dilation': 'None', 'norm_layer': 'None', 'short_cat': False, 'mode': 'Original', 'log_temperature': 9.988595673660008e-11, 'bias': [0.5, 0.5], 'b': 1.9676853448613216}
+2025-02-24 13:56:34,520 - INFO - all_dataset: ['FaceForensics++', 'FF-F2F', 'FF-DF', 'FF-FS', 'FF-NT']
+2025-02-24 13:56:34,520 - INFO - train_dataset: ['FaceForensics++']
+2025-02-24 13:56:34,520 - INFO - test_dataset: ['FaceForensics++']
+2025-02-24 13:56:34,520 - INFO - compression: c40
+2025-02-24 13:56:34,520 - INFO - train_batchSize: 32
+2025-02-24 13:56:34,520 - INFO - test_batchSize: 32
+2025-02-24 13:56:34,520 - INFO - workers: 8
+2025-02-24 13:56:34,521 - INFO - frame_num: {'train': 32, 'test': 32}
+2025-02-24 13:56:34,521 - INFO - resolution: 224
+2025-02-24 13:56:34,521 - INFO - with_mask: False
+2025-02-24 13:56:34,521 - INFO - with_landmark: False
+2025-02-24 13:56:34,521 - INFO - save_ckpt: True
+2025-02-24 13:56:34,521 - INFO - save_feat: True
+2025-02-24 13:56:34,521 - INFO - add_inverse_channels: True
+2025-02-24 13:56:34,521 - INFO - dataset_type: bcos
+2025-02-24 13:56:34,521 - INFO - use_data_augmentation: False
+2025-02-24 13:56:34,521 - INFO - data_aug: {'flip_prob': 0.5, 'rotate_prob': 0.5, 'rotate_limit': [-10, 10], 'blur_prob': 0.5, 'blur_limit': [3, 7], 'brightness_prob': 0.5, 'brightness_limit': [-0.1, 0.1], 'contrast_limit': [-0.1, 0.1], 'quality_lower': 40, 'quality_upper': 100}
+2025-02-24 13:56:34,521 - INFO - optimizer: {'type': 'adam', 'adam': {'lr': 0.0005743564511697709, 'beta1': 0.9324785183031292, 'beta2': 0.8971826216093396, 'eps': 4.609497209984396e-06, 'weight_decay': 0.0004062610756247765, 'amsgrad': True}, 'sgd': {'lr': 0.0002, 'momentum': 0.9, 'weight_decay': 0.0005}, 'gradient_clipping': False}
+2025-02-24 13:56:34,521 - INFO - lr_scheduler: cosine
+2025-02-24 13:56:34,521 - INFO - lr_eta_min: 4.090763972545404e-10
+2025-02-24 13:56:34,521 - INFO - lr_T_max: 113.37134517027496
+2025-02-24 13:56:34,522 - INFO - nEpochs: 15
+2025-02-24 13:56:34,522 - INFO - start_epoch: 0
+2025-02-24 13:56:34,522 - INFO - save_epoch: 1
+2025-02-24 13:56:34,522 - INFO - rec_iter: 500
+2025-02-24 13:56:34,522 - INFO - logdir: ./logs
+2025-02-24 13:56:34,522 - INFO - manualSeed: 10
+2025-02-24 13:56:34,522 - INFO - loss_func: cross_entropy
+2025-02-24 13:56:34,522 - INFO - losstype: None
+2025-02-24 13:56:34,522 - INFO - metric_scoring: auc
+2025-02-24 13:56:34,522 - INFO - ddp: False
+2025-02-24 13:56:34,522 - INFO - cuda: True
+2025-02-24 13:56:34,522 - INFO - cudnn: True
+2025-02-24 13:56:34,522 - INFO - mode: train
+2025-02-24 13:56:34,522 - INFO - lmdb: False
+2025-02-24 13:56:34,523 - INFO - dry_run: False
+2025-02-24 13:56:34,523 - INFO - rgb_dir:
+2025-02-24 13:56:34,523 - INFO - lmdb_dir: ./datasets/lmdb
+2025-02-24 13:56:34,523 - INFO - dataset_json_folder: preprocessing/dataset_json_v3
+2025-02-24 13:56:34,523 - INFO - SWA: False
+2025-02-24 13:56:34,523 - INFO - save_avg: True
+2025-02-24 13:56:34,523 - INFO - label_dict: {'DFD_fake': 1, 'DFD_real': 0, 'FF-SH': 1, 'FF-F2F': 1, 'FF-DF': 1, 'FF-FS': 1, 'FF-NT': 1, 'FF-FH': 1, 'FF-real': 0, 'CelebDFv1_real': 0, 'CelebDFv1_fake': 1, 'CelebDFv2_real': 0, 'CelebDFv2_fake': 1, 'DFDCP_Real': 0, 'DFDCP_FakeA': 1, 'DFDCP_FakeB': 1, 'DFDC_Fake': 1, 'DFDC_Real': 0, 'DF_fake': 1, 'DF_real': 0, 'UADFV_Fake': 1, 'UADFV_Real': 0, 'roop_Real': 0, 'roop_Fake': 1}
+2025-02-24 13:56:34,523 - INFO - local_rank: 0
+2025-02-24 13:56:36,680 - INFO - Load pretrained model successfully!
+2025-02-24 13:56:37,996 - INFO - Running model on cuda, since device=cuda available.
+2025-02-24 13:56:37,996 - INFO - ===> Epoch[0] start!
+2025-02-24 13:56:38,039 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 13:56:57,029 - INFO - Iter: 0    training-loss, overall: 2014503680.0
+2025-02-24 13:56:57,060 - INFO - Iter: 0    training-metric, acc: 0.78125    training-metric, auc: 0.5    training-metric, eer: 0.0    training-metric, ap: 0.78125
+  8%|███████▎                                                                                | 299/3586 [00:54<08:07,  6.75it/s]2025-02-24 13:57:32,897 - INFO - Iter: 300    training-loss, overall: 93285216.0
+2025-02-24 13:57:32,898 - INFO - Iter: 300    training-metric, acc: 0.6879166666666666    training-metric, auc: 0.5029274136049241    training-metric, eer: 0.703281746031746    training-metric, ap: 0.8051572970250026
+ 17%|██████████████▋                                                                         | 599/3586 [01:31<05:54,  8.43it/s]2025-02-24 13:58:10,136 - INFO - Iter: 600    training-loss, overall: 26112542.0
+2025-02-24 13:58:10,137 - INFO - Iter: 600    training-metric, acc: 0.6798958333333334    training-metric, auc: 0.5030612070854935    training-metric, eer: 0.7826643634143637    training-metric, ap: 0.8009160120452755
+ 25%|██████████████████████                                                                  | 899/3586 [02:08<07:03,  6.34it/s]2025-02-24 13:58:47,139 - INFO - Iter: 900    training-loss, overall: 15946059.0
+2025-02-24 13:58:47,140 - INFO - Iter: 900    training-metric, acc: 0.6763541666666667    training-metric, auc: 0.5041726928184908    training-metric, eer: 0.7742926610426615    training-metric, ap: 0.7993700373700207
+ 33%|█████████████████████████████                                                          | 1199/3586 [02:44<04:13,  9.42it/s]2025-02-24 13:59:22,942 - INFO - Iter: 1200    training-loss, overall: 10370348.0
+2025-02-24 13:59:22,944 - INFO - Iter: 1200    training-metric, acc: 0.6798958333333334    training-metric, auc: 0.500070247197613    training-metric, eer: 0.7698097920597922    training-metric, ap: 0.8030692746232027
+ 42%|████████████████████████████████████▍                                                  | 1500/3586 [03:20<03:33,  9.76it/s]2025-02-24 13:59:58,857 - INFO - Iter: 1500    training-loss, overall: 7023182.5
+2025-02-24 13:59:58,858 - INFO - Iter: 1500    training-metric, acc: 0.6864583333333333    training-metric, auc: 0.5066920013293932    training-metric, eer: 0.7827754375254378    training-metric, ap: 0.806675203205524
+ 50%|███████████████████████████████████████████▋                                           | 1800/3586 [03:59<03:42,  8.04it/s]2025-02-24 14:00:38,046 - INFO - Iter: 1800    training-loss, overall: 5869070.5
+2025-02-24 14:00:38,049 - INFO - Iter: 1800    training-metric, acc: 0.6797916666666667    training-metric, auc: 0.4940596346890163    training-metric, eer: 0.8073379583379584    training-metric, ap: 0.8039879957790231
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [04:36<03:09,  7.86it/s]2025-02-24 14:01:15,542 - INFO - Iter: 2100    training-loss, overall: 5452468.0
+2025-02-24 14:01:15,543 - INFO - Iter: 2100    training-metric, acc: 0.676875    training-metric, auc: 0.4961525213315568    training-metric, eer: 0.7848654401154401    training-metric, ap: 0.800482105216758
+ 67%|██████████████████████████████████████████████████████████▏                            | 2400/3586 [05:14<01:48, 10.92it/s]2025-02-24 14:01:53,574 - INFO - Iter: 2400    training-loss, overall: 4792985.0
+2025-02-24 14:01:53,575 - INFO - Iter: 2400    training-metric, acc: 0.6828125    training-metric, auc: 0.5074879695310247    training-metric, eer: 0.7759579587079592    training-metric, ap: 0.8004703072392911
+ 75%|█████████████████████████████████████████████████████████████████▌                     | 2700/3586 [05:53<02:06,  7.01it/s]2025-02-24 14:02:32,308 - INFO - Iter: 2700    training-loss, overall: 4580255.5
+2025-02-24 14:02:32,309 - INFO - Iter: 2700    training-metric, acc: 0.6794791666666666    training-metric, auc: 0.5046734198652727    training-metric, eer: 0.7827716450216453    training-metric, ap: 0.8010927459858425
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 3000/3586 [06:32<01:24,  6.90it/s]2025-02-24 14:03:11,307 - INFO - Iter: 3000    training-loss, overall: 4215536.5
+2025-02-24 14:03:11,308 - INFO - Iter: 3000    training-metric, acc: 0.6842708333333334    training-metric, auc: 0.5085447949755519    training-metric, eer: 0.7815244662744669    training-metric, ap: 0.8039370430578491
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3300/3586 [07:10<00:28, 10.09it/s]2025-02-24 14:03:49,314 - INFO - Iter: 3300    training-loss, overall: 4119911.25
+2025-02-24 14:03:49,315 - INFO - Iter: 3300    training-metric, acc: 0.6685416666666667    training-metric, auc: 0.4953665212977975    training-metric, eer: 0.7989472286972291    training-metric, ap: 0.7917415303781264
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3584/3586 [07:45<00:00,  8.05it/s]2025-02-24 14:04:24,568 - INFO - ===> Test start!
+2025-02-24 14:04:24,582 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [01:24<00:00,  8.24it/s]
+2025-02-24 14:05:50,494 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 14:05:50,497 - INFO - dataset: FaceForensics++    step: 3585    testing-loss, overall: 4142364.0
+2025-02-24 14:05:50,509 - INFO - dataset: FaceForensics++    step: 3585    testing-metric, acc: 0.683018530122639    testing-metric, auc: 0.49973958369793947    testing-metric, eer: 0.8061634658329612    testing-metric, ap: 0.7994868594140162    testing-metric, video_auc: 0.47732142857142856    testing-metric, acc_real:0.6730683340777133; acc_fake:0.68551276309897
+2025-02-24 14:05:50,845 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 0+3585
+2025-02-24 14:05:50,847 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 14:05:50,859 - INFO - dataset: avg    step: 3585    testing-metric, acc: 0.683018530122639    testing-metric, auc: 0.49973958369793947    testing-metric, eer: 0.8061634658329612    testing-metric, ap: 0.7994868594140162    testing-metric, video_auc: 0.47732142857142856
+2025-02-24 14:05:50,859 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [09:12<00:00,  6.49it/s]
+2025-02-24 14:05:50,935 - INFO - ===> Epoch[0] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.49973958369793947}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.49973958369793947, 'dataset_dict': {'FaceForensics++': 0.49973958369793947}})})!
+2025-02-24 14:05:50,935 - INFO - ===> Epoch[1] start!
+2025-02-24 14:05:50,989 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:05:51,698 - INFO - Iter: 3586    training-loss, overall: 4717501.5
+2025-02-24 14:05:51,699 - INFO - Iter: 3586    training-metric, acc: 0.6875    training-metric, auc: 0.49142857142857144    training-metric, eer: 0.8571428571428571    training-metric, ap: 0.7783333333333333
+  8%|███████▎                                                                                | 299/3586 [00:18<03:14, 16.94it/s]2025-02-24 14:06:09,793 - INFO - Iter: 3886    training-loss, overall: 3767097.25
+2025-02-24 14:06:09,794 - INFO - Iter: 3886    training-metric, acc: 0.6834375    training-metric, auc: 0.5039259980294665    training-metric, eer: 0.792573685573686    training-metric, ap: 0.8040542284588038
+ 17%|██████████████▋                                                                         | 599/3586 [00:36<03:00, 16.51it/s]2025-02-24 14:06:27,722 - INFO - Iter: 4186    training-loss, overall: 3633056.0
+2025-02-24 14:06:27,723 - INFO - Iter: 4186    training-metric, acc: 0.6782291666666667    training-metric, auc: 0.4990235554533995    training-metric, eer: 0.8005193602693607    training-metric, ap: 0.8000221285228157
+ 25%|██████████████████████                                                                  | 899/3586 [00:54<02:37, 17.05it/s]2025-02-24 14:06:45,693 - INFO - Iter: 4486    training-loss, overall: 3443221.75
+2025-02-24 14:06:45,694 - INFO - Iter: 4486    training-metric, acc: 0.6752083333333333    training-metric, auc: 0.5047762701729838    training-metric, eer: 0.785872035372036    training-metric, ap: 0.7966642256498271
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:12<02:21, 16.85it/s]2025-02-24 14:07:03,509 - INFO - Iter: 4786    training-loss, overall: 3448503.5
+2025-02-24 14:07:03,511 - INFO - Iter: 4786    training-metric, acc: 0.6805208333333334    training-metric, auc: 0.5024622406530529    training-metric, eer: 0.7886587301587306    training-metric, ap: 0.8018167016181142
+ 35%|██████████████████████████████▌                                                        | 1259/3586 [01:15<02:16, 17.05it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:30<02:02, 16.98it/s]2025-02-24 14:07:21,482 - INFO - Iter: 5086    training-loss, overall: 3224552.5
+2025-02-24 14:07:21,483 - INFO - Iter: 5086    training-metric, acc: 0.6880208333333333    training-metric, auc: 0.503959280280391    training-metric, eer: 0.7972437818591671    training-metric, ap: 0.8068592851530226
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:47<01:46, 16.78it/s]2025-02-24 14:07:38,853 - INFO - ===> Test start!
+2025-02-24 14:07:38,868 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.89it/s]
+2025-02-24 14:08:21,214 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 14:08:21,215 - INFO - dataset: FaceForensics++    step: 5378    testing-loss, overall: 3600054.5
+2025-02-24 14:08:21,217 - INFO - dataset: FaceForensics++    step: 5378    testing-metric, acc: 0.7266583116999373    testing-metric, auc: 0.502849128355435    testing-metric, eer: 0.870701205895489    testing-metric, ap: 0.8004846966841944    testing-metric, video_auc: 0.48596938775510207    testing-metric, acc_real:0.7181777579276463; acc_fake:0.7287841468875952
+2025-02-24 14:08:21,417 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 1+1792
+2025-02-24 14:08:21,418 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 14:08:21,420 - INFO - dataset: avg    step: 5378    testing-metric, acc: 0.7266583116999373    testing-metric, auc: 0.502849128355435    testing-metric, eer: 0.870701205895489    testing-metric, ap: 0.8004846966841944    testing-metric, video_auc: 0.48596938775510207
+2025-02-24 14:08:21,420 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:30<1:07:01,  2.25s/it]2025-02-24 14:08:21,905 - INFO - Iter: 5386    training-loss, overall: 3164833.5
+2025-02-24 14:08:21,906 - INFO - Iter: 5386    training-metric, acc: 0.6869791666666667    training-metric, auc: 0.5026706543698446    training-metric, eer: 0.8008688071188074    training-metric, ap: 0.8074859029493345
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:48<01:38, 15.14it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 14:08:39,857 - INFO - Iter: 5686    training-loss, overall: 3210340.0
+2025-02-24 14:08:39,859 - INFO - Iter: 5686    training-metric, acc: 0.6677083333333333    training-metric, auc: 0.48947240660366803    training-metric, eer: 0.8109031158362261    training-metric, ap: 0.7948436282523388
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:06<01:11, 16.51it/s]2025-02-24 14:08:57,836 - INFO - Iter: 5986    training-loss, overall: 2942775.0
+2025-02-24 14:08:57,837 - INFO - Iter: 5986    training-metric, acc: 0.6809375    training-metric, auc: 0.5014768028512904    training-metric, eer: 0.7990540108040114    training-metric, ap: 0.8027788748658718
+ 75%|█████████████████████████████████████████████████████████████████▏                     | 2689/3586 [03:23<00:52, 16.98it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:24<00:52, 16.86it/s]2025-02-24 14:09:15,685 - INFO - Iter: 6286    training-loss, overall: 2911233.0
+2025-02-24 14:09:15,686 - INFO - Iter: 6286    training-metric, acc: 0.6829166666666666    training-metric, auc: 0.5049989958810833    training-metric, eer: 0.7837479038984052    training-metric, ap: 0.8039599615342283
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:42<00:35, 16.44it/s]2025-02-24 14:09:33,548 - INFO - Iter: 6586    training-loss, overall: 2917073.25
+2025-02-24 14:09:33,549 - INFO - Iter: 6586    training-metric, acc: 0.67125    training-metric, auc: 0.4940634825940996    training-metric, eer: 0.8035966348466351    training-metric, ap: 0.7958707261913626
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [04:00<00:17, 16.52it/s]2025-02-24 14:09:51,529 - INFO - Iter: 6886    training-loss, overall: 2863859.0
+2025-02-24 14:09:51,530 - INFO - Iter: 6886    training-metric, acc: 0.67375    training-metric, auc: 0.4966011193975535    training-metric, eer: 0.8012071262071266    training-metric, ap: 0.7975378710830092
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:17<00:00, 17.06it/s]2025-02-24 14:10:08,699 - INFO - ===> Test start!
+2025-02-24 14:10:08,713 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:42<00:00, 16.53it/s]
+2025-02-24 14:10:51,927 - INFO - dataset: FaceForensics++    step: 7171    testing-loss, overall: 2920494.5    00:00, 16.79it/s]
+2025-02-24 14:10:51,929 - INFO - dataset: FaceForensics++    step: 7171    testing-metric, acc: 0.6916569689374272    testing-metric, auc: 0.502045803067272    testing-metric, eer: 0.8144260830728004    testing-metric, ap: 0.80022668470248    testing-metric, video_auc: 0.48354591836734695    testing-metric, acc_real:0.6806610093791872; acc_fake:0.6944133452754142
+2025-02-24 14:10:51,930 - INFO - dataset: avg    step: 7171    testing-metric, acc: 0.6916569689374272    testing-metric, auc: 0.502045803067272    testing-metric, eer: 0.8144260830728004    testing-metric, ap: 0.80022668470248    testing-metric, video_auc: 0.48354591836734695
+2025-02-24 14:10:51,931 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [05:00<00:00, 11.92it/s]
+2025-02-24 14:10:52,134 - INFO - ===> Epoch[1] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.502849128355435}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.502849128355435, 'dataset_dict': {'FaceForensics++': 0.502849128355435}})})!
+2025-02-24 14:10:52,136 - INFO - ===> Epoch[2] start!
+2025-02-24 14:10:52,186 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:10:53,048 - INFO - Iter: 7172    training-loss, overall: 1751324.375
+2025-02-24 14:10:53,049 - INFO - Iter: 7172    training-metric, acc: 0.6875    training-metric, auc: 0.5833333333333333    training-metric, eer: 0.625    training-metric, ap: 0.782986111111111
+  8%|███████▎                                                                                | 299/3586 [00:18<03:19, 16.51it/s]2025-02-24 14:11:11,243 - INFO - Iter: 7472    training-loss, overall: 2695810.75
+2025-02-24 14:11:11,245 - INFO - Iter: 7472    training-metric, acc: 0.6775    training-metric, auc: 0.49614150766421006    training-metric, eer: 0.801104543604544    training-metric, ap: 0.8018338348740137
+ 17%|██████████████▋                                                                         | 599/3586 [00:36<02:59, 16.59it/s]2025-02-24 14:11:29,325 - INFO - Iter: 7772    training-loss, overall: 2567861.5
+2025-02-24 14:11:29,326 - INFO - Iter: 7772    training-metric, acc: 0.6778125    training-metric, auc: 0.5055033248148607    training-metric, eer: 0.7836728086728096    training-metric, ap: 0.8005583600384079
+ 18%|███████████████▊                                                                        | 645/3586 [00:39<02:55, 16.72it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 25%|██████████████████████                                                                  | 899/3586 [01:05<03:05, 14.48it/s]2025-02-24 14:11:58,236 - INFO - Iter: 8072    training-loss, overall: 2462892.75
+2025-02-24 14:11:58,284 - INFO - Iter: 8072    training-metric, acc: 0.6844791666666666    training-metric, auc: 0.5043778746612829    training-metric, eer: 0.7917322643911281    training-metric, ap: 0.803937719103326
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:29<02:59, 13.32it/s]2025-02-24 14:12:22,588 - INFO - Iter: 8372    training-loss, overall: 2513037.5
+2025-02-24 14:12:22,591 - INFO - Iter: 8372    training-metric, acc: 0.6763541666666667    training-metric, auc: 0.49762842078747854    training-metric, eer: 0.7986422558922563    training-metric, ap: 0.7990951213020469
+ 42%|████████████████████████████████████▏                                                  | 1493/3586 [01:53<03:28, 10.06it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:53<02:33, 13.58it/s]2025-02-24 14:12:46,509 - INFO - Iter: 8672    training-loss, overall: 2468932.5
+2025-02-24 14:12:46,510 - INFO - Iter: 8672    training-metric, acc: 0.6751041666666666    training-metric, auc: 0.4838237959301649    training-metric, eer: 0.8235716902940984    training-metric, ap: 0.8013392641491157
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [02:18<02:31, 11.83it/s]2025-02-24 14:13:11,163 - INFO - ===> Test start!
+2025-02-24 14:13:11,188 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:46<00:00, 14.92it/s]
+2025-02-24 14:13:59,505 - INFO - dataset: FaceForensics++    step: 8964    testing-loss, overall: 2666147.75    0:00, 17.09it/s]
+2025-02-24 14:13:59,529 - INFO - dataset: FaceForensics++    step: 8964    testing-metric, acc: 0.6603706024527796    testing-metric, auc: 0.5009718858400536    testing-metric, eer: 0.7650736936132202    testing-metric, ap: 0.7998819785333642    testing-metric, video_auc: 0.49048469387755106    testing-metric, acc_real:0.6485037963376508; acc_fake:0.6633452754142409
+2025-02-24 14:13:59,530 - INFO - dataset: avg    step: 8964    testing-metric, acc: 0.6603706024527796    testing-metric, auc: 0.5009718858400536    testing-metric, eer: 0.7650736936132202    testing-metric, ap: 0.7998819785333642    testing-metric, video_auc: 0.49048469387755106
+2025-02-24 14:13:59,530 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [03:07<1:16:09,  2.56s/it]2025-02-24 14:14:00,047 - INFO - Iter: 8972    training-loss, overall: 2393034.0
+2025-02-24 14:14:00,049 - INFO - Iter: 8972    training-metric, acc: 0.6814583333333334    training-metric, auc: 0.5069049469918986    training-metric, eer: 0.7834975949975951    training-metric, ap: 0.8031339285472701
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [03:39<02:59,  8.28it/s]2025-02-24 14:14:31,898 - INFO - Iter: 9272    training-loss, overall: 2350808.75
+2025-02-24 14:14:31,901 - INFO - Iter: 9272    training-metric, acc: 0.6780208333333333    training-metric, auc: 0.4999632186738886    training-metric, eer: 0.7982715525215525    training-metric, ap: 0.7992475079482766
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [04:11<02:05,  9.42it/s]2025-02-24 14:15:04,424 - INFO - Iter: 9572    training-loss, overall: 2350305.0
+2025-02-24 14:15:04,427 - INFO - Iter: 9572    training-metric, acc: 0.6707291666666667    training-metric, auc: 0.4953867487505757    training-metric, eer: 0.798048118548119    training-metric, ap: 0.7946750812340184
+ 75%|█████████████████████████████████████████████████████████████████▌                     | 2700/3586 [04:52<01:11, 12.46it/s]2025-02-24 14:15:45,082 - INFO - Iter: 9872    training-loss, overall: 2255988.75
+2025-02-24 14:15:45,086 - INFO - Iter: 9872    training-metric, acc: 0.6789583333333333    training-metric, auc: 0.5007776146422053    training-metric, eer: 0.7927514152514153    training-metric, ap: 0.8008548216593628
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [05:26<00:57, 10.19it/s]2025-02-24 14:16:19,190 - INFO - Iter: 10172    training-loss, overall: 2222948.25
+2025-02-24 14:16:19,193 - INFO - Iter: 10172    training-metric, acc: 0.6739583333333333    training-metric, auc: 0.48853775304686925    training-metric, eer: 0.8186561401561405    training-metric, ap: 0.7983638638030701
+ 89%|█████████████████████████████████████████████████████████████████████████████▏         | 3179/3586 [05:45<00:55,  7.36it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [05:58<00:32,  8.79it/s]2025-02-24 14:16:50,696 - INFO - Iter: 10472    training-loss, overall: 2210966.75
+2025-02-24 14:16:50,698 - INFO - Iter: 10472    training-metric, acc: 0.6729166666666667    training-metric, auc: 0.49414761347209885    training-metric, eer: 0.7945557699344835    training-metric, ap: 0.7962127972448922
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [06:27<00:00,  9.51it/s]2025-02-24 14:17:20,378 - INFO - ===> Test start!
+2025-02-24 14:17:20,395 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:45<00:00, 15.46it/s]
+2025-02-24 14:18:06,740 - INFO - dataset: FaceForensics++    step: 10757    testing-loss, overall: 2488152.5    0:00, 16.80it/s]
+2025-02-24 14:18:06,744 - INFO - dataset: FaceForensics++    step: 10757    testing-metric, acc: 0.7133202040999015    testing-metric, auc: 0.5017874243927669    testing-metric, eer: 0.8512728896828942    testing-metric, ap: 0.8001436933620675    testing-metric, video_auc: 0.47428571428571425    testing-metric, acc_real:0.7110317105850826; acc_fake:0.7138938647559337
+2025-02-24 14:18:06,745 - INFO - dataset: avg    step: 10757    testing-metric, acc: 0.7133202040999015    testing-metric, auc: 0.5017874243927669    testing-metric, eer: 0.8512728896828942    testing-metric, ap: 0.8001436933620675    testing-metric, video_auc: 0.47428571428571425
+2025-02-24 14:18:06,745 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [07:14<00:00,  8.25it/s]
+2025-02-24 14:18:06,986 - INFO - ===> Epoch[2] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.502849128355435}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.502849128355435, 'dataset_dict': {'FaceForensics++': 0.502849128355435}})})!
+2025-02-24 14:18:06,987 - INFO - ===> Epoch[3] start!
+2025-02-24 14:18:07,041 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:18:08,280 - INFO - Iter: 10758    training-loss, overall: 1723216.5
+2025-02-24 14:18:08,282 - INFO - Iter: 10758    training-metric, acc: 0.71875    training-metric, auc: 0.5064102564102564    training-metric, eer: 0.8333333333333334    training-metric, ap: 0.8144586894586894
+  8%|███████▎                                                                                | 299/3586 [00:19<03:19, 16.52it/s]2025-02-24 14:18:26,748 - INFO - Iter: 11058    training-loss, overall: 2120700.0
+2025-02-24 14:18:26,749 - INFO - Iter: 11058    training-metric, acc: 0.6860416666666667    training-metric, auc: 0.5062251707354449    training-metric, eer: 0.7913335830835831    training-metric, ap: 0.8026424278464093
+ 13%|███████████▎                                                                            | 463/3586 [00:29<03:16, 15.88it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 17%|██████████████▋                                                                         | 599/3586 [00:37<03:01, 16.47it/s]2025-02-24 14:18:45,356 - INFO - Iter: 11358    training-loss, overall: 2065517.75
+2025-02-24 14:18:45,358 - INFO - Iter: 11358    training-metric, acc: 0.688125    training-metric, auc: 0.5096477893173703    training-metric, eer: 0.7848801050306067    training-metric, ap: 0.8069084189442247
+ 25%|█████████████████████▌                                                                  | 879/3586 [00:54<02:46, 16.29it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 25%|██████████████████████                                                                  | 899/3586 [00:56<02:47, 16.07it/s]2025-02-24 14:19:03,826 - INFO - Iter: 11658    training-loss, overall: 2093484.625
+2025-02-24 14:19:03,827 - INFO - Iter: 11658    training-metric, acc: 0.6779166666666666    training-metric, auc: 0.4919790194348972    training-metric, eer: 0.8115653020335295    training-metric, ap: 0.8007178189335273
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:14<02:22, 16.69it/s]2025-02-24 14:19:22,092 - INFO - Iter: 11958    training-loss, overall: 1987304.125
+2025-02-24 14:19:22,093 - INFO - Iter: 11958    training-metric, acc: 0.67125    training-metric, auc: 0.5039340861529673    training-metric, eer: 0.783359843859844    training-metric, ap: 0.7958493851467117
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:32<02:11, 15.92it/s]2025-02-24 14:19:40,310 - INFO - Iter: 12258    training-loss, overall: 1979903.375
+2025-02-24 14:19:40,311 - INFO - Iter: 12258    training-metric, acc: 0.6794791666666666    training-metric, auc: 0.5066383000467076    training-metric, eer: 0.7794488936988935    training-metric, ap: 0.801258303528831
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:50<01:46, 16.82it/s]2025-02-24 14:19:58,065 - INFO - ===> Test start!
+2025-02-24 14:19:58,079 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:43<00:00, 16.24it/s]
+2025-02-24 14:20:42,090 - INFO - dataset: FaceForensics++    step: 12550    testing-loss, overall: 2343051.5    0:00, 16.53it/s]
+2025-02-24 14:20:42,093 - INFO - dataset: FaceForensics++    step: 12550    testing-metric, acc: 0.7203025691522693    testing-metric, auc: 0.500882680255784    testing-metric, eer: 0.8653416703885664    testing-metric, ap: 0.7998533439730505    testing-metric, video_auc: 0.4791836734693877    testing-metric, acc_real:0.7195176418043769; acc_fake:0.7204993282579489
+2025-02-24 14:20:42,095 - INFO - dataset: avg    step: 12550    testing-metric, acc: 0.7203025691522693    testing-metric, auc: 0.500882680255784    testing-metric, eer: 0.8653416703885664    testing-metric, ap: 0.7998533439730505    testing-metric, video_auc: 0.4791836734693877
+2025-02-24 14:20:42,095 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:34<1:09:19,  2.33s/it]2025-02-24 14:20:42,624 - INFO - Iter: 12558    training-loss, overall: 1925931.125
+2025-02-24 14:20:42,625 - INFO - Iter: 12558    training-metric, acc: 0.6805208333333334    training-metric, auc: 0.4874869153895215    training-metric, eer: 0.8234084896584903    training-metric, ap: 0.8035968875165167
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:53<01:34, 15.72it/s]2025-02-24 14:21:01,342 - INFO - Iter: 12858    training-loss, overall: 1934919.5
+2025-02-24 14:21:01,344 - INFO - Iter: 12858    training-metric, acc: 0.6740625    training-metric, auc: 0.49233363288207205    training-metric, eer: 0.8067857605357606    training-metric, ap: 0.7977549495905989
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:12<01:11, 16.51it/s]2025-02-24 14:21:19,737 - INFO - Iter: 13158    training-loss, overall: 1978877.25
+2025-02-24 14:21:19,738 - INFO - Iter: 13158    training-metric, acc: 0.6680208333333333    training-metric, auc: 0.4889983659278457    training-metric, eer: 0.810247123247124    training-metric, ap: 0.7953767657888225
+ 75%|█████████████████████████████████████████████████████████████████▌                     | 2700/3586 [03:34<01:51,  7.92it/s]2025-02-24 14:21:41,920 - INFO - Iter: 13458    training-loss, overall: 1912757.125
+2025-02-24 14:21:41,923 - INFO - Iter: 13458    training-metric, acc: 0.6807291666666667    training-metric, auc: 0.5046066650974376    training-metric, eer: 0.7862565397565398    training-metric, ap: 0.8020473644602271
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 3000/3586 [03:52<00:34, 16.94it/s]2025-02-24 14:21:59,923 - INFO - Iter: 13758    training-loss, overall: 1793667.5
+2025-02-24 14:21:59,924 - INFO - Iter: 13758    training-metric, acc: 0.6851041666666666    training-metric, auc: 0.5112667229807785    training-metric, eer: 0.778981601731602    training-metric, ap: 0.8044244619761344
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3300/3586 [04:10<00:18, 15.78it/s]2025-02-24 14:22:18,329 - INFO - Iter: 14058    training-loss, overall: 1839621.125
+2025-02-24 14:22:18,332 - INFO - Iter: 14058    training-metric, acc: 0.6782291666666667    training-metric, auc: 0.4953839097649389    training-metric, eer: 0.8080208310208314    training-metric, ap: 0.8008667044409076
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3584/3586 [04:28<00:00, 16.86it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 14:22:35,892 - INFO - ===> Test start!
+2025-02-24 14:22:35,905 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:43<00:00, 16.13it/s]
+2025-02-24 14:23:20,247 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 14:23:20,248 - INFO - dataset: FaceForensics++    step: 14343    testing-loss, overall: 2116456.0
+2025-02-24 14:23:20,250 - INFO - dataset: FaceForensics++    step: 14343    testing-metric, acc: 0.6865992301494942    testing-metric, auc: 0.5035684108825212    testing-metric, eer: 0.801920500223314    testing-metric, ap: 0.8007160718296293    testing-metric, video_auc: 0.48706632653061227    testing-metric, acc_real:0.6790978115230013; acc_fake:0.6884796238244514
+2025-02-24 14:23:20,660 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 3+3585
+2025-02-24 14:23:20,662 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 14:23:20,663 - INFO - dataset: avg    step: 14343    testing-metric, acc: 0.6865992301494942    testing-metric, auc: 0.5035684108825212    testing-metric, eer: 0.801920500223314    testing-metric, ap: 0.8007160718296293    testing-metric, video_auc: 0.48706632653061227
+2025-02-24 14:23:20,663 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [05:13<00:00, 11.44it/s]
+2025-02-24 14:23:20,937 - INFO - ===> Epoch[3] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5035684108825212}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5035684108825212, 'dataset_dict': {'FaceForensics++': 0.5035684108825212}})})!
+2025-02-24 14:23:20,937 - INFO - ===> Epoch[4] start!
+2025-02-24 14:23:20,990 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:23:21,842 - INFO - Iter: 14344    training-loss, overall: 1586533.75
+2025-02-24 14:23:21,844 - INFO - Iter: 14344    training-metric, acc: 0.78125    training-metric, auc: 0.46296296296296297    training-metric, eer: 1.0    training-metric, ap: 0.8341049382716049
+  2%|██▏                                                                                      | 89/3586 [00:05<03:30, 16.62it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+  8%|███████▎                                                                                | 299/3586 [00:18<03:13, 16.95it/s]2025-02-24 14:23:39,970 - INFO - Iter: 14644    training-loss, overall: 1842568.125
+2025-02-24 14:23:39,971 - INFO - Iter: 14644    training-metric, acc: 0.6789583333333333    training-metric, auc: 0.5008868060963964    training-metric, eer: 0.793546512944506    training-metric, ap: 0.800719750688734
+ 17%|██████████████▋                                                                         | 599/3586 [00:36<03:00, 16.59it/s]2025-02-24 14:23:58,339 - INFO - Iter: 14944    training-loss, overall: 1717256.375
+2025-02-24 14:23:58,340 - INFO - Iter: 14944    training-metric, acc: 0.6825    training-metric, auc: 0.5022318016147415    training-metric, eer: 0.794962842712843    training-metric, ap: 0.8033778570183269
+ 25%|██████████████████████                                                                  | 899/3586 [00:54<02:35, 17.26it/s]2025-02-24 14:24:15,999 - INFO - Iter: 15244    training-loss, overall: 1796188.375
+2025-02-24 14:24:16,000 - INFO - Iter: 15244    training-metric, acc: 0.6784375    training-metric, auc: 0.5035523033452244    training-metric, eer: 0.7765981333481335    training-metric, ap: 0.802164100868929
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:12<02:21, 16.92it/s]2025-02-24 14:24:33,895 - INFO - Iter: 15544    training-loss, overall: 1775150.125
+2025-02-24 14:24:33,896 - INFO - Iter: 15544    training-metric, acc: 0.6692708333333334    training-metric, auc: 0.4942599698070877    training-metric, eer: 0.8027357457357464    training-metric, ap: 0.7936580628265064
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:30<02:03, 16.89it/s]2025-02-24 14:24:52,037 - INFO - Iter: 15844    training-loss, overall: 1678844.875
+2025-02-24 14:24:52,038 - INFO - Iter: 15844    training-metric, acc: 0.6817708333333333    training-metric, auc: 0.5074801606259256    training-metric, eer: 0.7847210197210198    training-metric, ap: 0.7999619410416988
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:48<01:48, 16.47it/s]2025-02-24 14:25:09,591 - INFO - ===> Test start!
+2025-02-24 14:25:09,606 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:42<00:00, 16.59it/s]
+2025-02-24 14:25:53,035 - INFO - dataset: FaceForensics++    step: 16136    testing-loss, overall: 2033003.75    :00, 17.25it/s]
+2025-02-24 14:25:53,037 - INFO - dataset: FaceForensics++    step: 16136    testing-metric, acc: 0.7194969116462269    testing-metric, auc: 0.5016338897815003    testing-metric, eer: 0.8619919606967397    testing-metric, ap: 0.8000943992969578    testing-metric, video_auc: 0.46908163265306124    testing-metric, acc_real:0.7125949084412684; acc_fake:0.7212270488132557
+2025-02-24 14:25:53,039 - INFO - dataset: avg    step: 16136    testing-metric, acc: 0.7194969116462269    testing-metric, auc: 0.5016338897815003    testing-metric, eer: 0.8619919606967397    testing-metric, ap: 0.8000943992969578    testing-metric, video_auc: 0.46908163265306124
+2025-02-24 14:25:53,040 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:32<1:08:22,  2.30s/it]2025-02-24 14:25:53,534 - INFO - Iter: 16144    training-loss, overall: 1695159.875
+2025-02-24 14:25:53,536 - INFO - Iter: 16144    training-metric, acc: 0.6714583333333334    training-metric, auc: 0.4951121936628711    training-metric, eer: 0.802087634587635    training-metric, ap: 0.7972011388019232
+ 57%|█████████████████████████████████████████████████▎                                     | 2035/3586 [02:46<01:28, 17.58it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:49<01:26, 17.24it/s]2025-02-24 14:26:11,324 - INFO - Iter: 16444    training-loss, overall: 1741103.125
+2025-02-24 14:26:11,326 - INFO - Iter: 16444    training-metric, acc: 0.6797916666666667    training-metric, auc: 0.49437523715136567    training-metric, eer: 0.8069330428026078    training-metric, ap: 0.8032250727371906
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:07<01:07, 17.64it/s]2025-02-24 14:26:28,589 - INFO - Iter: 16744    training-loss, overall: 1634347.5
+2025-02-24 14:26:28,591 - INFO - Iter: 16744    training-metric, acc: 0.6823958333333333    training-metric, auc: 0.502565347230732    training-metric, eer: 0.7959620009620013    training-metric, ap: 0.8044118935938924
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:24<00:50, 17.69it/s]2025-02-24 14:26:45,654 - INFO - Iter: 17044    training-loss, overall: 1624396.5
+2025-02-24 14:26:45,655 - INFO - Iter: 17044    training-metric, acc: 0.675    training-metric, auc: 0.4910419453141024    training-metric, eer: 0.8102859547859553    training-metric, ap: 0.8006347370396659
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:41<00:33, 17.58it/s]2025-02-24 14:27:03,314 - INFO - Iter: 17344    training-loss, overall: 1541337.5
+2025-02-24 14:27:03,315 - INFO - Iter: 17344    training-metric, acc: 0.6927083333333334    training-metric, auc: 0.5006498080377997    training-metric, eer: 0.8042171717171719    training-metric, ap: 0.8106687068227616
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [03:59<00:16, 17.53it/s]2025-02-24 14:27:20,716 - INFO - Iter: 17644    training-loss, overall: 1634432.5
+2025-02-24 14:27:20,718 - INFO - Iter: 17644    training-metric, acc: 0.6772916666666666    training-metric, auc: 0.5110099838906056    training-metric, eer: 0.7730552133052138    training-metric, ap: 0.7992735373512548
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:15<00:00, 17.61it/s]2025-02-24 14:27:36,836 - INFO - ===> Test start!
+2025-02-24 14:27:36,849 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.67it/s]
+2025-02-24 14:28:20,170 - INFO - dataset: FaceForensics++    step: 17929    testing-loss, overall: 1829464.125    00, 17.60it/s]
+2025-02-24 14:28:20,172 - INFO - dataset: FaceForensics++    step: 17929    testing-metric, acc: 0.6543729299077969    testing-metric, auc: 0.503496406375039    testing-metric, eer: 0.7483251451540867    testing-metric, ap: 0.8006930509113726    testing-metric, video_auc: 0.49464285714285716    testing-metric, acc_real:0.6469405984814649; acc_fake:0.6562360053739364
+2025-02-24 14:28:20,173 - INFO - dataset: avg    step: 17929    testing-metric, acc: 0.6543729299077969    testing-metric, auc: 0.503496406375039    testing-metric, eer: 0.7483251451540867    testing-metric, ap: 0.8006930509113726    testing-metric, video_auc: 0.49464285714285716
+2025-02-24 14:28:20,174 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:58<00:00, 11.99it/s]
+2025-02-24 14:28:20,398 - INFO - ===> Epoch[4] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5035684108825212}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5035684108825212, 'dataset_dict': {'FaceForensics++': 0.5035684108825212}})})!
+2025-02-24 14:28:20,399 - INFO - ===> Epoch[5] start!
+2025-02-24 14:28:20,461 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:28:21,245 - INFO - Iter: 17930    training-loss, overall: 2664063.5
+2025-02-24 14:28:21,248 - INFO - Iter: 17930    training-metric, acc: 0.5625    training-metric, auc: 0.49090909090909085    training-metric, eer: 0.7    training-metric, ap: 0.6836260330578512
+  8%|███████▎                                                                                | 299/3586 [00:18<03:17, 16.64it/s]2025-02-24 14:28:39,219 - INFO - Iter: 18230    training-loss, overall: 1586548.0
+2025-02-24 14:28:39,220 - INFO - Iter: 18230    training-metric, acc: 0.6719791666666667    training-metric, auc: 0.5004922711382553    training-metric, eer: 0.7902326839826848    training-metric, ap: 0.7956564902165391
+ 17%|██████████████▋                                                                         | 599/3586 [00:36<03:00, 16.51it/s]2025-02-24 14:28:57,424 - INFO - Iter: 18530    training-loss, overall: 1592141.0
+2025-02-24 14:28:57,425 - INFO - Iter: 18530    training-metric, acc: 0.6807291666666667    training-metric, auc: 0.5054553055490595    training-metric, eer: 0.7878334535834539    training-metric, ap: 0.802383755714513
+ 25%|██████████████████████                                                                  | 899/3586 [00:54<02:39, 16.81it/s]2025-02-24 14:29:15,500 - INFO - Iter: 18830    training-loss, overall: 1555158.5
+2025-02-24 14:29:15,501 - INFO - Iter: 18830    training-metric, acc: 0.675    training-metric, auc: 0.49851472418081366    training-metric, eer: 0.7960476652976658    training-metric, ap: 0.7983275759144327
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:11<02:18, 17.28it/s]2025-02-24 14:29:32,990 - INFO - Iter: 19130    training-loss, overall: 1530880.25
+2025-02-24 14:29:32,991 - INFO - Iter: 19130    training-metric, acc: 0.6711458333333333    training-metric, auc: 0.49510757660677723    training-metric, eer: 0.7954875494875496    training-metric, ap: 0.7940423813803651
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:29<02:04, 16.82it/s]2025-02-24 14:29:50,636 - INFO - Iter: 19430    training-loss, overall: 1512941.125
+2025-02-24 14:29:50,637 - INFO - Iter: 19430    training-metric, acc: 0.6813541666666667    training-metric, auc: 0.5055418156282483    training-metric, eer: 0.78650715950716    training-metric, ap: 0.8038063702876135
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:47<01:46, 16.90it/s]2025-02-24 14:30:08,092 - INFO - ===> Test start!
+2025-02-24 14:30:08,107 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.82it/s]
+2025-02-24 14:30:51,373 - INFO - dataset: FaceForensics++    step: 19722    testing-loss, overall: 1741233.25    :00, 17.15it/s]
+2025-02-24 14:30:51,375 - INFO - dataset: FaceForensics++    step: 19722    testing-metric, acc: 0.6768865813266494    testing-metric, auc: 0.5019291332637423    testing-metric, eer: 0.790084859312193    testing-metric, ap: 0.8001892354658502    testing-metric, video_auc: 0.48987244897959176    testing-metric, acc_real:0.6674854845913354; acc_fake:0.679243170622481
+2025-02-24 14:30:51,377 - INFO - dataset: avg    step: 19722    testing-metric, acc: 0.6768865813266494    testing-metric, auc: 0.5019291332637423    testing-metric, eer: 0.790084859312193    testing-metric, ap: 0.8001892354658502    testing-metric, video_auc: 0.48987244897959176
+2025-02-24 14:30:51,377 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:30<1:08:07,  2.29s/it]2025-02-24 14:30:51,865 - INFO - Iter: 19730    training-loss, overall: 1513115.25
+2025-02-24 14:30:51,866 - INFO - Iter: 19730    training-metric, acc: 0.6754166666666667    training-metric, auc: 0.49703172436567733    training-metric, eer: 0.7935789765789768    training-metric, ap: 0.7978262462958797
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:48<01:32, 16.08it/s]2025-02-24 14:31:09,786 - INFO - Iter: 20030    training-loss, overall: 1489111.5
+2025-02-24 14:31:09,908 - INFO - Iter: 20030    training-metric, acc: 0.6764583333333334    training-metric, auc: 0.499964963844872    training-metric, eer: 0.7939538239538247    training-metric, ap: 0.8010766242249322
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:06<01:10, 16.79it/s]2025-02-24 14:31:27,820 - INFO - Iter: 20330    training-loss, overall: 1485620.75
+2025-02-24 14:31:27,821 - INFO - Iter: 20330    training-metric, acc: 0.6825    training-metric, auc: 0.49344082489401747    training-metric, eer: 0.8094372016872018    training-metric, ap: 0.8049486687989303
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:24<00:52, 16.89it/s]2025-02-24 14:31:45,791 - INFO - Iter: 20630    training-loss, overall: 1456452.875
+2025-02-24 14:31:45,792 - INFO - Iter: 20630    training-metric, acc: 0.68125    training-metric, auc: 0.4932480706074662    training-metric, eer: 0.8109984182484186    training-metric, ap: 0.805245964161099
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:42<00:34, 17.09it/s]2025-02-24 14:32:03,532 - INFO - Iter: 20930    training-loss, overall: 1421386.875
+2025-02-24 14:32:03,534 - INFO - Iter: 20930    training-metric, acc: 0.6813541666666667    training-metric, auc: 0.5071524187725869    training-metric, eer: 0.7829160469160472    training-metric, ap: 0.8026155038635601
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [04:00<00:17, 16.86it/s]2025-02-24 14:32:21,402 - INFO - Iter: 21230    training-loss, overall: 1392725.875
+2025-02-24 14:32:21,404 - INFO - Iter: 21230    training-metric, acc: 0.6817708333333333    training-metric, auc: 0.504545249183129    training-metric, eer: 0.7854982794982798    training-metric, ap: 0.8039641338557467
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:17<00:00, 17.10it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 14:32:38,470 - INFO - ===> Test start!
+2025-02-24 14:32:38,488 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:42<00:00, 16.45it/s]
+2025-02-24 14:33:22,366 - INFO - dataset: FaceForensics++    step: 21515    testing-loss, overall: 1674341.0    0:00, 17.33it/s]
+2025-02-24 14:33:22,370 - INFO - dataset: FaceForensics++    step: 21515    testing-metric, acc: 0.6819443201145824    testing-metric, auc: 0.5009921996116957    testing-metric, eer: 0.8010272443054935    testing-metric, ap: 0.7998884886961768    testing-metric, video_auc: 0.4828316326530612    testing-metric, acc_real:0.6757481018311746; acc_fake:0.6834975369458128
+2025-02-24 14:33:22,371 - INFO - dataset: avg    step: 21515    testing-metric, acc: 0.6819443201145824    testing-metric, auc: 0.5009921996116957    testing-metric, eer: 0.8010272443054935    testing-metric, ap: 0.7998884886961768    testing-metric, video_auc: 0.4828316326530612
+2025-02-24 14:33:22,371 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [05:01<00:00, 11.89it/s]
+2025-02-24 14:33:22,585 - INFO - ===> Epoch[5] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5035684108825212}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5035684108825212, 'dataset_dict': {'FaceForensics++': 0.5035684108825212}})})!
+2025-02-24 14:33:22,586 - INFO - ===> Epoch[6] start!
+2025-02-24 14:33:22,650 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:33:23,556 - INFO - Iter: 21516    training-loss, overall: 1967864.0
+2025-02-24 14:33:23,558 - INFO - Iter: 21516    training-metric, acc: 0.59375    training-metric, auc: 0.41304347826086957    training-metric, eer: 1.0    training-metric, ap: 0.6855590062111802
+  8%|███████▎                                                                                | 299/3586 [00:17<03:15, 16.84it/s]2025-02-24 14:33:41,025 - INFO - Iter: 21816    training-loss, overall: 1363464.875
+2025-02-24 14:33:41,027 - INFO - Iter: 21816    training-metric, acc: 0.6833333333333333    training-metric, auc: 0.5011840489355572    training-metric, eer: 0.7982726162726168    training-metric, ap: 0.8049744303064992
+ 17%|██████████████▋                                                                         | 599/3586 [00:35<02:59, 16.66it/s]2025-02-24 14:33:59,093 - INFO - Iter: 22116    training-loss, overall: 1391874.875
+2025-02-24 14:33:59,094 - INFO - Iter: 22116    training-metric, acc: 0.6863541666666667    training-metric, auc: 0.5038535490070921    training-metric, eer: 0.7977117604617605    training-metric, ap: 0.8067909222216872
+ 25%|██████████████████████                                                                  | 899/3586 [00:53<02:37, 17.01it/s]2025-02-24 14:34:17,065 - INFO - Iter: 22416    training-loss, overall: 1375401.875
+2025-02-24 14:34:17,066 - INFO - Iter: 22416    training-metric, acc: 0.675625    training-metric, auc: 0.49966753249307594    training-metric, eer: 0.7927999500499503    training-metric, ap: 0.7988653503501377
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:11<02:21, 16.92it/s]2025-02-24 14:34:34,768 - INFO - Iter: 22716    training-loss, overall: 1430481.25
+2025-02-24 14:34:34,769 - INFO - Iter: 22716    training-metric, acc: 0.6690625    training-metric, auc: 0.4960302199649192    training-metric, eer: 0.7987491582491583    training-metric, ap: 0.795539068724854
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:29<02:01, 17.20it/s]2025-02-24 14:34:52,612 - INFO - Iter: 23016    training-loss, overall: 1386825.125
+2025-02-24 14:34:52,680 - INFO - Iter: 23016    training-metric, acc: 0.6758333333333333    training-metric, auc: 0.49700740528457155    training-metric, eer: 0.7992706400353463    training-metric, ap: 0.7992224127704517
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:46<01:46, 16.93it/s]2025-02-24 14:35:09,859 - INFO - ===> Test start!
+2025-02-24 14:35:09,875 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.44it/s]
+2025-02-24 14:35:51,148 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 14:35:51,149 - INFO - dataset: FaceForensics++    step: 23308    testing-loss, overall: 1582922.875
+2025-02-24 14:35:51,152 - INFO - dataset: FaceForensics++    step: 23308    testing-metric, acc: 0.6649359949870199    testing-metric, auc: 0.5047471346706304    testing-metric, eer: 0.7626172398392139    testing-metric, ap: 0.8010956042603836    testing-metric, video_auc: 0.5025255102040816    testing-metric, acc_real:0.6574363555158553; acc_fake:0.6668159426780117
+2025-02-24 14:35:51,352 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 6+1792
+2025-02-24 14:35:51,353 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 14:35:51,355 - INFO - dataset: avg    step: 23308    testing-metric, acc: 0.6649359949870199    testing-metric, auc: 0.5047471346706304    testing-metric, eer: 0.7626172398392139    testing-metric, ap: 0.8010956042603836    testing-metric, video_auc: 0.5025255102040816
+2025-02-24 14:35:51,355 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:28<1:05:19,  2.19s/it]2025-02-24 14:35:51,824 - INFO - Iter: 23316    training-loss, overall: 1338920.625
+2025-02-24 14:35:51,825 - INFO - Iter: 23316    training-metric, acc: 0.6839583333333333    training-metric, auc: 0.5109430240369961    training-metric, eer: 0.778052429052429    training-metric, ap: 0.8039485200405304
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:46<01:30, 16.47it/s]2025-02-24 14:36:09,715 - INFO - Iter: 23616    training-loss, overall: 1371873.375
+2025-02-24 14:36:09,717 - INFO - Iter: 23616    training-metric, acc: 0.6708333333333333    training-metric, auc: 0.49120351944993434    training-metric, eer: 0.8066937229437235    training-metric, ap: 0.7958721870350363
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:04<01:09, 17.05it/s]2025-02-24 14:36:27,345 - INFO - Iter: 23916    training-loss, overall: 1317064.625
+2025-02-24 14:36:27,346 - INFO - Iter: 23916    training-metric, acc: 0.6828125    training-metric, auc: 0.5031787450110472    training-metric, eer: 0.7928891293891297    training-metric, ap: 0.8056711583428141
+ 74%|████████████████████████████████████████████████████████████████▎                      | 2653/3586 [03:19<00:54, 17.09it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:22<00:53, 16.67it/s]2025-02-24 14:36:45,263 - INFO - Iter: 24216    training-loss, overall: 1325706.25
+2025-02-24 14:36:45,264 - INFO - Iter: 24216    training-metric, acc: 0.67375    training-metric, auc: 0.4935310209884832    training-metric, eer: 0.808980632893677    training-metric, ap: 0.7973261871306502
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:39<00:34, 17.20it/s]2025-02-24 14:37:02,926 - INFO - Iter: 24516    training-loss, overall: 1263003.625
+2025-02-24 14:37:02,927 - INFO - Iter: 24516    training-metric, acc: 0.6878125    training-metric, auc: 0.5059328090436308    training-metric, eer: 0.7914988437488434    training-metric, ap: 0.8077639830987562
+ 88%|████████████████████████████████████████████████████████████████████████████▎          | 3143/3586 [03:48<00:25, 17.10it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 90%|██████████████████████████████████████████████████████████████████████████████▏        | 3221/3586 [03:52<00:22, 16.56it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [03:57<00:17, 16.85it/s]2025-02-24 14:37:20,466 - INFO - Iter: 24816    training-loss, overall: 1313367.875
+2025-02-24 14:37:20,467 - INFO - Iter: 24816    training-metric, acc: 0.6766666666666666    training-metric, auc: 0.49665429565996383    training-metric, eer: 0.7995872136811737    training-metric, ap: 0.8009204970404258
+ 93%|█████████████████████████████████████████████████████████████████████████████████      | 3341/3586 [03:59<00:14, 16.44it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:14<00:00, 17.73it/s]2025-02-24 14:37:37,457 - INFO - ===> Test start!
+2025-02-24 14:37:37,471 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.16it/s]
+2025-02-24 14:38:19,333 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 14:38:19,334 - INFO - dataset: FaceForensics++    step: 25101    testing-loss, overall: 1555076.625
+2025-02-24 14:38:19,336 - INFO - dataset: FaceForensics++    step: 25101    testing-metric, acc: 0.6391997135439978    testing-metric, auc: 0.5078213021135123    testing-metric, eer: 0.7114783385439929    testing-metric, ap: 0.8020856023656693    testing-metric, video_auc: 0.5099489795918367    testing-metric, acc_real:0.6310853059401519; acc_fake:0.6412337662337663
+2025-02-24 14:38:19,566 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 6+3585
+2025-02-24 14:38:19,568 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 14:38:19,569 - INFO - dataset: avg    step: 25101    testing-metric, acc: 0.6391997135439978    testing-metric, auc: 0.5078213021135123    testing-metric, eer: 0.7114783385439929    testing-metric, ap: 0.8020856023656693    testing-metric, video_auc: 0.5099489795918367
+2025-02-24 14:38:19,570 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:56<00:00, 12.09it/s]
+2025-02-24 14:38:19,777 - INFO - ===> Epoch[6] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5078213021135123}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5078213021135123, 'dataset_dict': {'FaceForensics++': 0.5078213021135123}})})!
+2025-02-24 14:38:19,779 - INFO - ===> Epoch[7] start!
+2025-02-24 14:38:19,843 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:38:20,686 - INFO - Iter: 25102    training-loss, overall: 2223578.25
+2025-02-24 14:38:20,688 - INFO - Iter: 25102    training-metric, acc: 0.65625    training-metric, auc: 0.5318181818181817    training-metric, eer: 0.8    training-metric, ap: 0.7014941077441078
+  8%|███████▎                                                                                | 299/3586 [00:18<03:13, 17.02it/s]2025-02-24 14:38:38,493 - INFO - Iter: 25402    training-loss, overall: 1271614.625
+2025-02-24 14:38:38,495 - INFO - Iter: 25402    training-metric, acc: 0.6840625    training-metric, auc: 0.4985790485791031    training-metric, eer: 0.8017518592518592    training-metric, ap: 0.8053377070963021
+ 17%|██████████████▋                                                                         | 599/3586 [00:37<03:15, 15.30it/s]2025-02-24 14:38:57,549 - INFO - Iter: 25702    training-loss, overall: 1298107.0
+2025-02-24 14:38:57,550 - INFO - Iter: 25702    training-metric, acc: 0.6759375    training-metric, auc: 0.5006788399974369    training-metric, eer: 0.7808658471158474    training-metric, ap: 0.7980863368394184
+ 17%|███████████████▏                                                                        | 617/3586 [00:38<03:16, 15.08it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 19%|████████████████▍                                                                       | 671/3586 [00:41<02:51, 16.96it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 25%|██████████████████████                                                                  | 899/3586 [00:55<02:43, 16.48it/s]2025-02-24 14:39:16,270 - INFO - Iter: 26002    training-loss, overall: 1260787.125
+2025-02-24 14:39:16,271 - INFO - Iter: 26002    training-metric, acc: 0.6851041666666666    training-metric, auc: 0.5032290870831513    training-metric, eer: 0.7969111704849963    training-metric, ap: 0.805558075495727
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:14<02:23, 16.59it/s]2025-02-24 14:39:35,198 - INFO - Iter: 26302    training-loss, overall: 1260589.75
+2025-02-24 14:39:35,199 - INFO - Iter: 26302    training-metric, acc: 0.6816666666666666    training-metric, auc: 0.5071712722197984    training-metric, eer: 0.7846260313760312    training-metric, ap: 0.8044169263249963
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:33<02:12, 15.71it/s]2025-02-24 14:39:53,809 - INFO - Iter: 26602    training-loss, overall: 1254394.0
+2025-02-24 14:39:53,811 - INFO - Iter: 26602    training-metric, acc: 0.6738541666666666    training-metric, auc: 0.49405663885624257    training-metric, eer: 0.797357022607023    training-metric, ap: 0.7985955252262233
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:51<01:49, 16.41it/s]2025-02-24 14:40:12,107 - INFO - ===> Test start!
+2025-02-24 14:40:12,122 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.17it/s]
+2025-02-24 14:40:53,996 - INFO - dataset: FaceForensics++    step: 26894    testing-loss, overall: 1459568.625    00, 17.99it/s]
+2025-02-24 14:40:53,999 - INFO - dataset: FaceForensics++    step: 26894    testing-metric, acc: 0.7156029003670218    testing-metric, auc: 0.5043025568400582    testing-metric, eer: 0.8483698079499776    testing-metric, ap: 0.8009521320833599    testing-metric, video_auc: 0.48403061224489796    testing-metric, acc_real:0.7067887449754354; acc_fake:0.7178123600537394
+2025-02-24 14:40:54,000 - INFO - dataset: avg    step: 26894    testing-metric, acc: 0.7156029003670218    testing-metric, auc: 0.5043025568400582    testing-metric, eer: 0.8483698079499776    testing-metric, ap: 0.8009521320833599    testing-metric, video_auc: 0.48403061224489796
+2025-02-24 14:40:54,001 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:34<1:06:26,  2.23s/it]2025-02-24 14:40:54,642 - INFO - Iter: 26902    training-loss, overall: 1221373.5
+2025-02-24 14:40:54,645 - INFO - Iter: 26902    training-metric, acc: 0.6859375    training-metric, auc: 0.5020552891486683    training-metric, eer: 0.7999577922077928    training-metric, ap: 0.8072953654968115
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:53<01:33, 15.98it/s]2025-02-24 14:41:13,557 - INFO - Iter: 27202    training-loss, overall: 1218950.75
+2025-02-24 14:41:13,558 - INFO - Iter: 27202    training-metric, acc: 0.6844791666666666    training-metric, auc: 0.4944196542467955    training-metric, eer: 0.8105513468013469    training-metric, ap: 0.8050012582995708
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:11<01:13, 16.24it/s]2025-02-24 14:41:32,283 - INFO - Iter: 27502    training-loss, overall: 1182858.75
+2025-02-24 14:41:32,284 - INFO - Iter: 27502    training-metric, acc: 0.6838541666666667    training-metric, auc: 0.4997661040403379    training-metric, eer: 0.7995729918229916    training-metric, ap: 0.8060197221444363
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:29<00:51, 17.14it/s]2025-02-24 14:41:50,026 - INFO - Iter: 27802    training-loss, overall: 1205424.5
+2025-02-24 14:41:50,027 - INFO - Iter: 27802    training-metric, acc: 0.6820833333333334    training-metric, auc: 0.504143931839245    training-metric, eer: 0.7850532338032342    training-metric, ap: 0.8044223783405918
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:47<00:35, 16.53it/s]2025-02-24 14:42:08,303 - INFO - Iter: 28102    training-loss, overall: 1223415.375
+2025-02-24 14:42:08,304 - INFO - Iter: 28102    training-metric, acc: 0.6701041666666666    training-metric, auc: 0.49155153950884783    training-metric, eer: 0.8089155474155476    training-metric, ap: 0.7946782883080841
+ 85%|██████████████████████████████████████████████████████████████████████████▎            | 3063/3586 [03:51<00:31, 16.46it/s][34m[1mwandb[0m: [32m[41mERROR[0m Error while calling W&B API: context deadline exceeded (<Response [500]>)
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [04:05<00:16, 17.04it/s]2025-02-24 14:42:26,294 - INFO - Iter: 28402    training-loss, overall: 1244617.0
+2025-02-24 14:42:26,295 - INFO - Iter: 28402    training-metric, acc: 0.6619791666666667    training-metric, auc: 0.4930475261267544    training-metric, eer: 0.7989860602360609    training-metric, ap: 0.7875708382242829
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:23<00:00, 17.78it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 14:42:43,866 - INFO - ===> Test start!
+2025-02-24 14:42:43,880 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.94it/s]
+2025-02-24 14:43:26,399 - INFO - dataset: FaceForensics++    step: 28687    testing-loss, overall: 1397439.25    :00, 17.93it/s]
+2025-02-24 14:43:26,402 - INFO - dataset: FaceForensics++    step: 28687    testing-metric, acc: 0.7156476591173574    testing-metric, auc: 0.5040795428793843    testing-metric, eer: 0.849039749888343    testing-metric, ap: 0.8008803709692408    testing-metric, video_auc: 0.47849489795918365    testing-metric, acc_real:0.7085752568110764; acc_fake:0.7174205105239588
+2025-02-24 14:43:26,403 - INFO - dataset: avg    step: 28687    testing-metric, acc: 0.7156476591173574    testing-metric, auc: 0.5040795428793843    testing-metric, eer: 0.849039749888343    testing-metric, ap: 0.8008803709692408    testing-metric, video_auc: 0.47849489795918365
+2025-02-24 14:43:26,404 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [05:06<00:00, 11.71it/s]
+2025-02-24 14:43:26,576 - INFO - ===> Epoch[7] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5078213021135123}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5078213021135123, 'dataset_dict': {'FaceForensics++': 0.5078213021135123}})})!
+2025-02-24 14:43:26,577 - INFO - ===> Epoch[8] start!
+2025-02-24 14:43:26,639 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:43:27,450 - INFO - Iter: 28688    training-loss, overall: 1014679.5625
+2025-02-24 14:43:27,451 - INFO - Iter: 28688    training-metric, acc: 0.71875    training-metric, auc: 0.4423076923076923    training-metric, eer: 1.0    training-metric, ap: 0.7953415119363395
+  8%|███████▎                                                                                | 299/3586 [00:17<03:11, 17.18it/s]2025-02-24 14:43:44,969 - INFO - Iter: 28988    training-loss, overall: 1152816.875
+2025-02-24 14:43:44,971 - INFO - Iter: 28988    training-metric, acc: 0.6858333333333333    training-metric, auc: 0.5139165461131577    training-metric, eer: 0.767606421356422    training-metric, ap: 0.8034996225622124
+ 17%|██████████████▋                                                                         | 599/3586 [00:35<02:55, 17.00it/s]2025-02-24 14:44:02,565 - INFO - Iter: 29288    training-loss, overall: 1149056.0
+2025-02-24 14:44:02,566 - INFO - Iter: 29288    training-metric, acc: 0.6778125    training-metric, auc: 0.504624066767661    training-metric, eer: 0.7867097717097717    training-metric, ap: 0.8004802817134286
+ 25%|██████████████████████                                                                  | 899/3586 [00:52<02:35, 17.33it/s]2025-02-24 14:44:20,078 - INFO - Iter: 29588    training-loss, overall: 1183651.25
+2025-02-24 14:44:20,079 - INFO - Iter: 29588    training-metric, acc: 0.6777083333333334    training-metric, auc: 0.49740680220614536    training-metric, eer: 0.8002709882709882    training-metric, ap: 0.800486336916045
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:10<02:22, 16.80it/s]2025-02-24 14:44:37,901 - INFO - Iter: 29888    training-loss, overall: 1195419.75
+2025-02-24 14:44:37,903 - INFO - Iter: 29888    training-metric, acc: 0.676875    training-metric, auc: 0.4993067510801838    training-metric, eer: 0.7935708735708737    training-metric, ap: 0.8007886181581896
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:28<02:05, 16.62it/s]2025-02-24 14:44:56,051 - INFO - Iter: 30188    training-loss, overall: 1139399.625
+2025-02-24 14:44:56,053 - INFO - Iter: 30188    training-metric, acc: 0.6815625    training-metric, auc: 0.4890894079189851    training-metric, eer: 0.8187319624819631    training-metric, ap: 0.8056891117060971
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:46<01:44, 17.17it/s]2025-02-24 14:45:13,443 - INFO - ===> Test start!
+2025-02-24 14:45:13,458 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.76it/s]
+2025-02-24 14:45:56,485 - INFO - dataset: FaceForensics++    step: 30480    testing-loss, overall: 1320616.5    0:00, 18.16it/s]
+2025-02-24 14:45:56,488 - INFO - dataset: FaceForensics++    step: 30480    testing-metric, acc: 0.6765285113239639    testing-metric, auc: 0.5037132449491338    testing-metric, eer: 0.7847253238052702    testing-metric, ap: 0.8007627081944813    testing-metric, video_auc: 0.4984438775510204    testing-metric, acc_real:0.6663689146940599; acc_fake:0.6790752351097179
+2025-02-24 14:45:56,490 - INFO - dataset: avg    step: 30480    testing-metric, acc: 0.6765285113239639    testing-metric, auc: 0.5037132449491338    testing-metric, eer: 0.7847253238052702    testing-metric, ap: 0.8007627081944813    testing-metric, video_auc: 0.4984438775510204
+2025-02-24 14:45:56,490 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:29<1:07:44,  2.27s/it]2025-02-24 14:45:56,980 - INFO - Iter: 30488    training-loss, overall: 1149546.0
+2025-02-24 14:45:56,981 - INFO - Iter: 30488    training-metric, acc: 0.6755208333333333    training-metric, auc: 0.49494228167165727    training-metric, eer: 0.8061807544307551    training-metric, ap: 0.7997981056000554
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:48<01:29, 16.54it/s]2025-02-24 14:46:15,305 - INFO - Iter: 30788    training-loss, overall: 1183009.25
+2025-02-24 14:46:15,307 - INFO - Iter: 30788    training-metric, acc: 0.6786458333333333    training-metric, auc: 0.5000902593709654    training-metric, eer: 0.7961009823509827    training-metric, ap: 0.8006786673071833
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:05<01:09, 17.04it/s]2025-02-24 14:46:33,095 - INFO - Iter: 31088    training-loss, overall: 1105978.375
+2025-02-24 14:46:33,097 - INFO - Iter: 31088    training-metric, acc: 0.679375    training-metric, auc: 0.49415248529294276    training-metric, eer: 0.8098380415880417    training-metric, ap: 0.8029387368382427
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:24<00:54, 16.22it/s]2025-02-24 14:46:51,130 - INFO - Iter: 31388    training-loss, overall: 1100819.75
+2025-02-24 14:46:51,132 - INFO - Iter: 31388    training-metric, acc: 0.6754166666666667    training-metric, auc: 0.4976035940519761    training-metric, eer: 0.7990452325452327    training-metric, ap: 0.7997152403840428
+ 77%|██████████████████████████████████████████████████████████████████▋                    | 2751/3586 [03:27<00:49, 16.80it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:42<00:35, 16.74it/s]2025-02-24 14:47:09,322 - INFO - Iter: 31688    training-loss, overall: 1079146.875
+2025-02-24 14:47:09,325 - INFO - Iter: 31688    training-metric, acc: 0.6871875    training-metric, auc: 0.5030568923117799    training-metric, eer: 0.7952732607414882    training-metric, ap: 0.807013377073909
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [04:00<00:17, 16.49it/s]2025-02-24 14:47:27,499 - INFO - Iter: 31988    training-loss, overall: 1185179.625
+2025-02-24 14:47:27,500 - INFO - Iter: 31988    training-metric, acc: 0.6690625    training-metric, auc: 0.4960215688234885    training-metric, eer: 0.7969236134236136    training-metric, ap: 0.7937951611784303
+ 92%|████████████████████████████████████████████████████████████████████████████████▍      | 3317/3586 [04:01<00:15, 16.82it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 97%|████████████████████████████████████████████████████████████████████████████████████▋  | 3491/3586 [04:11<00:05, 17.19it/s][34m[1mwandb[0m: [32m[41mERROR[0m Error while calling W&B API: context deadline exceeded (<Response [500]>)
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:17<00:00, 17.70it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 14:47:44,497 - INFO - ===> Test start!
+2025-02-24 14:47:44,511 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.13it/s]
+2025-02-24 14:48:26,316 - INFO - dataset: FaceForensics++    step: 32273    testing-loss, overall: 1284459.75    :00, 17.97it/s]
+2025-02-24 14:48:26,319 - INFO - dataset: FaceForensics++    step: 32273    testing-metric, acc: 0.6456449735923373    testing-metric, auc: 0.5064889437078761    testing-metric, eer: 0.7257704332291202    testing-metric, ap: 0.8016574703515001    testing-metric, video_auc: 0.5093112244897959    testing-metric, acc_real:0.6422510049129075; acc_fake:0.6464957456336766
+2025-02-24 14:48:26,321 - INFO - dataset: avg    step: 32273    testing-metric, acc: 0.6456449735923373    testing-metric, auc: 0.5064889437078761    testing-metric, eer: 0.7257704332291202    testing-metric, ap: 0.8016574703515001    testing-metric, video_auc: 0.5093112244897959
+2025-02-24 14:48:26,321 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:59<00:00, 11.97it/s]
+2025-02-24 14:48:26,518 - INFO - ===> Epoch[8] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5078213021135123}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5078213021135123, 'dataset_dict': {'FaceForensics++': 0.5078213021135123}})})!
+2025-02-24 14:48:26,519 - INFO - ===> Epoch[9] start!
+2025-02-24 14:48:26,583 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:48:27,430 - INFO - Iter: 32274    training-loss, overall: 1711377.125
+2025-02-24 14:48:27,432 - INFO - Iter: 32274    training-metric, acc: 0.625    training-metric, auc: 0.5333333333333333    training-metric, eer: 0.6    training-metric, ap: 0.8526785714285714
+  8%|███████▎                                                                                | 299/3586 [00:18<03:20, 16.38it/s]2025-02-24 14:48:45,806 - INFO - Iter: 32574    training-loss, overall: 1097704.5
+2025-02-24 14:48:45,808 - INFO - Iter: 32574    training-metric, acc: 0.6819791666666667    training-metric, auc: 0.5032890293046574    training-metric, eer: 0.7901784234284238    training-metric, ap: 0.8027710038518455
+ 17%|██████████████▋                                                                         | 599/3586 [00:36<02:53, 17.17it/s]2025-02-24 14:49:03,528 - INFO - Iter: 32874    training-loss, overall: 1103677.75
+2025-02-24 14:49:03,530 - INFO - Iter: 32874    training-metric, acc: 0.6797916666666667    training-metric, auc: 0.4952305570984849    training-metric, eer: 0.8043463203463207    training-metric, ap: 0.8026301038751696
+ 25%|██████████████████████                                                                  | 899/3586 [00:53<02:33, 17.46it/s]2025-02-24 14:49:20,894 - INFO - Iter: 33174    training-loss, overall: 1113250.75
+2025-02-24 14:49:20,895 - INFO - Iter: 33174    training-metric, acc: 0.6751041666666666    training-metric, auc: 0.507281581196017    training-metric, eer: 0.7785654160654161    training-metric, ap: 0.7988581263379608
+ 28%|████████████████████████▍                                                               | 995/3586 [00:59<02:27, 17.53it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:11<02:17, 17.38it/s]2025-02-24 14:49:38,348 - INFO - Iter: 33474    training-loss, overall: 1056698.125
+2025-02-24 14:49:38,349 - INFO - Iter: 33474    training-metric, acc: 0.6821875    training-metric, auc: 0.5015910259365217    training-metric, eer: 0.7865969779013265    training-metric, ap: 0.8041140843529401
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:28<01:57, 17.78it/s]2025-02-24 14:49:55,483 - INFO - Iter: 33774    training-loss, overall: 1094045.5
+2025-02-24 14:49:55,484 - INFO - Iter: 33774    training-metric, acc: 0.6733333333333333    training-metric, auc: 0.5043724166523349    training-metric, eer: 0.7849206724647901    training-metric, ap: 0.7962782868281021
+ 48%|█████████████████████████████████████████▋                                             | 1719/3586 [01:40<01:47, 17.43it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:45<01:47, 16.66it/s]2025-02-24 14:50:12,290 - INFO - ===> Test start!
+2025-02-24 14:50:12,306 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.99it/s]
+2025-02-24 14:50:54,465 - INFO - dataset: FaceForensics++    step: 34066    testing-loss, overall: 1212478.875    00, 17.94it/s]
+2025-02-24 14:50:54,468 - INFO - dataset: FaceForensics++    step: 34066    testing-metric, acc: 0.6935368364515263    testing-metric, auc: 0.5038679483835687    testing-metric, eer: 0.8126395712371595    testing-metric, ap: 0.8008107980793532    testing-metric, video_auc: 0.4954591836734694    testing-metric, acc_real:0.6871371147833855; acc_fake:0.695141065830721
+2025-02-24 14:50:54,469 - INFO - dataset: avg    step: 34066    testing-metric, acc: 0.6935368364515263    testing-metric, auc: 0.5038679483835687    testing-metric, eer: 0.8126395712371595    testing-metric, ap: 0.8008107980793532    testing-metric, video_auc: 0.4954591836734694
+2025-02-24 14:50:54,469 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:27<1:06:25,  2.23s/it]2025-02-24 14:50:54,951 - INFO - Iter: 34074    training-loss, overall: 1052470.75
+2025-02-24 14:50:54,952 - INFO - Iter: 34074    training-metric, acc: 0.6828125    training-metric, auc: 0.4961534650099323    training-metric, eer: 0.8065677486000131    training-metric, ap: 0.8048264881117734
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:45<01:28, 16.72it/s]2025-02-24 14:51:12,737 - INFO - Iter: 34374    training-loss, overall: 1078215.5
+2025-02-24 14:51:12,738 - INFO - Iter: 34374    training-metric, acc: 0.6745833333333333    training-metric, auc: 0.505194100389403    training-metric, eer: 0.7833152958152961    training-metric, ap: 0.7965415898748812
+ 64%|███████████████████████████████████████████████████████▉                               | 2305/3586 [02:58<01:18, 16.35it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:03<01:13, 16.20it/s]2025-02-24 14:51:30,973 - INFO - Iter: 34674    training-loss, overall: 1065728.5
+2025-02-24 14:51:30,975 - INFO - Iter: 34674    training-metric, acc: 0.6734375    training-metric, auc: 0.4955304725446693    training-metric, eer: 0.7994928705631047    training-metric, ap: 0.7977193766372752
+ 71%|█████████████████████████████████████████████████████████████▉                         | 2551/3586 [03:13<01:04, 16.10it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:22<00:53, 16.45it/s]2025-02-24 14:51:49,619 - INFO - Iter: 34974    training-loss, overall: 1038739.75
+2025-02-24 14:51:49,621 - INFO - Iter: 34974    training-metric, acc: 0.6820833333333334    training-metric, auc: 0.5036014887281479    training-metric, eer: 0.7873884569536747    training-metric, ap: 0.803205424888983
+ 76%|█████████████████████████████████████████████████████████████████▉                     | 2717/3586 [03:23<00:53, 16.37it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 78%|████████████████████████████████████████████████████████████████████                   | 2803/3586 [03:28<00:47, 16.63it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:40<00:37, 15.76it/s]2025-02-24 14:52:08,129 - INFO - Iter: 35274    training-loss, overall: 1064311.125
+2025-02-24 14:52:08,131 - INFO - Iter: 35274    training-metric, acc: 0.6723958333333333    training-metric, auc: 0.48907533368989314    training-metric, eer: 0.8140561433346672    training-metric, ap: 0.7972983117847959
+ 90%|██████████████████████████████████████████████████████████████████████████████▏        | 3223/3586 [03:54<00:21, 16.68it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [03:59<00:17, 16.87it/s]2025-02-24 14:52:26,557 - INFO - Iter: 35574    training-loss, overall: 1034944.5625
+2025-02-24 14:52:26,559 - INFO - Iter: 35574    training-metric, acc: 0.6878125    training-metric, auc: 0.4990341689920411    training-metric, eer: 0.8016590247359485    training-metric, ap: 0.8108924616249413
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:16<00:00, 17.66it/s]2025-02-24 14:52:43,594 - INFO - ===> Test start!
+2025-02-24 14:52:43,607 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.67it/s]
+2025-02-24 14:53:26,608 - INFO - dataset: FaceForensics++    step: 35859    testing-loss, overall: 1166849.5    0:00, 17.83it/s]
+2025-02-24 14:53:26,611 - INFO - dataset: FaceForensics++    step: 35859    testing-metric, acc: 0.6699042162742816    testing-metric, auc: 0.5052666921949314    testing-metric, eer: 0.7695399732023225    testing-metric, ap: 0.8012609954971734    testing-metric, video_auc: 0.5062244897959184    testing-metric, acc_real:0.6632425189816883; acc_fake:0.6715741155396328
+2025-02-24 14:53:26,702 - INFO - dataset: avg    step: 35859    testing-metric, acc: 0.6699042162742816    testing-metric, auc: 0.5052666921949314    testing-metric, eer: 0.7695399732023225    testing-metric, ap: 0.8012609954971734    testing-metric, video_auc: 0.5062244897959184
+2025-02-24 14:53:26,703 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:59<00:00, 11.96it/s]
+2025-02-24 14:53:26,870 - INFO - ===> Epoch[9] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5078213021135123}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5078213021135123, 'dataset_dict': {'FaceForensics++': 0.5078213021135123}})})!
+2025-02-24 14:53:26,870 - INFO - ===> Epoch[10] start!
+2025-02-24 14:53:26,935 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:53:27,553 - INFO - Iter: 35860    training-loss, overall: 732402.25
+2025-02-24 14:53:27,555 - INFO - Iter: 35860    training-metric, acc: 0.78125    training-metric, auc: 0.6772727272727272    training-metric, eer: 0.6    training-metric, ap: 0.7736742424242424
+  8%|███████▎                                                                                | 299/3586 [00:17<03:12, 17.07it/s]2025-02-24 14:53:45,179 - INFO - Iter: 36160    training-loss, overall: 1045861.4375
+2025-02-24 14:53:45,180 - INFO - Iter: 36160    training-metric, acc: 0.6748958333333334    training-metric, auc: 0.5007184344906942    training-metric, eer: 0.7934977152477156    training-metric, ap: 0.798638934048099
+ 17%|██████████████▋                                                                         | 599/3586 [00:35<02:53, 17.23it/s]2025-02-24 14:54:02,738 - INFO - Iter: 36460    training-loss, overall: 1021241.9375
+2025-02-24 14:54:02,740 - INFO - Iter: 36460    training-metric, acc: 0.6733333333333333    training-metric, auc: 0.49413952724561533    training-metric, eer: 0.8032695730195736    training-metric, ap: 0.7995867304182336
+ 25%|██████████████████████                                                                  | 899/3586 [00:53<02:39, 16.89it/s]2025-02-24 14:54:20,420 - INFO - Iter: 36760    training-loss, overall: 1034159.375
+2025-02-24 14:54:20,421 - INFO - Iter: 36760    training-metric, acc: 0.6758333333333333    training-metric, auc: 0.4946895576199492    training-metric, eer: 0.8074928404928405    training-metric, ap: 0.797984791355095
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:10<02:18, 17.23it/s]2025-02-24 14:54:37,684 - INFO - Iter: 37060    training-loss, overall: 990904.375
+2025-02-24 14:54:37,685 - INFO - Iter: 37060    training-metric, acc: 0.6811458333333333    training-metric, auc: 0.5114189537879296    training-metric, eer: 0.7702314213564213    training-metric, ap: 0.8014916731035663
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:27<02:02, 17.08it/s]2025-02-24 14:54:55,150 - INFO - Iter: 37360    training-loss, overall: 1025416.375
+2025-02-24 14:54:55,151 - INFO - Iter: 37360    training-metric, acc: 0.6823958333333333    training-metric, auc: 0.5079036375871595    training-metric, eer: 0.7782509065009066    training-metric, ap: 0.8014051656962949
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:45<01:51, 16.09it/s]2025-02-24 14:55:12,548 - INFO - ===> Test start!
+2025-02-24 14:55:12,563 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.21it/s]
+2025-02-24 14:55:55,275 - INFO - dataset: FaceForensics++    step: 37652    testing-loss, overall: 1169917.875    00, 17.86it/s]
+2025-02-24 14:55:55,277 - INFO - dataset: FaceForensics++    step: 37652    testing-metric, acc: 0.6281443022110823    testing-metric, auc: 0.5071749616525995    testing-metric, eer: 0.6947297900848594    testing-metric, ap: 0.8018793665461665    testing-metric, video_auc: 0.5106377551020408    testing-metric, acc_real:0.6199196069673961; acc_fake:0.630206000895656
+2025-02-24 14:55:55,278 - INFO - dataset: avg    step: 37652    testing-metric, acc: 0.6281443022110823    testing-metric, auc: 0.5071749616525995    testing-metric, eer: 0.6947297900848594    testing-metric, ap: 0.8018793665461665    testing-metric, video_auc: 0.5106377551020408
+2025-02-24 14:55:55,279 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:28<1:07:19,  2.26s/it]2025-02-24 14:55:55,778 - INFO - Iter: 37660    training-loss, overall: 1002009.0625
+2025-02-24 14:55:55,779 - INFO - Iter: 37660    training-metric, acc: 0.6758333333333333    training-metric, auc: 0.5045397022347106    training-metric, eer: 0.7851192141192145    training-metric, ap: 0.7990081846646796
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:46<01:27, 16.99it/s]2025-02-24 14:56:13,642 - INFO - Iter: 37960    training-loss, overall: 1017686.4375
+2025-02-24 14:56:13,643 - INFO - Iter: 37960    training-metric, acc: 0.6805208333333334    training-metric, auc: 0.4997116993378822    training-metric, eer: 0.7934014041514044    training-metric, ap: 0.8056285508463172
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:04<01:11, 16.64it/s]2025-02-24 14:56:31,661 - INFO - Iter: 38260    training-loss, overall: 1016035.5625
+2025-02-24 14:56:31,663 - INFO - Iter: 38260    training-metric, acc: 0.6766666666666666    training-metric, auc: 0.5066431617349665    training-metric, eer: 0.7822907092907094    training-metric, ap: 0.8005667397001404
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:22<00:52, 17.05it/s]2025-02-24 14:56:49,460 - INFO - Iter: 38560    training-loss, overall: 961458.375
+2025-02-24 14:56:49,461 - INFO - Iter: 38560    training-metric, acc: 0.6822916666666666    training-metric, auc: 0.5000732886524948    training-metric, eer: 0.7970137085137087    training-metric, ap: 0.804718236671547
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:39<00:34, 16.87it/s]2025-02-24 14:57:07,213 - INFO - Iter: 38860    training-loss, overall: 996109.6875
+2025-02-24 14:57:07,214 - INFO - Iter: 38860    training-metric, acc: 0.6766666666666666    training-metric, auc: 0.5048046738342277    training-metric, eer: 0.7842707292707296    training-metric, ap: 0.798556585094823
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [03:57<00:16, 17.27it/s]2025-02-24 14:57:25,032 - INFO - Iter: 39160    training-loss, overall: 938930.25
+2025-02-24 14:57:25,034 - INFO - Iter: 39160    training-metric, acc: 0.6895833333333333    training-metric, auc: 0.4955467168795702    training-metric, eer: 0.8138822843822844    training-metric, ap: 0.8109978542223939
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:14<00:00, 17.64it/s]2025-02-24 14:57:41,815 - INFO - ===> Test start!
+2025-02-24 14:57:41,831 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.77it/s]
+2025-02-24 14:58:25,223 - INFO - dataset: FaceForensics++    step: 39445    testing-loss, overall: 1097286.125    00, 17.93it/s]
+2025-02-24 14:58:25,243 - INFO - dataset: FaceForensics++    step: 39445    testing-metric, acc: 0.6684271775132038    testing-metric, auc: 0.505849178658584    testing-metric, eer: 0.7655203215721305    testing-metric, ap: 0.8014487595582037    testing-metric, video_auc: 0.5043367346938776    testing-metric, acc_real:0.6623492630638678; acc_fake:0.6699507389162561
+2025-02-24 14:58:25,243 - INFO - dataset: avg    step: 39445    testing-metric, acc: 0.6684271775132038    testing-metric, auc: 0.505849178658584    testing-metric, eer: 0.7655203215721305    testing-metric, ap: 0.8014487595582037    testing-metric, video_auc: 0.5043367346938776
+2025-02-24 14:58:25,244 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:58<00:00, 12.03it/s]
+2025-02-24 14:58:25,336 - INFO - ===> Epoch[10] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5078213021135123}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5078213021135123, 'dataset_dict': {'FaceForensics++': 0.5078213021135123}})})!
+2025-02-24 14:58:25,336 - INFO - ===> Epoch[11] start!
+2025-02-24 14:58:25,395 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 14:58:26,180 - INFO - Iter: 39446    training-loss, overall: 1737079.375
+2025-02-24 14:58:26,182 - INFO - Iter: 39446    training-metric, acc: 0.6875    training-metric, auc: 0.5    training-metric, eer: 0.875    training-metric, ap: 0.75
+  8%|███████▎                                                                                | 299/3586 [00:17<03:09, 17.31it/s]2025-02-24 14:58:43,552 - INFO - Iter: 39746    training-loss, overall: 989985.0
+2025-02-24 14:58:43,554 - INFO - Iter: 39746    training-metric, acc: 0.6788541666666666    training-metric, auc: 0.49682615848933315    training-metric, eer: 0.8042478817478823    training-metric, ap: 0.8008875478821498
+ 17%|██████████████▋                                                                         | 599/3586 [00:35<02:55, 17.00it/s]2025-02-24 14:59:00,982 - INFO - Iter: 40046    training-loss, overall: 995597.875
+2025-02-24 14:59:00,984 - INFO - Iter: 40046    training-metric, acc: 0.6721875    training-metric, auc: 0.5060916707991197    training-metric, eer: 0.7747617845117846    training-metric, ap: 0.7969410208792824
+ 21%|██████████████████▊                                                                     | 765/3586 [00:44<02:53, 16.23it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 25%|██████████████████████                                                                  | 899/3586 [00:52<02:36, 17.17it/s]2025-02-24 14:59:18,554 - INFO - Iter: 40346    training-loss, overall: 955588.9375
+2025-02-24 14:59:18,556 - INFO - Iter: 40346    training-metric, acc: 0.6784375    training-metric, auc: 0.4973468766859732    training-metric, eer: 0.8052914476827526    training-metric, ap: 0.8023192473661184
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:10<02:18, 17.19it/s]2025-02-24 14:59:36,075 - INFO - Iter: 40646    training-loss, overall: 976506.6875
+2025-02-24 14:59:36,076 - INFO - Iter: 40646    training-metric, acc: 0.6746875    training-metric, auc: 0.4911876152217113    training-metric, eer: 0.8131795334295338    training-metric, ap: 0.7985785944828494
+ 40%|███████████████████████████████████▏                                                   | 1449/3586 [01:24<02:07, 16.77it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:27<02:02, 17.03it/s]2025-02-24 14:59:53,663 - INFO - Iter: 40946    training-loss, overall: 965393.75
+2025-02-24 14:59:53,664 - INFO - Iter: 40946    training-metric, acc: 0.675625    training-metric, auc: 0.4962639419137155    training-metric, eer: 0.7987992683644857    training-metric, ap: 0.7993944812600527
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:44<01:45, 17.00it/s]2025-02-24 15:00:10,783 - INFO - ===> Test start!
+2025-02-24 15:00:10,799 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:39<00:00, 17.52it/s]
+2025-02-24 15:00:51,825 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/metric_dict_best.pickle
+2025-02-24 15:00:51,827 - INFO - dataset: FaceForensics++    step: 41238    testing-loss, overall: 1087622.625
+2025-02-24 15:00:51,829 - INFO - dataset: FaceForensics++    step: 41238    testing-metric, acc: 0.6366037060245278    testing-metric, auc: 0.5084488788998192    testing-metric, eer: 0.7054488610987047    testing-metric, ap: 0.8022910671237953    testing-metric, video_auc: 0.5151275510204081    testing-metric, acc_real:0.6337650736936132; acc_fake:0.6373152709359606
+2025-02-24 15:00:52,060 - INFO - Checkpoint saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/ckpt_best.pth, current ckpt is 11+1792
+2025-02-24 15:00:52,061 - INFO - Metrics saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/avg/metric_dict_best.pickle
+2025-02-24 15:00:52,063 - INFO - dataset: avg    step: 41238    testing-metric, acc: 0.6366037060245278    testing-metric, auc: 0.5084488788998192    testing-metric, eer: 0.7054488610987047    testing-metric, ap: 0.8022910671237953    testing-metric, video_auc: 0.5151275510204081
+2025-02-24 15:00:52,063 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:26<1:05:00,  2.18s/it]2025-02-24 15:00:52,534 - INFO - Iter: 41246    training-loss, overall: 962310.3125
+2025-02-24 15:00:52,535 - INFO - Iter: 41246    training-metric, acc: 0.6778125    training-metric, auc: 0.5052684209605284    training-metric, eer: 0.7773382635882637    training-metric, ap: 0.7999744929227277
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:44<01:27, 17.08it/s]2025-02-24 15:01:10,087 - INFO - Iter: 41546    training-loss, overall: 943940.1875
+2025-02-24 15:01:10,088 - INFO - Iter: 41546    training-metric, acc: 0.6788541666666666    training-metric, auc: 0.49549748238176156    training-metric, eer: 0.8081401468901476    training-metric, ap: 0.8015995820667408
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:01<01:09, 17.01it/s]2025-02-24 15:01:27,793 - INFO - Iter: 41846    training-loss, overall: 914401.8125
+2025-02-24 15:01:27,794 - INFO - Iter: 41846    training-metric, acc: 0.6801041666666666    training-metric, auc: 0.5139243439701597    training-metric, eer: 0.7696347726347724    training-metric, ap: 0.8010829994563311
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:19<00:52, 17.02it/s]2025-02-24 15:01:45,435 - INFO - Iter: 42146    training-loss, overall: 952431.0625
+2025-02-24 15:01:45,436 - INFO - Iter: 42146    training-metric, acc: 0.6811458333333333    training-metric, auc: 0.5090526509804643    training-metric, eer: 0.7815945535945535    training-metric, ap: 0.8001314437844087
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:37<00:35, 16.76it/s]2025-02-24 15:02:03,109 - INFO - Iter: 42446    training-loss, overall: 924029.125
+2025-02-24 15:02:03,110 - INFO - Iter: 42446    training-metric, acc: 0.6780208333333333    training-metric, auc: 0.4937097671854375    training-metric, eer: 0.8059806397306404    training-metric, ap: 0.8034405083006738
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [03:55<00:17, 16.70it/s]2025-02-24 15:02:20,992 - INFO - Iter: 42746    training-loss, overall: 906383.1875
+2025-02-24 15:02:20,993 - INFO - Iter: 42746    training-metric, acc: 0.680625    training-metric, auc: 0.5005333808775393    training-metric, eer: 0.79785915010915    training-metric, ap: 0.8035798107229569
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:12<00:00, 17.35it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 15:02:37,917 - INFO - ===> Test start!
+2025-02-24 15:02:37,934 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:40<00:00, 17.13it/s]
+2025-02-24 15:03:19,955 - INFO - dataset: FaceForensics++    step: 43031    testing-loss, overall: 1136963.75    :00, 17.67it/s]
+2025-02-24 15:03:19,958 - INFO - dataset: FaceForensics++    step: 43031    testing-metric, acc: 0.591576403186823    testing-metric, auc: 0.5059776867031877    testing-metric, eer: 0.6368914694059848    testing-metric, ap: 0.8014933576070208    testing-metric, video_auc: 0.5121173469387756    testing-metric, acc_real:0.5879857079053149; acc_fake:0.5924764890282131
+2025-02-24 15:03:19,960 - INFO - dataset: avg    step: 43031    testing-metric, acc: 0.591576403186823    testing-metric, auc: 0.5059776867031877    testing-metric, eer: 0.6368914694059848    testing-metric, ap: 0.8014933576070208    testing-metric, video_auc: 0.5121173469387756
+2025-02-24 15:03:19,960 - INFO - ===> Test Done!
+100%|███████████████████████████████████████████████████████████████████████████████████████| 3586/3586 [04:54<00:00, 12.18it/s]
+2025-02-24 15:03:20,156 - INFO - ===> Epoch[11] end with testing auc: defaultdict(<function Trainer.__init__.<locals>.<lambda> at 0x14e5416e7820>, {'FaceForensics++': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34c3a0>, {'auc': 0.5084488788998192}), 'avg': defaultdict(<function Trainer.__init__.<locals>.<lambda>.<locals>.<lambda> at 0x14e53c34cca0>, {'auc': 0.5084488788998192, 'dataset_dict': {'FaceForensics++': 0.5084488788998192}})})!
+2025-02-24 15:03:20,156 - INFO - ===> Epoch[12] start!
+2025-02-24 15:03:20,229 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/train/FaceForensics++/data_dict_train.pickle
+  0%|                                                                                                  | 0/3586 [00:00<?, ?it/s]2025-02-24 15:03:21,135 - INFO - Iter: 43032    training-loss, overall: 1002225.0625
+2025-02-24 15:03:21,137 - INFO - Iter: 43032    training-metric, acc: 0.65625    training-metric, auc: 0.3620689655172414    training-metric, eer: 1.0    training-metric, ap: 0.8836206896551724
+  8%|███████▎                                                                                | 299/3586 [00:18<03:19, 16.49it/s]2025-02-24 15:03:39,465 - INFO - Iter: 43332    training-loss, overall: 915968.5625
+2025-02-24 15:03:39,466 - INFO - Iter: 43332    training-metric, acc: 0.678125    training-metric, auc: 0.49845298379195396    training-metric, eer: 0.8011072261072262    training-metric, ap: 0.8018876160129373
+ 17%|██████████████▋                                                                         | 599/3586 [00:37<03:04, 16.17it/s]2025-02-24 15:03:57,960 - INFO - Iter: 43632    training-loss, overall: 929924.625
+2025-02-24 15:03:57,962 - INFO - Iter: 43632    training-metric, acc: 0.6777083333333334    training-metric, auc: 0.508634893878432    training-metric, eer: 0.7757807470307476    training-metric, ap: 0.7993123768994111
+ 25%|██████████████████████                                                                  | 899/3586 [00:55<02:50, 15.72it/s]2025-02-24 15:04:16,145 - INFO - Iter: 43932    training-loss, overall: 967809.1875
+2025-02-24 15:04:16,147 - INFO - Iter: 43932    training-metric, acc: 0.6641666666666667    training-metric, auc: 0.4830477606515042    training-metric, eer: 0.8169247419247418    training-metric, ap: 0.7922233980847335
+ 33%|█████████████████████████████                                                          | 1199/3586 [01:13<02:25, 16.35it/s]2025-02-24 15:04:34,671 - INFO - Iter: 44232    training-loss, overall: 906675.875
+2025-02-24 15:04:34,672 - INFO - Iter: 44232    training-metric, acc: 0.6796875    training-metric, auc: 0.5118983908277162    training-metric, eer: 0.774120018870019    training-metric, ap: 0.7988536951523026
+ 35%|██████████████████████████████▏                                                        | 1243/3586 [01:16<02:22, 16.40it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 42%|████████████████████████████████████▎                                                  | 1499/3586 [01:32<02:07, 16.36it/s]2025-02-24 15:04:53,178 - INFO - Iter: 44532    training-loss, overall: 942890.25
+2025-02-24 15:04:53,179 - INFO - Iter: 44532    training-metric, acc: 0.6727083333333334    training-metric, auc: 0.489676399541296    training-metric, eer: 0.8141101466352305    training-metric, ap: 0.7996426868391291
+ 50%|███████████████████████████████████████████▍                                           | 1791/3586 [01:50<01:49, 16.36it/s]2025-02-24 15:05:10,968 - INFO - ===> Test start!
+2025-02-24 15:05:10,985 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+100%|█████████████████████████████████████████████████████████████████████████████████████████| 699/699 [00:41<00:00, 16.80it/s]
+2025-02-24 15:05:54,043 - INFO - dataset: FaceForensics++    step: 44824    testing-loss, overall: 1002121.75    :00, 17.42it/s]
+2025-02-24 15:05:54,046 - INFO - dataset: FaceForensics++    step: 44824    testing-metric, acc: 0.663906543729299    testing-metric, auc: 0.506529746262116    testing-metric, eer: 0.7561411344350156    testing-metric, ap: 0.8016703454449372    testing-metric, video_auc: 0.5077806122448979    testing-metric, acc_real:0.6581062974542207; acc_fake:0.6653605015673981
+2025-02-24 15:05:54,048 - INFO - dataset: avg    step: 44824    testing-metric, acc: 0.663906543729299    testing-metric, auc: 0.506529746262116    testing-metric, eer: 0.7561411344350156    testing-metric, ap: 0.8016703454449372    testing-metric, video_auc: 0.5077806122448979
+2025-02-24 15:05:54,048 - INFO - ===> Test Done!
+ 50%|██████████████████████████████████████████▋                                          | 1799/3586 [02:33<1:07:52,  2.28s/it]2025-02-24 15:05:54,554 - INFO - Iter: 44832    training-loss, overall: 892807.25
+2025-02-24 15:05:54,556 - INFO - Iter: 44832    training-metric, acc: 0.6801041666666666    training-metric, auc: 0.4994360701193784    training-metric, eer: 0.7965229677729679    training-metric, ap: 0.8013088926488859
+ 59%|██████████████████████████████████████████████████▉                                    | 2099/3586 [02:52<01:27, 16.96it/s]2025-02-24 15:06:12,985 - INFO - Iter: 45132    training-loss, overall: 878995.0625
+2025-02-24 15:06:12,986 - INFO - Iter: 45132    training-metric, acc: 0.6847916666666667    training-metric, auc: 0.49841989206847276    training-metric, eer: 0.8063738206238212    training-metric, ap: 0.8068494048343056
+ 59%|███████████████████████████████████████████████████▌                                   | 2125/3586 [02:53<01:26, 16.92it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+ 67%|██████████████████████████████████████████████████████████▏                            | 2399/3586 [03:10<01:09, 17.09it/s]2025-02-24 15:06:31,092 - INFO - Iter: 45432    training-loss, overall: 839396.625
+2025-02-24 15:06:31,094 - INFO - Iter: 45432    training-metric, acc: 0.6889583333333333    training-metric, auc: 0.5064730973486505    training-metric, eer: 0.7901398118789424    training-metric, ap: 0.8073465623341747
+ 75%|█████████████████████████████████████████████████████████████████▍                     | 2699/3586 [03:28<00:55, 15.99it/s]2025-02-24 15:06:49,308 - INFO - Iter: 45732    training-loss, overall: 898423.5
+2025-02-24 15:06:49,309 - INFO - Iter: 45732    training-metric, acc: 0.6785416666666667    training-metric, auc: 0.4995039672163076    training-metric, eer: 0.7985565175565177    training-metric, ap: 0.8018766644163571
+ 84%|████████████████████████████████████████████████████████████████████████▊              | 2999/3586 [03:46<00:36, 16.23it/s]2025-02-24 15:07:07,212 - INFO - Iter: 46032    training-loss, overall: 870760.4375
+2025-02-24 15:07:07,214 - INFO - Iter: 46032    training-metric, acc: 0.6907291666666666    training-metric, auc: 0.5117486869237394    training-metric, eer: 0.7831477688977689    training-metric, ap: 0.8091651254107171
+ 92%|████████████████████████████████████████████████████████████████████████████████       | 3299/3586 [04:04<00:16, 17.08it/s]2025-02-24 15:07:25,065 - INFO - Iter: 46332    training-loss, overall: 898287.25
+2025-02-24 15:07:25,066 - INFO - Iter: 46332    training-metric, acc: 0.6779166666666666    training-metric, auc: 0.49322398129562106    training-metric, eer: 0.8087348484848484    training-metric, ap: 0.8006408961095258
+100%|██████████████████████████████████████████████████████████████████████████████████████▉| 3585/3586 [04:20<00:00, 17.49it/s]/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main/lib/python3.9/site-packages/sklearn/metrics/_ranking.py:1179: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+2025-02-24 15:07:41,681 - INFO - ===> Test start!
+2025-02-24 15:07:41,695 - INFO - data_dict saved to ./logs/training/resnet34_bcos_2025-02-24-13-56-34/test/FaceForensics++/data_dict_test.pickle
+
+ 30%|██████████████████████████▌                                                              | 209/699 [00:12<00:28, 17.07it/s]

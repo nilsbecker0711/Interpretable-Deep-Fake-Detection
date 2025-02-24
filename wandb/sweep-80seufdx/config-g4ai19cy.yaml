@@ -1,0 +1,36 @@
+wandb_version: 1
+
+amsgrad:
+  value: false
+batchSize:
+  value: 64
+beta1:
+  value: 0.8693422414109494
+beta2:
+  value: 0.9621846033254228
+eps:
+  value: 7.562096353202533e-06
+freeze:
+  value: false
+log_temperature:
+  value: 5.394351345768367e-10
+lr:
+  value: 0.0003892198903862236
+lr_gamma:
+  value: 0.3546377349585095
+lr_scheduler:
+  value: cosine
+lr_step:
+  value: 7
+manualSeed:
+  value: 1
+momentum:
+  value: 0.8797506278185511
+nEpochs:
+  value: 20
+optimizer:
+  value: adam
+use_data_augmentation:
+  value: false
+weight_decay:
+  value: 0.0008870565397546505
