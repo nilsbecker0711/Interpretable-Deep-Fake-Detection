@@ -117,6 +117,6 @@ class InceptionBcosDetector(AbstractDetector):
         prob = torch.softmax(pred, dim=1)[:, 1]
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
-        print(pred_dict)
+        #print(pred_dict)
         return pred_dict
 
