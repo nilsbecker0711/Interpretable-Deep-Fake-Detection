@@ -39,6 +39,7 @@ class Inception3(nn.Module):
         self.log_temperature: int = inceptionnet_config["log_temperature"]
         self.bias: float = np.log(inceptionnet_config["bias"][0]/inceptionnet_config["bias"][1])
         self.b: float = inceptionnet_config["b"]
+        self.scale: float = inceptionnet_config["scale_fact"]
 
         if inception_blocks is None:
             inception_blocks = [
@@ -51,7 +52,7 @@ class Inception3(nn.Module):
                           ' due to scipy/scipy#11299), please set init_weights=True.', FutureWarning)
             init_weights = True
         assert len(inception_blocks) == 7
-        conv_block = inception_blocks[0]
+        conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=self.b, scale=self.scale, **kwargs)
         inception_a = inception_blocks[1]
         inception_b = inception_blocks[2]
         inception_c = inception_blocks[3]
@@ -60,34 +61,34 @@ class Inception3(nn.Module):
         inception_aux = inception_blocks[6]
         self.aux_logits = aux_logits
         self.transform_input = transform_input
-        self.Conv2d_1a_3x3 = conv_block(6, 32, kernel_size=3, stride=2, b=self.b)
-        self.Conv2d_2a_3x3 = conv_block(32, 32, kernel_size=3, b=self.b)
-        self.Conv2d_2b_3x3 = conv_block(32, 64, kernel_size=3, padding=1, b=self.b)
+        self.Conv2d_1a_3x3 = conv_block(6, 32, kernel_size=3, stride=2)
+        self.Conv2d_2a_3x3 = conv_block(32, 32, kernel_size=3)
+        self.Conv2d_2b_3x3 = conv_block(32, 64, kernel_size=3, padding=1)
         # Diff to torchvision: maxpool -> avgpool
         self.avgpool1 = nn.AvgPool2d(kernel_size=3, stride=2)
         # Diff End
-        self.Conv2d_3b_1x1 = conv_block(64, 80, kernel_size=1, b=self.b)
-        self.Conv2d_4a_3x3 = conv_block(80, 192, kernel_size=3, b=self.b)
+        self.Conv2d_3b_1x1 = conv_block(64, 80, kernel_size=1)
+        self.Conv2d_4a_3x3 = conv_block(80, 192, kernel_size=3)
         # Diff to torchvision: maxpool -> avgpool
         self.avgpool2 = nn.AvgPool2d(kernel_size=3, stride=2)
         # Diff End
-        self.Mixed_5b = inception_a(192, pool_features=32, b=self.b)
-        self.Mixed_5c = inception_a(256, pool_features=64, b=self.b)
-        self.Mixed_5d = inception_a(288, pool_features=64, b=self.b)
-        self.Mixed_6a = inception_b(288, b=self.b)
-        self.Mixed_6b = inception_c(768, channels_7x7=128, b=self.b)
-        self.Mixed_6c = inception_c(768, channels_7x7=160, b=self.b)
-        self.Mixed_6d = inception_c(768, channels_7x7=160, b=self.b)
-        self.Mixed_6e = inception_c(768, channels_7x7=192, b=self.b)
+        self.Mixed_5b = inception_a(192, pool_features=32, b=self.b, scale=self.scale)
+        self.Mixed_5c = inception_a(256, pool_features=64, b=self.b, scale=self.scale)
+        self.Mixed_5d = inception_a(288, pool_features=64, b=self.b, scale=self.scale)
+        self.Mixed_6a = inception_b(288, b=self.b, scale=self.scale)
+        self.Mixed_6b = inception_c(768, channels_7x7=128, b=self.b, scale=self.scale)
+        self.Mixed_6c = inception_c(768, channels_7x7=160, b=self.b, scale=self.scale)
+        self.Mixed_6d = inception_c(768, channels_7x7=160, b=self.b, scale=self.scale)
+        self.Mixed_6e = inception_c(768, channels_7x7=192, b=self.b, scale=self.scale)
         self.AuxLogits: Optional[nn.Module] = None
         if aux_logits:
-            self.AuxLogits = inception_aux(768, num_classes)
-        self.Mixed_7a = inception_d(768, b=self.b)
-        self.Mixed_7b = inception_e(1280, b=self.b)
-        self.Mixed_7c = inception_e(2048, b=self.b)
+            self.AuxLogits = inception_aux(768, num_classes, b=self.b, scale=self.scale)
+        self.Mixed_7a = inception_d(768, b=self.b, scale=self.scale)
+        self.Mixed_7b = inception_e(1280, b=self.b, scale=self.scale)
+        self.Mixed_7c = inception_e(2048, b=self.b, scale=self.scale)
         # self.dropout = nn.Dropout()
         # Diff to torchvision: no avgpool and linear -> BcosConv2d
-        self.fc = BcosConv2d(2048, num_classes, kernel_size=1, stride=1, padding=0, scale_fact=200, b = self.b)
+        self.fc = BcosConv2d(2048, num_classes, kernel_size=1, stride=1, padding=0, scale_fact=self.scale, b = self.b)
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))  # Add global average pooling
         self.flatten = nn.Flatten()                        # Add flatten layer
         self.debug = False
@@ -273,22 +274,23 @@ class InceptionA(nn.Module):
         in_channels: int,
         pool_features: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionA, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.branch1x1 = conv_block(in_channels, 64, kernel_size=1, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)
+        self.branch1x1 = conv_block(in_channels, 64, kernel_size=1)
 
-        self.branch5x5_1 = conv_block(in_channels, 48, kernel_size=1, b=self.b)
-        self.branch5x5_2 = conv_block(48, 64, kernel_size=5, padding=2, b=self.b)
+        self.branch5x5_1 = conv_block(in_channels, 48, kernel_size=1)
+        self.branch5x5_2 = conv_block(48, 64, kernel_size=5, padding=2)
         self.pool = nn.AvgPool2d(kernel_size=3, stride=1, padding=1)
-        self.branch3x3dbl_1 = conv_block(in_channels, 64, kernel_size=1, b=self.b)
-        self.branch3x3dbl_2 = conv_block(64, 96, kernel_size=3, padding=1, b=self.b)
-        self.branch3x3dbl_3 = conv_block(96, 96, kernel_size=3, padding=1, b=self.b)
+        self.branch3x3dbl_1 = conv_block(in_channels, 64, kernel_size=1)
+        self.branch3x3dbl_2 = conv_block(64, 96, kernel_size=3, padding=1)
+        self.branch3x3dbl_3 = conv_block(96, 96, kernel_size=3, padding=1)
 
-        self.branch_pool = conv_block(in_channels, pool_features, kernel_size=1, b=self.b)
+        self.branch_pool = conv_block(in_channels, pool_features, kernel_size=1)
 
     def _forward(self, x: Tensor) -> List[Tensor]:
         branch1x1 = self.branch1x1(x)
@@ -317,18 +319,19 @@ class InceptionB(nn.Module):
         self,
         in_channels: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionB, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.branch3x3 = conv_block(in_channels, 384, kernel_size=3, stride=2, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)        
+        self.branch3x3 = conv_block(in_channels, 384, kernel_size=3, stride=2)
         self.pool = nn.AvgPool2d(kernel_size=3, stride=2)
 
-        self.branch3x3dbl_1 = conv_block(in_channels, 64, kernel_size=1, b=self.b)
-        self.branch3x3dbl_2 = conv_block(64, 96, kernel_size=3, padding=1, b=self.b)
-        self.branch3x3dbl_3 = conv_block(96, 96, kernel_size=3, stride=2, b=self.b)
+        self.branch3x3dbl_1 = conv_block(in_channels, 64, kernel_size=1)
+        self.branch3x3dbl_2 = conv_block(64, 96, kernel_size=3, padding=1)
+        self.branch3x3dbl_3 = conv_block(96, 96, kernel_size=3, stride=2)
 
     def _forward(self, x: Tensor) -> List[Tensor]:
         branch3x3 = self.branch3x3(x)
@@ -354,27 +357,28 @@ class InceptionC(nn.Module):
         in_channels: int,
         channels_7x7: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionC, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.branch1x1 = conv_block(in_channels, 192, kernel_size=1, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)
+        self.branch1x1 = conv_block(in_channels, 192, kernel_size=1)
 
         c7 = channels_7x7
-        self.branch7x7_1 = conv_block(in_channels, c7, kernel_size=1, b=self.b)
-        self.branch7x7_2 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3), b=self.b)
-        self.branch7x7_3 = conv_block(c7, 192, kernel_size=(7, 1), padding=(3, 0), b=self.b)
+        self.branch7x7_1 = conv_block(in_channels, c7, kernel_size=1)
+        self.branch7x7_2 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
+        self.branch7x7_3 = conv_block(c7, 192, kernel_size=(7, 1), padding=(3, 0))
         self.pool = nn.AvgPool2d(kernel_size=3, stride=1, padding=1)
 
-        self.branch7x7dbl_1 = conv_block(in_channels, c7, kernel_size=1, b=self.b)
-        self.branch7x7dbl_2 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0), b=self.b)
-        self.branch7x7dbl_3 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3), b=self.b)
-        self.branch7x7dbl_4 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0), b=self.b)
-        self.branch7x7dbl_5 = conv_block(c7, 192, kernel_size=(1, 7), padding=(0, 3), b=self.b)
+        self.branch7x7dbl_1 = conv_block(in_channels, c7, kernel_size=1)
+        self.branch7x7dbl_2 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
+        self.branch7x7dbl_3 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
+        self.branch7x7dbl_4 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
+        self.branch7x7dbl_5 = conv_block(c7, 192, kernel_size=(1, 7), padding=(0, 3))
 
-        self.branch_pool = conv_block(in_channels, 192, kernel_size=1, b=self.b)
+        self.branch_pool = conv_block(in_channels, 192, kernel_size=1)
 
     def _forward(self, x: Tensor) -> List[Tensor]:
         branch1x1 = self.branch1x1(x)
@@ -406,20 +410,21 @@ class InceptionD(nn.Module):
         self,
         in_channels: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionD, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.branch3x3_1 = conv_block(in_channels, 192, kernel_size=1, b=self.b)
-        self.branch3x3_2 = conv_block(192, 320, kernel_size=3, stride=2, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)
+        self.branch3x3_1 = conv_block(in_channels, 192, kernel_size=1)
+        self.branch3x3_2 = conv_block(192, 320, kernel_size=3, stride=2)
         self.pool = nn.AvgPool2d(kernel_size=3, stride=2)
 
-        self.branch7x7x3_1 = conv_block(in_channels, 192, kernel_size=1, b=self.b)
-        self.branch7x7x3_2 = conv_block(192, 192, kernel_size=(1, 7), padding=(0, 3), b=self.b)
-        self.branch7x7x3_3 = conv_block(192, 192, kernel_size=(7, 1), padding=(3, 0), b=self.b)
-        self.branch7x7x3_4 = conv_block(192, 192, kernel_size=3, stride=2, b=self.b)
+        self.branch7x7x3_1 = conv_block(in_channels, 192, kernel_size=1)
+        self.branch7x7x3_2 = conv_block(192, 192, kernel_size=(1, 7), padding=(0, 3))
+        self.branch7x7x3_3 = conv_block(192, 192, kernel_size=(7, 1), padding=(3, 0))
+        self.branch7x7x3_4 = conv_block(192, 192, kernel_size=3, stride=2)
 
     def _forward(self, x: Tensor) -> List[Tensor]:
         branch3x3 = self.branch3x3_1(x)
@@ -446,25 +451,26 @@ class InceptionE(nn.Module):
         self,
         in_channels: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionE, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.branch1x1 = conv_block(in_channels, 320, kernel_size=1, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)
+        self.branch1x1 = conv_block(in_channels, 320, kernel_size=1)
 
-        self.branch3x3_1 = conv_block(in_channels, 384, kernel_size=1, b=self.b)
-        self.branch3x3_2a = conv_block(384, 384, kernel_size=(1, 3), padding=(0, 1), b=self.b)
-        self.branch3x3_2b = conv_block(384, 384, kernel_size=(3, 1), padding=(1, 0), b=self.b)
+        self.branch3x3_1 = conv_block(in_channels, 384, kernel_size=1)
+        self.branch3x3_2a = conv_block(384, 384, kernel_size=(1, 3), padding=(0, 1))
+        self.branch3x3_2b = conv_block(384, 384, kernel_size=(3, 1), padding=(1, 0))
         self.pool = nn.AvgPool2d(kernel_size=3, stride=1, padding=1)
 
-        self.branch3x3dbl_1 = conv_block(in_channels, 448, kernel_size=1, b=self.b)
-        self.branch3x3dbl_2 = conv_block(448, 384, kernel_size=3, padding=1, b=self.b)
-        self.branch3x3dbl_3a = conv_block(384, 384, kernel_size=(1, 3), padding=(0, 1), b=self.b)
-        self.branch3x3dbl_3b = conv_block(384, 384, kernel_size=(3, 1), padding=(1, 0), b=self.b)
+        self.branch3x3dbl_1 = conv_block(in_channels, 448, kernel_size=1)
+        self.branch3x3dbl_2 = conv_block(448, 384, kernel_size=3, padding=1)
+        self.branch3x3dbl_3a = conv_block(384, 384, kernel_size=(1, 3), padding=(0, 1))
+        self.branch3x3dbl_3b = conv_block(384, 384, kernel_size=(3, 1), padding=(1, 0))
 
-        self.branch_pool = conv_block(in_channels, 192, kernel_size=1, b=self.b)
+        self.branch_pool = conv_block(in_channels, 192, kernel_size=1)
 
     def _forward(self, x: Tensor) -> List[Tensor]:
         branch1x1 = self.branch1x1(x)
@@ -502,18 +508,19 @@ class InceptionAux(nn.Module):
         in_channels: int,
         num_classes: int,
         b: float,
+        scale: float,
         conv_block: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(InceptionAux, self).__init__()
         self.b = b
         if conv_block is None:
-            conv_block = BasicConv2d
-        self.conv0 = conv_block(in_channels, 128, kernel_size=1, b=self.b)
+            conv_block = lambda in_c, out_c, **kwargs: BasicConv2d(in_c, out_c, b=b, scale=scale, **kwargs)
+        self.conv0 = conv_block(in_channels, 128, kernel_size=1)
         self.pool = nn.AvgPool2d(kernel_size=5, stride=3)
-        self.conv1 = conv_block(128, 768, kernel_size=5, b=self.b)
+        self.conv1 = conv_block(128, 768, kernel_size=5)
         self.conv1.stddev = 0.01  # type: ignore[assignment]
         # Diff to torchvision: linear -> BcosConv2d
-        self.fc = BcosConv2d(768, num_classes, kernel_size=1, stride=1, padding=0, scale_fact=200, b=self.b)
+        self.fc = BcosConv2d(768, num_classes, kernel_size=1, stride=1, padding=0, scale_fact=scale)
         # Diff End
         self.fc.stddev = 0.001  # type: ignore[assignment]
 
@@ -536,6 +543,7 @@ class BasicConv2d(nn.Module):
         in_channels: int,
         out_channels: int,
         b: float,
+        scale: float,
         **kwargs: Any
     ) -> None:
         super(BasicConv2d, self).__init__()
@@ -544,7 +552,8 @@ class BasicConv2d(nn.Module):
         #     kwargs["padding"] = (kwargs["kernel_size"] - 1) // 2
         # else:
         #     kwargs["padding"] = tuple((np.array(kwargs["kernel_size"])-1)//2)
-        self.conv = BcosConv2d(in_channels, out_channels, scale_fact=200, b=b, **kwargs)
+        self.scale: float = scale
+        self.conv = BcosConv2d(in_channels, out_channels, scale_fact=self.scale, b=b, **kwargs)
 
     def forward(self, x: Tensor) -> Tensor:
         return self.conv(x)
