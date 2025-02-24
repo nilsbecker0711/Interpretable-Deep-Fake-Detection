@@ -219,7 +219,7 @@ class Trainer(object):
                 losses['overall'].backward()
 
                 # For Distributed Data Parallel, print only on one process (e.g., rank 0)
-                if torch.distributed.is_initialized():
+                """ if torch.distributed.is_initialized():
                     if torch.distributed.get_rank() == 0:
                         print("Gradient stats for backbone:")
                         if isinstance(self.model, DDP):
@@ -231,7 +231,7 @@ class Trainer(object):
                     if isinstance(self.model, DDP):
                         self.print_gradient_stats(self.model.module.backbone)
                     else:
-                        self.print_gradient_stats(self.model.backbone)
+                        self.print_gradient_stats(self.model.backbone) """
 
                 if i == 0:
                     self.optimizer.first_step(zero_grad=True)
@@ -252,7 +252,7 @@ class Trainer(object):
             #print("Gradients have been clipped successfully!")
 
             # For Distributed Data Parallel, print only on one process (e.g., rank 0)
-            if torch.distributed.is_initialized():
+           """  if torch.distributed.is_initialized():
                 if torch.distributed.get_rank() == 0:
                     print("Gradient stats for backbone:")
                     if isinstance(self.model, DDP):
@@ -264,7 +264,7 @@ class Trainer(object):
                 if isinstance(self.model, DDP):
                     self.print_gradient_stats(self.model.module.backbone)
                 else:
-                    self.print_gradient_stats(self.model.backbone)
+                    self.print_gradient_stats(self.model.backbone) """
 
             self.optimizer.step()
             return losses,predictions
