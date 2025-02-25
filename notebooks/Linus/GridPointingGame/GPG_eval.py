@@ -9,6 +9,12 @@ from PIL import Image
 from B_COS_eval import BCOSEvaluator, preprocess_image
 # from LIME_eval import LimeEvaluator
 # from GRADCAM_eval import GradCamEvaluator
+## still need 500 best and so on
+## lime and gradcam
+## mappointinggame
+## dataloader json fix train also der dataloader greift dadrauf zu
+
+
 
 # Append the analysis path so that the b_cos modules are found.
 sys.path.append('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/analysis')
