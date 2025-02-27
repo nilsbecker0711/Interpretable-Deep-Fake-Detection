@@ -16,3 +16,4 @@ logs/
 .ipynb_checkpoints/
 BWCluster/
 BWCluster/
+weights
