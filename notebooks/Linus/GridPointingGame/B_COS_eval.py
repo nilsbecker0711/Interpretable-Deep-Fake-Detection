@@ -34,7 +34,7 @@ def to_numpy(t):
 
 class HeatmapEvaluator:
     @staticmethod
-    def grad_to_img(img, linear_mapping, smooth=15, alpha_percentile=99.5):
+    def grad_to_img(img, linear_mapping, alpha_percentile=99.5): #smooth=15
         """
         Compute a color image from a dynamic linear mapping of BCos models.
         """
@@ -43,8 +43,8 @@ class HeatmapEvaluator:
         rgb_grad = to_numpy(rgb_grad[:3] / (rgb_grad[:3] + rgb_grad[3:] + 1e-12))
         alpha = linear_mapping.norm(p=2, dim=0, keepdim=True)
         alpha = torch.where(contribs[None] < 0, torch.zeros_like(alpha) + 1e-12, alpha)
-        if smooth:
-            alpha = F.avg_pool2d(alpha, smooth, stride=1, padding=(smooth - 1) // 2)
+        #if smooth:
+        #    alpha = F.avg_pool2d(alpha, smooth, stride=1, padding=(smooth - 1) // 2)
         alpha = to_numpy(alpha)
         alpha = (alpha / np.percentile(alpha, alpha_percentile)).clip(0, 1)
         rgb_grad = np.concatenate([rgb_grad, alpha], axis=0)
