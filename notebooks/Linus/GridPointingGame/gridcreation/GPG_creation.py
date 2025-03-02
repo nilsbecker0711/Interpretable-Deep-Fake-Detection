@@ -88,7 +88,7 @@ def create_GPG_grids(real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_
         print(f"[DEBUG] Saved 3-channel grid tensor to: {path_3ch}")
 
         # Create the 6-channel version by concatenating the grid and its inverse.
-        six_ch_tensor = torch.cat([grid_tensor, 1.0 - grid_tensor], dim=0)  # shape: [6, H, W]
+        six_ch_tensor = torch.cat([grid_tensor, 1.0 - grid_tensor], dim=1)  # shape: [6, H, W]
         base_name_6ch = f"grid_{grid_count}_fake_{fake_index}.pt"
         path_6ch = os.path.join(output_dir_6ch, base_name_6ch)
         torch.save(six_ch_tensor, path_6ch)
