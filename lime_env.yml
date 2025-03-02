@@ -103,7 +103,7 @@ dependencies:
   - libclang=14.0.6=default_h182e8cd_2
   - libclang13=14.0.6=default_h9f4243d_2
   - libcurl=8.12.1=h9bcc28a_0
-   - libcxx=14.0.6=h9765a3e_0
+  - libcxx=14.0.6=h9765a3e_0
   - libdeflate=1.22=h46256e1_0
   - libedit=3.1.20230828=h6c40b1e_0
   - libev=4.33=h10d778d_2
