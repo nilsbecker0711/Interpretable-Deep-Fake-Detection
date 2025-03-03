@@ -22,5 +22,4 @@ class BCELoss(AbstractLossClass):
         """
         # Compute the bce loss
         loss = self.loss_fn(inputs, targets.float())
-
         return loss

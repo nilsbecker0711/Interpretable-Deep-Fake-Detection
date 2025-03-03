@@ -17,9 +17,8 @@ class NormedConv2d(nn.Conv2d):
 
 
 class BcosConv2d(nn.Module):
-
     def __init__(self, inc, outc, kernel_size=1, stride=1, padding=0, max_out=2, b=1.25,
-                 scale=None, scale_fact=0.5, **kwargs):
+                 scale=None, scale_fact=10, **kwargs):
         super().__init__()
         
         ks = kernel_size

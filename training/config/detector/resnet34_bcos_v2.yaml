@@ -3,29 +3,29 @@ log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resne
 
 # model setting -> old
 # pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ckpt_best_01_23_13_epoch_8.pth
-pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
+pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: true
-model_name: resnet34_bcos_v2   # model name
-backbone_name: resnet34_bcos_v2  # backbone name
+model_name: resnet34_bcos_v2_minimal   # model name
+backbone_name: resnet34_bcos_v2_minimal  # backbone name
 
 #backbone setting
 backbone_config:
   num_classes: 2
-  inc: 3
+  # inc: 3
   dropout: false
-  pretrained: true
+  pretrained: false
   groups: 1
   base_width: 64
-  zero_init_residual: false
-  replace_stride_with_dilation: None
-  norm_layer: None
-  short_cat: False
-  mode: Original
-  small_inputs: true
-  in_chans: 6
-  stochastic_depth_prob: 0.0
+  # zero_init_residual: false
+  # replace_stride_with_dilation: None
+  # norm_layer: None
+  # short_cat: False
+  # mode: Original
+  # small_inputs: true
+  # in_chans: 6
+  # stochastic_depth_prob: 0.0
   logit_bias: None
-  logit_temperature: None
+  # logit_temperature: None
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]

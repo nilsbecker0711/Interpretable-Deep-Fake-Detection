@@ -184,6 +184,7 @@ class DeepfakeBcosDataset(data.Dataset):
         #         # MyToTensor(),            # Converts image to tensor if not already
         #         AddInverse(dim=0),            # Adds the inverse channels
         #     ])
+        s = self.config['resolution']
         trans = get_aug_trans(m=9, s=224)
         return trans
 
@@ -577,7 +578,6 @@ class DeepfakeBcosDataset(data.Dataset):
                 image = self.to_tensor(image)
                 trans = T.Compose([AddInverse(dim=0)])# also add the inverse channels in test
                 image_trans, landmarks_trans, mask_trans = trans(deepcopy(image)), deepcopy(landmarks), deepcopy(mask)
-            
             if self.config['with_landmark']:
                 landmarks_trans = torch.from_numpy(landmarks)
             if self.config['with_mask']:
