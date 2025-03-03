@@ -99,8 +99,8 @@ class XceptionDetector(AbstractDetector):
         label = data_dict['label']
         pred = pred_dict['cls']
         # compute metrics for batch data
-        auc, eer, acc, ap = calculate_metrics_for_train(label.detach(), pred.detach())
-        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap}
+        auc, eer, acc, ap, rc, f1 = calculate_metrics_for_train(label.detach(), pred.detach())
+        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc': rc, 'f1': f1}
         # we dont compute the video-level metrics for training
         self.video_names = []
         return metric_batch_dict
