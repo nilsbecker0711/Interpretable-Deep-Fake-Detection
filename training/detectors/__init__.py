@@ -13,6 +13,7 @@ from .resnet34_detector import ResnetDetector
 from .resnet34_bcos_detector import ResnetBcosDetector
 from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2
 from .inception_bcos_detector import InceptionBcosDetector
+from .xception_detector import XceptionDetector
 
 """ from .facexray_detector import FaceXrayDetector
 from .facexray_detector import FaceXrayDetector
