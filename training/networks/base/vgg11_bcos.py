@@ -51,8 +51,8 @@ class VGG19_Bcos(nn.Module):
 
     def _make_layers(self):
         layers = []
-        cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 
-               512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']
+        cfg = [64, 'M', 128, 'M', 512, 'M', 
+               512, 512, 'M', 512, 512, 'M']
         in_channels = self.config["input_channels"]  # Default input channel size
 
         for x in cfg:
@@ -90,7 +90,7 @@ class VGG19_Bcos(nn.Module):
         out = self.classifier_head2(x)
         return out
 
-@BACKBONE.register_module(module_name="vgg19_bcos")
-def build_vgg19_bcos(vgg_config):
+@BACKBONE.register_module(module_name="vgg11_bcos")
+def build_vgg11_bcos(vgg_config):
     print("vgg init")
     return VGG19_Bcos(vgg_config)
