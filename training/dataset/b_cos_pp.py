@@ -61,8 +61,19 @@ class MyToTensor(T.ToTensor):
         if not isinstance(input_img, torch.Tensor):
             return super().__call__(input_img)
         return input_img
+        
+# data augmentation as in second bcos paper for imagenet and smaller models
+def get_aug_trans_simple(crop_size, hflip_prob=0.5, interpolation=T.InterpolationMode.BILINEAR):
+    return T.Compose([
+        T.RandomResizedCrop(crop_size, interpolation=interpolation),
+        T.RandomHorizontalFlip(p=hflip_prob),
+        T.ToTensor(),
+        AddInverse(dim=0)
+    ])
 
-def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
+
+# tilo: old version of data augmentation
+""" def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
     return T.Compose([
                 *([RandAugment(n=n, m=m)] if n > 1 else []),
                 T.RandomResizedCrop(s, scale=(min_scale, 1.0)),
@@ -77,7 +88,7 @@ def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
                 #   )
                 # Kai: added this
                 AddInverse(dim=0)
-            ])
+            ]) """
 
 
 # class AddInverseAlbumentations:
@@ -161,7 +172,7 @@ class DeepfakeBcosDataset(data.Dataset):
         self.transform = self.init_data_aug_method()
 
         
-    def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
+        """def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
         # trans = A.Compose([           
         #     A.HorizontalFlip(p=self.config['data_aug']['flip_prob']),
         #     A.Rotate(limit=self.config['data_aug']['rotate_limit'], p=self.config['data_aug']['rotate_prob']),
@@ -186,6 +197,12 @@ class DeepfakeBcosDataset(data.Dataset):
         #     ])
         s = self.config['resolution']
         trans = get_aug_trans(m=9, s=224)
+        return trans """
+
+    # data augmentation as in second bcos paper for imagenet and smaller models
+    def init_data_aug_method(self):
+        # Use the simple version with just crop and flip:
+        trans = get_aug_trans_simple(crop_size=self.config['resolution'], hflip_prob=self.config['data_aug']['flip_prob'])
         return trans
 
     def rescale_landmarks(self, landmarks, original_size=256, new_size=224):
