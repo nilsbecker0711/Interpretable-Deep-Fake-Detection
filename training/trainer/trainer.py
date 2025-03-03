@@ -323,7 +323,7 @@ class Trainer(object):
                 grad_norm_std = grad_norms.std().item()
 
                 logits = predictions['cls']
-                class_shares = (predictions['cls'] > 0.5).long().sum().float() / predictions['cls'].size(0)
+                class_shares = (predictions['prob'] > 0.5).long().sum().float() / predictions['prob'].size(0)
 
                 # Collect all parameters into a single list
                 all_params = []
