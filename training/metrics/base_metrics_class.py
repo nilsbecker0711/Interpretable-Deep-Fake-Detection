@@ -38,8 +38,9 @@ def calculate_metrics_for_train(label, output):
     # Average Precision
     y_true = label.cpu().detach().numpy()
     y_pred = prob.cpu().detach().numpy()
-    if np.isnan(y_pred):  #Nils: Dont let training crash if NaN
-        return None, None, None, None, None, None
+    y_pred = (y_pred >= 0.5).astype(int) # replace all value >= 0.5 with 1, else with 0
+    """ if np.isnan(y_pred):  #Nils: Dont let training crash if NaN
+        return None, None, None, None, None, None """
 
     ap = metrics.average_precision_score(y_true, y_pred)
     rc = metrics.recall_score(y_true, y_pred)
