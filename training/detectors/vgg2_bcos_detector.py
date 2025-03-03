@@ -69,11 +69,11 @@ class VGGBcosDetector(AbstractDetector):
 
     def classifier2(self, features: torch.tensor) -> torch.tensor:
         #print(features.shape)
-        print(self.backbone.classifier(features))
+        #print(self.backbone.classifier(features))
         return self.backbone.classifier(features)
     
     def classifier(self, features: torch.tensor) -> torch.tensor: #UNUSED!!!
-        print(features.shape)
+        #print(features.shape)
         pred = self.backbone.classifier(features)  # [32, 2, 7, 7]
         #pred = F.adaptive_avg_pool2d(pred, 1)  # Pool to [32, 2, 1, 1]
         #pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
