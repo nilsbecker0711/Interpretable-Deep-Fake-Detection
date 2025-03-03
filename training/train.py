@@ -36,6 +36,8 @@ from metrics.utils import parse_metric_for_print
 from logger import create_logger, RankFilter
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
+import wandb
+
 
 parser = argparse.ArgumentParser(description='Process some paths.')
 parser.add_argument('--detector_path', type=str,
@@ -323,7 +325,7 @@ def main():
     timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
     if config['ddp'] == False:
         wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
-        group="HP_tuning",  # Same group for all agents
+        #group="HP_tuning",  # Same group for all agents
         #config=self.config
         dir=None
         )
