@@ -5,7 +5,7 @@ import numpy as np
 from sklearn import metrics
 from typing import Union
 from collections import defaultdict
-from networks.base.vgg19_bcos import build_vgg19_bcos
+from networks.base.vgg11_bcos import build_vgg11_bcos
 
 import torch
 import torch.nn as nn
@@ -24,7 +24,7 @@ from loss import LOSSFUNC
 
 logger = logging.getLogger(__name__)
 
-@DETECTOR.register_module(module_name='vgg19_bcos')
+@DETECTOR.register_module(module_name='vgg11_bcos')
 class VGGBcosDetector(AbstractDetector):
     def __init__(self, config):
         super().__init__()
@@ -41,7 +41,7 @@ class VGGBcosDetector(AbstractDetector):
             model_config = config['backbone_config']
             backbone = backbone_class(model_config)
         except KeyError:
-            build_vgg19_bcos(config)
+            build_vgg11_bcos(config)
             backbone_class = BACKBONE[config['backbone_name']]
             model_config = config['backbone_config']
             backbone = backbone_class(model_config)
@@ -102,4 +102,3 @@ class VGGBcosDetector(AbstractDetector):
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
         return pred_dict
-
