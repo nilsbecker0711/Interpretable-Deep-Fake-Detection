@@ -124,3 +124,5 @@ if __name__ == "__main__":
         grid_size=grid_size_tuple,
         max_grids=args.max_grids
     )
+
+#python notebooks/Linus/GridPointingGame/gridcreation/GPG_creation.py

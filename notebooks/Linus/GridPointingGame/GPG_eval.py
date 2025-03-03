@@ -1,9 +1,3 @@
-import os
-import sys
-import torch
-import argparse
-import matplotlib.pyplot as plt
-from B_COS_eval import BCOSEvaluator  # Assuming you’re evaluating using BCos.
 # from LIME_eval import LimeEvaluator
 # from GRADCAM_eval import GradCamEvaluator
 ## still need 500 best and so on
@@ -12,12 +6,23 @@ from B_COS_eval import BCOSEvaluator  # Assuming you’re evaluating using BCos.
 ## dataloader json fix train also der dataloader greift dadrauf zu
 # 20 most accurat per model to create grids
 
+import os
+import sys
+import torch
+import argparse
+import matplotlib.pyplot as plt
+
+from B_COS_eval import BCOSEvaluator
+from LIME_eval import LIMEEvaluator
+# from GRADCAM_eval import GradCamEvaluator
+
+
 def parse_arguments():
     """Parse command-line arguments to override default settings."""
     parser = argparse.ArgumentParser(description="Evaluate grids using a specified model and XAI method.")
     
     defaults = {
-        "xai_method": "bcos",
+        "xai_method": "lime",
         "base_output_dir": "datasets/GPG_grids",
         "model_path": "/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/weights/B_cos/ResNet50/b_cos_model_1732594597.04.pth",
         "grid_split": 3,
@@ -62,16 +67,26 @@ def main():
         print(f"[DEBUG] Loaded grid tensor from {grid_path} with shape: {grid_tensor.shape}")
         preprocessed_tensors.append(grid_tensor)
 
-    # Run evaluation using the selected XAI method.
+    # Depending on the xai_method, instantiate the corresponding evaluator.
     if xai_method == "bcos":
         evaluator = BCOSEvaluator(model_path)
-        evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=grid_split)
-    # elif xai_method == "lime":
-    #     lime_evaluator = LimeEvaluator(model_path, model_name)  # Adapt as needed.
-    #     lime_evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=grid_split)
-    # elif xai_method == "gradcam":
-    #     gradcam_evaluator = GradCamEvaluator(model_path, model_name)  # Adapt as needed.
-    #     gradcam_evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=grid_split)
+    elif xai_method == "lime":
+        config_path = "/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/training/config/detector/xception.yaml"
+        additional_args = {
+            'model_name': 'xception',
+            'test_batchSize': 12,
+            'pretrained': '/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/weights/resnet/ckpt_best.pth'
+        }
+        evaluator = LIMEEvaluator(config_path, additional_args, xai_method="lime")
+    elif xai_method == "gradcam":
+        # evaluator = GradCamEvaluator(model_path)  # Uncomment and adjust if you have a GradCamEvaluator.
+        print("GradCAM evaluator not implemented in this example.")
+        return
+    else:
+        raise ValueError(f"Unknown xai_method: {xai_method}")
+
+    # Run the evaluation.
+    evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=grid_split)
 
 if __name__ == "__main__":
     main()
