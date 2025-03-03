@@ -12,6 +12,7 @@ import torch.nn.functional as F
 
 from bcos.common import BcosUtilMixin
 from bcos.modules import BcosConv2d, LogitLayer, norms
+from bcos.utils import MyAdaptiveAvgPool2d
 from metrics.registry import BACKBONE
 
 __all__ = [
@@ -55,11 +56,13 @@ class BcosVGG(BcosUtilMixin, nn.Module):
             # nn.ReLU(True),
             # nn.Dropout(),
             conv_layer(4096, num_classes, scale_fact=1000),
+            #MyAdaptiveAvgPool2d((1, 1)),
         )
         self.num_classes = num_classes
+        
         self.logit_layer = LogitLayer(
             logit_temperature=self.temperature,
-            logit_bias=self.logit_bias or -math.log(num_classes - 1),
+            logit_bias=self.logit_bias #or -math.log(num_classes - 1),
         )
         if init_weights:
             self._initialize_weights()
