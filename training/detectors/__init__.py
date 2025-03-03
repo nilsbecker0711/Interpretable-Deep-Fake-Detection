@@ -10,7 +10,7 @@ from metrics.registry import DETECTOR
 from .utils import slowfast
 #from .vgg19_bcos_detector import VGGBcosDetector
 from .resnet34_detector import ResnetDetector
-from .resnet34_bcos_detector import ResnetBcosDetector
+from .v1.resnet34_bcos_detector import ResnetBcosDetector
 from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2
 from .resnet34_bcos_v2_minimal_detector import ResnetBcosDetector_v2_minimal
 from .inception_bcos_detector import InceptionBcosDetector
