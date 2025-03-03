@@ -196,6 +196,7 @@ class ResNet34_bcos(nn.Module):
         self.base_width = resnet_config["base_width"]
 
         self.conv1 = BcosConv2d(6, self.inplanes, kernel_size=7, stride=2, padding=3, b=self.b)
+        # self.conv1 = BcosConv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, b=self.b)
         self.avgpool = nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2,
@@ -292,3 +293,25 @@ class ResNet34_bcos(nn.Module):
         x = self.features(inp)
         out = self.classifier(x)
         return out
+
+    def initialize_weights(self, module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.BatchNorm2d):
+            nn.init.constant_(module.weight, 1)
+            nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.Linear):
+            nn.init.xavier_normal_(module.weight)# or nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        # Recursively apply to custom modules
+        elif isinstance(module, (Bottleneck, BasicBlock, BcosConv2d)):
+            for submodule in module.children():
+                self.initialize_weights(submodule)
+        # Ignore activation, pooling, and sequential layers
+        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
+            pass  # Do nothing
+        else:
+            print(f'unknown module type {type(module)}')

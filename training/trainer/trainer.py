@@ -30,6 +30,7 @@ from torch.optim.swa_utils import AveragedModel, SWALR
 from torch import distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from sklearn import metrics
+from sklearn.metrics import precision_score, recall_score, f1_score
 from metrics.utils import get_test_metrics
 
 FFpp_pool=['FaceForensics++','FF-DF','FF-F2F','FF-FS','FF-NT']#
@@ -133,7 +134,7 @@ class Trainer(object):
             num_gpus = torch.cuda.device_count()
             self.logger.info(f'avai gpus: {num_gpus}')
             # local_rank=[i for i in range(0,num_gpus)]
-            self.model = DDP(self.model, device_ids=[self.config['local_rank']],find_unused_parameters=True, output_device=self.config['local_rank'])
+            self.model = DDP(self.model, device_ids=[self.config['local_rank']], find_unused_parameters=False, output_device=self.config['local_rank'])
             #self.optimizer =  nn.DataParallel(self.optimizer, device_ids=[int(os.environ['LOCAL_RANK'])])
 
     def setTrain(self):
@@ -454,7 +455,11 @@ class Trainer(object):
         zero_num = len(label) - np.count_nonzero(label)
         acc_fake = np.count_nonzero(judge[zero_num:]) / len(judge[zero_num:])
         acc_real = np.count_nonzero(judge[:zero_num]) / len(judge[:zero_num])
-        return acc_real,acc_fake
+        # Precision, Recall, F1-score
+        precision = precision_score(label, pred, zero_division=0)
+        recall = recall_score(label, pred, zero_division=0)
+        f1 = f1_score(label, pred, zero_division=0)
+        return acc_real, acc_fake, precision, recall, f1
 
     def test_one_dataset(self, data_loader):
         # define test recorder
@@ -532,13 +537,20 @@ class Trainer(object):
             # also log to wandb
             wandb.log({f'test_metrics/{k}': v, 'step': step})
         if 'pred' in metric_one_dataset:
-            acc_real, acc_fake = self.get_respect_acc(metric_one_dataset['pred'], metric_one_dataset['label'])
+            acc_real, acc_fake, precision, recall, f1 = self.get_respect_acc(metric_one_dataset['pred'], metric_one_dataset['label'])
             metric_str += f'testing-metric, acc_real:{acc_real}; acc_fake:{acc_fake}'
             writer.add_scalar(f'test_metrics/acc_real', acc_real, global_step=step)
             writer.add_scalar(f'test_metrics/acc_fake', acc_fake, global_step=step)
+            writer.add_scalar(f'test_metrics/precision', precision, global_step=step)
+            writer.add_scalar(f'test_metrics/recall', recall, global_step=step)
+            writer.add_scalar(f'test_metrics/f1', f1, global_step=step)
+            
             # also log to wandb
             wandb.log({f'test_metrics/acc_real': acc_real, 'step': step})
             wandb.log({f'test_metrics/acc_fake': acc_fake, 'step': step})
+            wandb.log({f'test_metrics/precision': precision, 'step': step})
+            wandb.log({f'test_metrics/recall': recall, 'step': step})
+            wandb.log({f'test_metrics/f1': f1, 'step': step})
         self.logger.info(metric_str)
 
     def test_epoch(self, epoch, iteration, test_data_loaders, step):

@@ -320,7 +320,7 @@ def main():
             timeout=timedelta(minutes=30)
         )
         logger.addFilter(RankFilter(0))
-
+    IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
     timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
     if config['ddp'] == False:
         wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
@@ -329,9 +329,9 @@ def main():
         #config=self.config
         dir=None
         )
-    elif IS_MAIN_PROCESS:
+    else:# elif IS_MAIN_Process
         wandb.init(project="deepfake_training",  
-        group="HP_tuning",  # Same group for all agents
+        group=f"DDP_{config['model_name']}_{timestamp}",  # Same group for all agents
         name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
         #config=self.config
         dir=None

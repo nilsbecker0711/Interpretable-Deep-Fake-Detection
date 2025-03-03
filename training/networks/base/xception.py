@@ -283,3 +283,25 @@ class Xception(nn.Module):
         x = self.features(input)
         out = self.classifier(x)
         return out, x
+
+    def initialize_weights(self, module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.BatchNorm2d):
+            nn.init.constant_(module.weight, 1)
+            nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.Linear):
+            nn.init.xavier_normal_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        # Recursively apply to custom modules
+        elif isinstance(module, SeparableConv2d) or isinstance(module, Block):
+            for submodule in module.children():
+                self.initialize_weights(submodule)
+        # Ignore activation, pooling, and sequential layers
+        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
+            pass  # Do nothing
+        else:
+            print(f'unknown module type {type(module)}')
