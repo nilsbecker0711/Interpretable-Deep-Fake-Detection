@@ -71,7 +71,7 @@ def set_wandb_config(config):
     print(wandb_config)
 
     # general parameters
-    # config['freeze'] = wandb_config.freeze
+    #config['freeze'] = wandb_config.freeze
     config['train_batchSize'] = wandb_config.batchSize
     config['test_batchSize'] = wandb_config.batchSize
     config['nEpochs'] = wandb_config.nEpochs
@@ -328,4 +328,5 @@ sweep_config = {
 if __name__ == "__main__":
     sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
     # sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
-    wandb.agent(sweep_id, function=train, count=4)  # Run one sweep at a time
+
+    wandb.agent(sweep_id, function=train, count=1)  # Run one sweep at a time
