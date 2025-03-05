@@ -48,11 +48,6 @@ def main():
     print(f"XAI: {args.xai_method}, Base: {args.base_output_dir}, Model: {args.model_path}, Grid: {args.grid_split}x{args.grid_split}")
     print(f"Real: {args.real_dir}, Fake: {args.fake_dir}, Max grids: {args.max_grids}")
     
-    """
-
-    #######NEW VERSION
-
-
     # Load configuration.
     config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
     
@@ -80,24 +75,12 @@ def main():
         weights_name=weights_name
     )
     grid_creator.create_GPG_grids()
-    """"
-
-        # Instantiate the grid creator with your parameters.
-    grid_creator = GPGCreator(
-        real_dir=args.real_dir,
-        fake_dir=args.fake_dir,
-        base_output_dir=args.base_output_dir,
-        grid_size=(args.grid_split, args.grid_split),
-        max_grids=args.max_grids
-    )
-    
-    # Create grids.
-    grid_creator.create_GPG_grids()
 
     # Optionally, you can inspect the fake images ranking:
     # print("Top-ranked fake images:", grid_creator.fake_images_ranked[:5])
     
     # Determine grid directory based on XAI method.
+
     grid_dir = os.path.join(grid_creator.output_folder, "6ch") if args.xai_method == "bcos" else os.path.join(grid_creator.output_folder, "3ch")
     grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
     print(f"Found {len(grid_paths)} grid tensors for evaluation in {grid_dir}.")

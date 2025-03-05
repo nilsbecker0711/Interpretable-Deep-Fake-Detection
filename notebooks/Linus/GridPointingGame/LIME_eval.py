@@ -151,11 +151,20 @@ class LIMEEvaluator:
                 true_fake_pos = int(os.path.basename(path).split('_fake_')[1].split('.')[0])
             except Exception as e:
                 true_fake_pos = -1
+                print(f"[DEBUG] Could not parse true fake position from filename: {e}")
+
+            # Calculate grid accuracy as the ratio of nonzero pixels in the true cell to the total nonzero pixels.
+            total_nonzero = float(sum(pixel_counts))
+            if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
+                grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
+            else:
+                grid_accuracy = 0
+            print(f"[DEBUG] For grid {os.path.basename(path)}: true position {true_fake_pos}, predicted {fake_pred}, grid metric: {grid_accuracy:.3f}")
 
             # Left: Original image
             ax[0].imshow(img_np)
             ax[0].axis('off')
-            ax[0].set_title(f"Original Image: {true_fake_pos}")
+            ax[1].set_title(f'LIME Prediction: {fake_pred}\nGrid metric: {grid_accuracy:.3f}')
 
             # Right: LIME explanation with grid lines
             # Convert temp to float in [0,1] for proper visualization.

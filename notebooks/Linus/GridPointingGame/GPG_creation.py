@@ -114,49 +114,62 @@ class RankedGPGCreator:
     def pre_assess_images(self):
         """
         Pre-assess real images using the provided model.
-        Only include images that are correctly classified as real (true label 0).
+        Only include images that are correctly classified as real (ground-truth label 0)
+        if available; otherwise, include misclassified images sorted by confidence (lowest first).
         Returns:
-            List of real image paths sorted by confidence (highest first).
+            List of real image paths sorted by confidence.
+            (Correct predictions sorted descending by confidence; if none, misclassified ones sorted ascending.)
         """
         real_images = self.get_all_png_files(self.real_dir)
         print(f"[DEBUG] Found {len(real_images)} real images for pre-assessment.")
         transform = T.ToTensor()
-        image_confidences = []
+        
+        correct_confidences = []   # For images predicted as real (label 0)
+        incorrect_confidences = [] # For images predicted incorrectly (not 0)
 
         for img_path in real_images:
             with Image.open(img_path) as img:
                 img = img.convert("RGB")
-                tensor_img = transform(img).unsqueeze(0)  # add batch dimension
+                tensor_img = transform(img).unsqueeze(0)  # shape: [1, 3, H, W]
+                # No conversion to 6 channels: we keep the original 3 channels.
 
             with torch.no_grad():
-                # For real images, the ground truth is 0.
-                true_label = 0
+                true_label = 0  # ground-truth for real images
                 data_dict = {
                     'image': tensor_img,
                     'label': torch.tensor([true_label]).to(tensor_img.device)
                 }
                 output = self.model(data_dict)
-                prob_tensor = output['prob']
-                # Apply sigmoid (assuming logits are returned).
-                prob_value = torch.sigmoid(prob_tensor).item() if prob_tensor.dim() == 2 else torch.sigmoid(prob_tensor).item()
-                # Determine predicted label based on threshold 0.5.
-                predicted_label = 1 if prob_value >= 0.5 else 0
+                # Assume the model returns logits under the key 'cls'
+                logits = output['cls']
+                predicted_label = logits.argmax(dim=1).item()
+                # Use the logit of the predicted class as confidence.
+                confidence = logits[0, predicted_label].item()
 
-            if predicted_label != true_label:
-                print(f"[DEBUG] Skipping real image {img_path}: predicted {predicted_label} != {true_label}")
-                continue
+            if predicted_label == true_label:
+                correct_confidences.append((img_path, confidence))
+            else:
+                incorrect_confidences.append((img_path, confidence))
+                print(f"[DEBUG] Including misclassified real image {img_path}: predicted {predicted_label} != {true_label} with confidence {confidence}")
 
-            image_confidences.append((img_path, prob_value))
-        
-        # Sort images by confidence (highest first).
-        image_confidences.sort(key=lambda x: x[1], reverse=True)
-        ranked = [img_path for img_path, conf in image_confidences]
+        # Decide which set to use:
+        if correct_confidences:
+            # If any images were correctly classified, sort them descending by confidence.
+            correct_confidences.sort(key=lambda x: x[1], reverse=True)
+            ranked = [img_path for img_path, conf in correct_confidences]
+        else:
+            # Otherwise, sort the misclassified ones ascending (lowest confidence first).
+            incorrect_confidences.sort(key=lambda x: x[1])
+            ranked = [img_path for img_path, conf in incorrect_confidences]
+
         return ranked
+
 
     def pre_assess_fake_images(self):
         """
         Pre-assess fake images using the provided model.
-        Only include images that are correctly classified as fake (true label 1).
+        Only include images that are correctly classified as fake (ground-truth label 1),
+        similar to LocalisationAnalyser.
         Returns:
             List of fake image paths sorted by confidence (highest first).
         """
@@ -168,25 +181,24 @@ class RankedGPGCreator:
         for img_path in fake_images:
             with Image.open(img_path) as img:
                 img = img.convert("RGB")
-                tensor_img = transform(img).unsqueeze(0)  # add batch dimension
+                tensor_img = transform(img).unsqueeze(0)  # shape: [1, 3, H, W]
+                # No concatenation to 6 channels here either.
 
             with torch.no_grad():
-                # For fake images, the ground truth is 1.
-                true_label = 1
+                true_label = 1  # ground-truth label for fake images
                 data_dict = {
                     'image': tensor_img,
                     'label': torch.tensor([true_label]).to(tensor_img.device)
                 }
                 output = self.model(data_dict)
-                prob_tensor = output['prob']
-                prob_value = torch.sigmoid(prob_tensor).item() if prob_tensor.dim() == 2 else torch.sigmoid(prob_tensor).item()
-                predicted_label = 1 if prob_value >= 0.5 else 0
+                logits = output['cls']
+                predicted_class = logits.argmax(dim=1).item()
+                if predicted_class != true_label:
+                    print(f"[DEBUG] Skipping fake image {img_path}: predicted {predicted_class} != {true_label}")
+                    continue
+                confidence = logits[0, predicted_class].item()
 
-            if predicted_label != true_label:
-                print(f"[DEBUG] Skipping fake image {img_path}: predicted {predicted_label} != {true_label}")
-                continue
-
-            image_confidences.append((img_path, prob_value))
+            image_confidences.append((img_path, confidence))
         
         image_confidences.sort(key=lambda x: x[1], reverse=True)
         ranked = [img_path for img_path, conf in image_confidences]
@@ -209,6 +221,13 @@ class RankedGPGCreator:
         """
         print(f"[DEBUG] Creating grids using ranking. real_dir={self.real_dir}, fake_dir={self.fake_dir}, output_folder={self.output_folder}")
         
+
+        # Check if enough grid files already exist.
+        existing_files = [f for f in os.listdir(self.output_dir_3ch) if f.endswith('.pt')]
+        if len(existing_files) >= self.max_grids:
+            print(f"[DEBUG] Found {len(existing_files)} existing grid files in {self.output_dir_3ch}. Skipping grid creation.")
+            return
+
         n_imgs = int(self.grid_size[0]) * int(self.grid_size[1])
         grid_count = 0
         side = int(np.sqrt(n_imgs))  # Assumes a square grid.

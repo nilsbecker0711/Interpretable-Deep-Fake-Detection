@@ -10,7 +10,7 @@ backbone_name: xception  # backbone name
 backbone_config:
   mode: original
   num_classes: 2
-  inc: 6
+  inc: 3
   dropout: false
 
 # dataset
