@@ -52,8 +52,8 @@ from loss import LOSSFUNC
 
 logger = logging.getLogger(__name__)
 
-@DETECTOR.register_module(module_name='resnet34_bcos_v2')
-class ResnetBcosDetector_v2(AbstractDetector):
+@DETECTOR.register_module(module_name='vit_bcos')
+class ViTBcosDetector(AbstractDetector):
     def __init__(self, config):
         super().__init__()
         self.config = config

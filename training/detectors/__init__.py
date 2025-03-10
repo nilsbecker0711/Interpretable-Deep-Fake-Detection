@@ -16,6 +16,7 @@ from .resnet34_bcos_v2_minimal_detector import ResnetBcosDetector_v2_minimal
 from .inception_bcos_detector import InceptionBcosDetector
 from .xception_detector import XceptionDetector
 from .vgg2_bcos_detector import VGGBcosDetector
+from .vit_bcos_detector import ViTBcosDetector
 
 """ from .facexray_detector import FaceXrayDetector
 from .facexray_detector import FaceXrayDetector

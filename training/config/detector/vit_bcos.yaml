@@ -1,30 +1,45 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet_v2_minimal
+log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet_v2
 
 # model setting -> old
 freeze: false
-pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_v2_minimal_2025-03-10-09-20-41/test/avg/ckpt_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
+#/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
-model_name: resnet34_bcos_v2_minimal   # model name
-backbone_name: resnet34_bcos_v2_minimal  # backbone name
+model_name: vit_bcos   # model name
+backbone_name: vit_bcos  # backbone name
 
 #backbone setting
 backbone_config:
   num_classes: 2
-  #inc: 3
+  channels: 6
   #dropout: false
-  #pretrained: true
-  groups: 1
-  base_width: 64
+  #pretrained: false
+  #groups: 1
+  #base_width: 64
   #zero_init_residual: false
-  #replace_stride_with_dilation: None
-  #norm_layer: None
-  #short_cat: False
-  #mode: Original
-  #log_temperature: 1
-  logit_bias: #[0.5, 0.5]
+  # replace_stride_with_dilation: None
+  # norm_layer: None
+  # short_cat: False
+  # mode: Original
+  #small_inputs: false
+  #stochastic_depth_prob: 0.0
+  logit_bias: #None
+  logit_temperature: 1 #None
   b: 1.25
-  # inplanes
+  image_size: 14 # Union[int, Tuple[int, int]],
+  patch_size: 1 # Union[int, Tuple[int, int]],
+  dim: 192
+  depth: 11 # 12-1
+  heads: 3
+  mlp_dim: 768
+  max_out: 1
+  #linear_layer: Callable[..., nn.Module] = None,
+  #norm_layer: Callable[..., nn.Module] = None,
+  #act_layer: Callable[..., nn.Module] = None,
+  #norm2d_layer: Callable[..., nn.Module] = None,
+  #conv2d_layer: Callable[..., nn.Module] = None,
+  conv_stem: [24, 48, 96, 192]
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -32,8 +47,8 @@ train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c40  # compression-level for videos
-train_batchSize: 64   # training batch size
-test_batchSize: 64   # test batch size
+train_batchSize: 32   # training batch size
+test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 224   # resolution of output image to network
@@ -41,7 +56,7 @@ with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-#add_inverse_channels: false #true
+add_inverse_channels: true
 
 
 # data augmentation
@@ -68,34 +83,34 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000025  # learning rate -> bcos paper 2.5e-4
-    beta1: 0.8  # beta1 for Adam optimizer
+    lr: 0.0002  # learning rate
+    beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
-    eps: 0.000001  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
-    weight_decay: 0  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
-    amsgrad: true
+    eps: 0.00000001  # epsilon for Adam optimizer
+    weight_decay: 0.0005  # weight decay for regularization
+    amsgrad: false
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
-  gradient_clipping: false
+  gradient_clipping: true
 
 # training config
-lr_scheduler: cosine # step   # learning rate scheduler
+lr_scheduler: warmup_cosine # step   # learning rate scheduler
 lr_eta_min: 0
 lr_T_max: 200
 # lr_step: 4
 # lr_gamma: 0.2
-nEpochs: 100   # number of epochs to train for
+nEpochs: 15   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
-rec_iter: 500   # interval iterations for recording
+rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
 save_ckpt: false   # whether to save checkpoint
 
 # loss function
-loss_func: cross_entropy   # loss function to use: binary_cross_entropy (is the bcos version), cross_entropy or bce reasonable
+loss_func: cross_entropy   # loss function to use
 losstype: null
 
 # metric
