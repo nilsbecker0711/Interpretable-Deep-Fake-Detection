@@ -58,7 +58,7 @@ class HeatmapEvaluator:
         
         # (4) Compute the opacity (alpha) channel from the mapping.
         # Using the squared L2 norm emphasizes strong activations.
-        alpha = (linear_mapping.norm(p=2, dim=0, keepdim=True)) ** 2
+        alpha = (linear_mapping.norm(p=2, dim=0, keepdim=True))
         # Zero out alpha for pixels with a negative overall contribution.
         alpha = torch.where(contribs[None] < 0, torch.zeros_like(alpha) + 1e-12, alpha)
         alpha = to_numpy(alpha)
@@ -73,6 +73,7 @@ class HeatmapEvaluator:
         heatmap = rgb_grad_np.transpose((1, 2, 0))
         print(f"[DEBUG] Final heatmap shape: {heatmap.shape}")
         return heatmap
+
 
     @staticmethod
     def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9):

@@ -65,7 +65,7 @@ class XceptionDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
-        """
+        
         # if donot load the pretrained weights, fail to get good results
         ## CHANGE THIS HERE FOR THE CLUSTER TO NOT MAP LOCATION CPU
         state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
@@ -77,7 +77,9 @@ class XceptionDetector(AbstractDetector):
         logger.info('Load pretrained model successfully!')
         
         return backbone
+        
         """
+        
         if config['pretrained']:
             # if donot load the pretrained weights, fail to get good results
             state_dict = torch.load(config['pretrained'])
@@ -91,6 +93,7 @@ class XceptionDetector(AbstractDetector):
             backbone.apply(backbone.initialize_weights)
             logger.info("Initialized backbone weights from scratch!")
             return backbone
+        """
 
     def build_loss(self, config):
         # prepare the loss function
