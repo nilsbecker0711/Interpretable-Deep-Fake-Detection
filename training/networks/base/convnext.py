@@ -105,21 +105,26 @@ class CNBlockConfig:
 
 @BACKBONE.register_module(module_name='convnext_bcos')
 class BcosConvNeXt(BcosUtilMixin, nn.Module):
-    def __init__(
-        self,
-        block_setting: List[CNBlockConfig],
-        stochastic_depth_prob: float = 0.0,
-        layer_scale: float = 1e-6,
-        num_classes: int = 1000,
-        in_chans: int = 6,
-        block: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
-        logit_bias: Optional[float] = None,
-        logit_temperature: Optional[float] = None,
-        **kwargs: Any,
-    ) -> None:
+    def __init__( self, convnext_config ):
         super().__init__()
+        block_setting = List[CNBlockConfig]
+    #     stochastic_depth_prob: float = 0.0,
+    #     layer_scale: float = 1e-6,
+    #     num_classes: int = 1000,
+    #     in_chans: int = 6,
+        self.mode = convnext_config["mode"]
+        stochastic_depth_prob = convnext_config["stochastic_depth_prob"]
+        layer_scale = convnext_config["layer_scale"]
+        num_classes = convnext_config["num_classes"]
+        in_chans = convnext_config["in_chans"]
+        block: Optional[Callable[..., nn.Module]] = None,
+        conv_layer = DEFAULT_CONV_LAYER,
+        norm_layer = DEFAULT_NORM_LAYER,
+        logit_bias = convnext_config["logit_bias"],
+        logit_temperature = convnext_config["logit_temperature"],
+    #     **kwargs: Any,
+    # ) -> None:
+
         # _log_api_usage_once(self)
 
         if not block_setting:
@@ -205,7 +210,7 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
                 lastconv_output_channels, num_classes, kernel_size=1, bias=False
             ),
         )
-        self.num_classes = num_classes
+        self.num_classes = self.num_classes
         self.logit_layer = LogitLayer(
             logit_temperature=logit_temperature,
             logit_bias=logit_bias or -math.log(num_classes - 1),
@@ -216,17 +221,26 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
                 nn.init.trunc_normal_(m.weight, std=0.02)
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
-
-    def _forward_impl(self, x: Tensor) -> Tensor:
-        x = self.features(x)
-        x = self.classifier(x)
+        
+    def classifier_impl(self, features):
+        x = self.classifier(features)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.logit_layer(x)
         return x
+    # def _forward_impl(self, x: Tensor) -> Tensor:
+    #     x = self.features(x)
+    #     x = self.classifier(x)
+    #     x = self.avgpool(x)
+    #     x = torch.flatten(x, 1)
+    #     x = self.logit_layer(x)
+    #     return x
 
-    def forward(self, x: Tensor) -> Tensor:
-        return self._forward_impl(x)
+    def forward(self, inp: Tensor) -> Tensor:
+        x = self.features(inp)
+        out = self.classifier_impl(x)
+        return out
+    
 
     def get_classifier(self) -> nn.Module:
         """Returns the classifier part of the model. Note this comes before global pooling."""

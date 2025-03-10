@@ -39,7 +39,17 @@ class Convnext_Bcos_Detector(AbstractDetector):
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
         # if donot load the pretrained weights, fail to get good results
-        
+        # self.block_setting = config['CNBlockConfig'],
+        #self.stochastic_depth_prob = config['',
+        # layer_scale: float = 1e-6,
+        # num_classes: int = 1000,
+        # in_chans: int = 6,
+        # block: Optional[Callable[..., nn.Module]] = None,
+        # conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
+        # norm_layer: Optional[Callable[..., nn.Module]] = None,
+        # logit_bias: Optional[float] = None,
+        # logit_temperature: Optional[float] = None,
+        # **kwargs: Any,
         ## CHANGE THIS HERE FOR THE CLUSTER TO NOT MAP LOCATION CPU
         
         state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
