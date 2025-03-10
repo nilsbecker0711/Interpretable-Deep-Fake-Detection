@@ -43,7 +43,7 @@ with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-add_inverse_channels: false #true
+#add_inverse_channels: false #true
 
 
 # data augmentation
