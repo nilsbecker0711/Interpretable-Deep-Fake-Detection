@@ -107,7 +107,7 @@ class CNBlockConfig:
 class BcosConvNeXt(BcosUtilMixin, nn.Module):
     def __init__( self, convnext_config ):
         super().__init__()
-        block_setting = List[CNBlockConfig]
+        block_setting = CNBlockConfig
     #     stochastic_depth_prob: float = 0.0,
     #     layer_scale: float = 1e-6,
     #     num_classes: int = 1000,

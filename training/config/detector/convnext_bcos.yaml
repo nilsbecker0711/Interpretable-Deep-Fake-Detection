@@ -10,6 +10,7 @@ backbone_name: convnext_bcos  # backbone name
 backbone_config:
   mode: original
   stochastic_depth_prob: 0.1  # probability for stochastic depth regularization
+  num_classes: 2
   layer_scale: 1e-6           # initial scaling factor for layer outputs
   # block_setting: List[CNBlockConfig]
   stochastic_depth_prob: 0.0
