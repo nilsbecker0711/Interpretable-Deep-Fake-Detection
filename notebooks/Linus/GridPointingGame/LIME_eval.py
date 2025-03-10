@@ -1,5 +1,13 @@
-import sys
 import os
+import sys
+
+# Gehe drei Ebenen nach oben, um den Projektstamm zu erreichen:
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+print("Project root added to sys.path:", project_root)
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -10,8 +18,6 @@ from PIL import Image
 import yaml
 from lime import lime_image
 from skimage.segmentation import mark_boundaries  # Explicit import
-
-sys.path.append("/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection")
 
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR

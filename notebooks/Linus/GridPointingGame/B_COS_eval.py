@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import argparse
 
 # Append the analysis path so that the b_cos modules are found.
-sys.path.append('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/analysis')
+sys.path.append('Interpretable-Deep-Fake-Detection/analysis')
 from b_cos.resnet import resnet50 as model
 
 

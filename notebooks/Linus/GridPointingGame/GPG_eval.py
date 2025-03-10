@@ -1,6 +1,11 @@
-#!/usr/bin/env python
 import os
 import sys
+
+# Absoluter Pfad zum Projektstamm (hier zwei Ebenen höher, da sich GPG_eval.py in notebooks/Linus/GridPointingGame befindet)
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if PROJECT_PATH not in sys.path:
+    sys.path.insert(0, PROJECT_PATH)
+
 import torch
 import argparse
 import numpy as np
@@ -11,12 +16,10 @@ import torchvision.transforms as T
 from PIL import Image
 
 # Evaluators.
-from B_COS_eval import BCOSEvaluator
+#from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  # Adjust the import path if needed.
 # from GRADCAM_eval import GradCamEvaluator  # Uncomment if available.
 
-PROJECT_PATH = "/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection"
-sys.path.append(PROJECT_PATH)
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 
@@ -27,12 +30,12 @@ GRID_SPLIT = 3
 REAL_DIR = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
 FAKE_DIR = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"
 MAX_GRIDS = 2
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training", "config", "detector", "xception.yaml")
 
 ADDITIONAL_ARGS = {
     "model_name": "xception",
     "test_batchSize": 12,
-    "pretrained": os.path.join(PROJECT_PATH, "weights/resnet/ckpt_best.pth")
+    "pretrained": os.path.join(PROJECT_PATH, "weights", "resnet", "ckpt_best.pth")
 }
 
 def load_model(config):
@@ -156,18 +159,8 @@ class RankedGPGCreator:
         Pre-assess real images using the provided model.
         Nutzt entweder den DataLoader (falls vorhanden) oder die Dateisuche.
         """
-        if self.real_loader is not None:
-            real_images = get_images_from_dataloader(self.real_loader)
-            print(f"[DEBUG] Loaded {len(real_images)} real images from DataLoader.")
-        else:
-            real_paths = self.get_all_png_files(self.real_dir)
-            print(f"[DEBUG] Found {len(real_paths)} real images for pre-assessment.")
-            transform = T.ToTensor()
-            real_images = []
-            for path in real_paths:
-                with Image.open(path) as img:
-                    img = img.convert("RGB")
-                    real_images.append(transform(img))
+        real_images = get_images_from_dataloader(self.real_loader)
+        print(f"[DEBUG] Loaded {len(real_images)} real images from DataLoader.")
         
         correct_confidences = []   # For images predicted as real (label 0)
         incorrect_confidences = [] # For images predicted incorrectly (not 0)
@@ -205,18 +198,8 @@ class RankedGPGCreator:
         Pre-assess fake images using the provided model.
         Nutzt entweder den DataLoader (falls vorhanden) oder die Dateisuche.
         """
-        if self.fake_loader is not None:
-            fake_images = get_images_from_dataloader(self.fake_loader)
-            print(f"[DEBUG] Loaded {len(fake_images)} fake images from DataLoader.")
-        else:
-            fake_paths = self.get_all_png_files(self.fake_dir)
-            print(f"[DEBUG] Found {len(fake_paths)} fake images for pre-assessment.")
-            transform = T.ToTensor()
-            fake_images = []
-            for path in fake_paths:
-                with Image.open(path) as img:
-                    img = img.convert("RGB")
-                    fake_images.append(transform(img))
+        fake_images = get_images_from_dataloader(self.fake_loader)
+        print(f"[DEBUG] Loaded {len(fake_images)} fake images from DataLoader.")
         
         image_confidences = []
 
@@ -347,7 +330,9 @@ def main():
     
     # Extrahiere Modell- und Gewichtsnamen für den Ausgabepfad.
     model_name = config.get("model_name", "defaultModel")
-    pretrained_path = config.get("pretrained", "default_weights.pth")
+    pretrained_path = config['pretrained']
+    if not os.path.exists(pretrained_path):
+        raise FileNotFoundError(f"Gewichtedatei nicht gefunden: {pretrained_path}")
     weights_name = os.path.basename(pretrained_path).split('.')[0]
     
     from train import prepare_testing_data
