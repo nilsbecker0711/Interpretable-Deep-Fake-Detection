@@ -73,6 +73,8 @@ class CNBlock(nn.Module):
             ),
             # Permute([0, 3, 1, 2]),
         )
+        print("dim:", dim, "type:", type(dim))
+        print("layer_scale:", layer_scale, "type:", type(layer_scale))
         self.layer_scale = nn.Parameter(torch.ones(dim, 1, 1) * layer_scale)
         self.stochastic_depth = StochasticDepth(stochastic_depth_prob, "row")
 
@@ -107,21 +109,60 @@ class CNBlockConfig:
 class BcosConvNeXt(BcosUtilMixin, nn.Module):
     def __init__( self, convnext_config ):
         super().__init__()
-        block_setting = CNBlockConfig
+        block_setting = convnext_config['block_setting']
+        
+        if convnext_config['block_setting'] == "tiny":
+              block_setting =[
+        CNBlockConfig(96, 192, 3),
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 9),
+        CNBlockConfig(768, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "small":
+                block_setting = [
+        CNBlockConfig(96, 192, 3),
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 27),
+        CNBlockConfig(768, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "atto":
+                block_setting = [
+        CNBlockConfig(40, 80, 2),
+        CNBlockConfig(80, 160, 2),
+        CNBlockConfig(160, 320, 6),
+        CNBlockConfig(320, None, 2),
+    ]
+        elif convnext_config['block_setting'] == "base":
+                block_setting = [
+        CNBlockConfig(128, 256, 3),
+        CNBlockConfig(256, 512, 3),
+        CNBlockConfig(512, 1024, 27),
+        CNBlockConfig(1024, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "large":
+                block_setting = [
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 3),
+        CNBlockConfig(768, 1536, 27),
+        CNBlockConfig(1536, None, 3),
+    ]
     #     stochastic_depth_prob: float = 0.0,
     #     layer_scale: float = 1e-6,
     #     num_classes: int = 1000,
     #     in_chans: int = 6,
         self.mode = convnext_config["mode"]
-        stochastic_depth_prob = convnext_config["stochastic_depth_prob"]
-        layer_scale = convnext_config["layer_scale"]
+        stochastic_depth_prob = convnext_config["stochastic_depth_prob"] #consider having this change with the block_setting
+        layer_scale = float(convnext_config["layer_scale"])
         num_classes = convnext_config["num_classes"]
+        self.num_classes = convnext_config["num_classes"]
         in_chans = convnext_config["in_chans"]
-        block: Optional[Callable[..., nn.Module]] = None,
-        conv_layer = DEFAULT_CONV_LAYER,
-        norm_layer = DEFAULT_NORM_LAYER,
-        logit_bias = convnext_config["logit_bias"],
-        logit_temperature = convnext_config["logit_temperature"],
+        block = None
+        conv_layer = DEFAULT_CONV_LAYER
+        self.conv_layer = DEFAULT_CONV_LAYER
+        norm_layer = DEFAULT_NORM_LAYER
+        self.norm_layer = DEFAULT_NORM_LAYER
+        logit_bias = convnext_config["logit_bias"]
+        logit_temperature = convnext_config["logit_temperature"]
     #     **kwargs: Any,
     # ) -> None:
 
