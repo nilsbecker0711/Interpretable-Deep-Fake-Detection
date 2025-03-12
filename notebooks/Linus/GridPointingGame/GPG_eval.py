@@ -22,6 +22,8 @@ from LIME_eval import LIMEEvaluator  # Adjust the import path if needed.
 
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
+from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
+
 
 
 XAI_METHOD = "lime"
@@ -30,12 +32,12 @@ GRID_SPLIT = 3
 REAL_DIR = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
 FAKE_DIR = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"
 MAX_GRIDS = 2
-MODEL_PATH = os.path.join(PROJECT_PATH, "training", "config", "detector", "xception.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
 
 ADDITIONAL_ARGS = {
     "model_name": "xception",
     "test_batchSize": 12,
-    "pretrained": os.path.join(PROJECT_PATH, "weights", "resnet", "ckpt_best.pth")
+    "pretrained": os.path.join(PROJECT_PATH, "weights/resnet/ckpt_best.pth")
 }
 
 def load_model(config):
@@ -116,6 +118,8 @@ class RankedGPGCreator:
         self.model_name = model_name
         self.weights_name = weights_name
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         
         # Create subdirectories for 3-channel and 6-channel grids.
         self.output_dir_3ch = os.path.join(self.output_folder, "3ch")
@@ -155,42 +159,40 @@ class RankedGPGCreator:
         return png_files
 
     def pre_assess_images(self):
-        """
-        Pre-assess real images using the provided model.
-        Nutzt entweder den DataLoader (falls vorhanden) oder die Dateisuche.
-        """
         real_images = get_images_from_dataloader(self.real_loader)
         print(f"[DEBUG] Loaded {len(real_images)} real images from DataLoader.")
         
-        correct_confidences = []   # For images predicted as real (label 0)
-        incorrect_confidences = [] # For images predicted incorrectly (not 0)
-
+        correct_confidences = []   # Für Bilder, die als real (Label 0) klassifiziert werden
+        incorrect_confidences = [] # Für falsch klassifizierte Bilder
+    
         for img_tensor in real_images:
-            img_tensor = img_tensor.unsqueeze(0)  # shape: [1, 3, H, W]
+            # Füge eine Batch-Dimension hinzu und verschiebe auf das Device, auf dem das Modell liegt.
+            img_tensor = img_tensor.unsqueeze(0).to(self.device)  # shape: [1, 3, H, W]
             with torch.no_grad():
-                true_label = 0  # ground-truth for real images
+                true_label = 0  # ground-truth für reale Bilder
+                # Verschiebe auch den Label-Tensor auf das gleiche Device.
                 data_dict = {
                     'image': img_tensor,
-                    'label': torch.tensor([true_label])  # remains on CPU
+                    'label': torch.tensor([true_label]).to(self.device)
                 }
                 output = self.model(data_dict)
                 logits = output['cls']
                 predicted_label = logits.argmax(dim=1).item()
                 confidence = logits[0, predicted_label].item()
-
+    
             if predicted_label == true_label:
                 correct_confidences.append((img_tensor, confidence))
             else:
                 incorrect_confidences.append((img_tensor, confidence))
                 print(f"[DEBUG] Including misclassified real image with confidence {confidence}")
-
+    
         if correct_confidences:
             correct_confidences.sort(key=lambda x: x[1], reverse=True)
             ranked = [tensor for tensor, conf in correct_confidences]
         else:
             incorrect_confidences.sort(key=lambda x: x[1])
             ranked = [tensor for tensor, conf in incorrect_confidences]
-
+    
         return ranked
 
     def pre_assess_fake_images(self):
@@ -336,6 +338,23 @@ def main():
     weights_name = os.path.basename(pretrained_path).split('.')[0]
     
     from train import prepare_testing_data
+
+    """
+    test_set = DeepfakeAbstractBaseDataset(
+                    config=config,
+                    mode='test',
+            )
+    test_data_loader = \
+            torch.utils.data.DataLoader(
+                dataset=test_set,
+                batch_size=config['test_batchSize'],
+                shuffle=False,
+                num_workers=int(config['workers']),
+                collate_fn=test_set.collate_fn,
+                drop_last = (test_name=='DeepFakeDetection'),
+            )
+    """
+    
     test_data_loaders = prepare_testing_data(config)
     test_loader = test_data_loaders[list(test_data_loaders.keys())[0]]
     

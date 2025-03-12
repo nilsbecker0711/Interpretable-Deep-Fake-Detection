@@ -29,7 +29,7 @@ with_landmark: false   # whether to include facial landmark information in the i
 
 
 # data augmentation
-dataset_type: 'bcos'
+dataset_type: 
 use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
