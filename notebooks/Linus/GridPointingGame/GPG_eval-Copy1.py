@@ -29,6 +29,8 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 XAI_METHOD = "lime"
 BASE_OUTPUT_DIR = "datasets/GPG_grids"
 GRID_SPLIT = 3
+REAL_DIR = "datasets/FaceForensics++/original_sequences/actors/c40/frames"
+FAKE_DIR = "datasets/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/frames"
 MAX_GRIDS = 2
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
 
@@ -87,11 +89,13 @@ def get_images_from_dataloader(data_loader):
     return all_images
 
 class RankedGPGCreator:
-    def __init__(self, base_output_dir, grid_size=(3, 3), max_grids=2,
+    def __init__(self, real_dir, fake_dir, base_output_dir, grid_size=(3, 3), max_grids=2,
                  model=None, model_name="default", weights_name="default",
-                 real_loader=None, fake_loader=None, dataset=None):
+                 real_loader=None, fake_loader=None):
         """
         Args:
+            real_dir (str): Directory with real images (wird nur genutzt, wenn kein Loader übergeben wird).
+            fake_dir (str): Directory with fake images.
             base_output_dir (str): Base directory in which to save grids.
             grid_size (tuple): Dimensions of the grid (rows, columns).
             max_grids (int): Maximum number of grids to create.
@@ -101,101 +105,129 @@ class RankedGPGCreator:
             real_loader (DataLoader, optional): Falls übergeben, werden reale Bilder aus dem DataLoader geladen.
             fake_loader (DataLoader, optional): Falls übergeben, werden fake Bilder aus dem DataLoader geladen.
         """
+        self.real_dir = real_dir
+        self.fake_dir = fake_dir
         self.grid_size = grid_size
         self.max_grids = max_grids
         self.model = model
         self.real_loader = real_loader
         self.fake_loader = fake_loader
-        self.dataset = dataset  # Store the dataset instance here.
+
+        # Name output folder after model name and weights.
         self.model_name = model_name
         self.weights_name = weights_name
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         
-        # Create subdirectories for 3-channel.
+        # Create subdirectories for 3-channel and 6-channel grids.
         self.output_dir_3ch = os.path.join(self.output_folder, "3ch")
+        self.output_dir_6ch = os.path.join(self.output_folder, "6ch")
         os.makedirs(self.output_dir_3ch, exist_ok=True)
+        os.makedirs(self.output_dir_6ch, exist_ok=True)
 
-        # Process images ranking.
-        self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
-        if os.path.exists(self.ranking_file):
-            self.sorted_confs = self.load_ranking(self.ranking_file)
-            print(f"[DEBUG] Loaded existing sorted confidences from {self.ranking_file}")
+        # Process fake images ranking.
+        self.fake_ranking_file = os.path.join(self.output_folder, "fake_ranking.pkl")
+        if os.path.exists(self.fake_ranking_file):
+            self.fake_images_ranked = self.load_ranking(self.fake_ranking_file)
+            print(f"[DEBUG] Loaded existing fake ranking from {self.fake_ranking_file}")
         else:
-            self.sorted_confs = self.compute_sorted_confs()
-            self.save_ranking(self.sorted_confs, self.ranking_file)
-            print(f"[DEBUG] Saved sorted confidences to {self.ranking_file}")
+            self.fake_images_ranked = self.pre_assess_fake_images()
+            self.save_ranking(self.fake_images_ranked, self.fake_ranking_file)
+            print(f"[DEBUG] Saved fake ranking to {self.fake_ranking_file}")
+            
+        # Process real images ranking.
+        self.ranking_file = os.path.join(self.output_folder, "ranking.pkl")
+        if os.path.exists(self.ranking_file):
+            self.real_images_ranked = self.load_ranking(self.ranking_file)
+            print(f"[DEBUG] Loaded existing real ranking from {self.ranking_file}")
+        else:
+            self.real_images_ranked = self.pre_assess_images()
+            self.save_ranking(self.real_images_ranked, self.ranking_file)
+            print(f"[DEBUG] Saved real ranking to {self.ranking_file}")
 
-    def compute_sorted_confs(self):
-        """
-        Berechnet und speichert Bildindizes sortiert nach der Klassifikationskonfidenz
-        für beide Klassen (0: real, 1: fake). Es werden nur (Bildindex, confidence)-Tupel gespeichert.
-        """
-        ranking = {0: [], 1: []}
-        # Wir gehen davon aus, dass der real_loader beide Klassen enthält.
-        loader = self.real_loader  
-        img_idx = 0
-        with torch.no_grad():
-            for batch in loader:
-                images = batch['image'].to(self.device)  # [batch_size, C, H, W]
-                labels = batch['label'].to(self.device)    # Erwartet als Integer-Tensor
-                output = self.model({'image': images, 'label': labels})
+    def pre_assess_images(self):
+        real_images = get_images_from_dataloader(self.real_loader)
+        print(f"[DEBUG] Loaded {len(real_images)} real images from DataLoader.")
+        
+        correct_confidences = []   # Für Bilder, die als real (Label 0) klassifiziert werden
+        incorrect_confidences = [] # Für falsch klassifizierte Bilder
+    
+        for img_tensor in real_images:
+            # Füge eine Batch-Dimension hinzu und verschiebe auf das Device, auf dem das Modell liegt.
+            img_tensor = img_tensor.unsqueeze(0).to(self.device)  # shape: [1, 3, H, W]
+            with torch.no_grad():
+                true_label = 0  # ground-truth für reale Bilder
+                # Verschiebe auch den Label-Tensor auf das gleiche Device.
+                data_dict = {
+                    'image': img_tensor,
+                    'label': torch.tensor([true_label]).to(self.device)
+                }
+                output = self.model(data_dict)
                 logits = output['cls']
-                # Für jedes Bild in der Batch:
-                for i in range(len(images)):
-                    true_label = int(labels[i].item())
-                    predicted_label = logits[i].argmax().item()
+                predicted_class = logits.argmax(dim=1).item()
+                confidence = logits[0, predicted_class].item()
+                
+                probs = torch.softmax(logits, dim=1)
+                assigned_prob = probs[0, predicted_class].item()  # Definiert vor der if-Abfrage
+    
+            if predicted_class == true_label:
+                correct_confidences.append((img_tensor, confidence))
+            else:
+                incorrect_confidences.append((img_tensor, confidence))
+                #print(f"[DEBUG] Including misclassified real image with confidence {confidence}")
+    
+        if correct_confidences:
+            correct_confidences.sort(key=lambda x: x[1], reverse=True)
+            ranked = [tensor for tensor, conf in correct_confidences]
+        else:
+            incorrect_confidences.sort(key=lambda x: x[1])
+            ranked = [tensor for tensor, conf in incorrect_confidences]
+    
+        return ranked
 
-                    """
-                    # Nur korrekt klassifizierte Bilder berücksichtigen:
-                    if predicted_label == true_label:
-                        confidence = logits[i, predicted_label].item()
-                        ranking[true_label].append((img_idx, confidence))
-                    img_idx += 1
-                    """
-                    
-                    # For real images, include only correctly classified ones.
-                    if true_label == 0:
-                        if predicted_label == true_label:
-                            confidence = logits[i, predicted_label].item()
-                            ranking[true_label].append((img_idx, confidence))
-                    # For fake images, include all regardless of correct classification.
-                    elif true_label == 1:
-                        # Use the confidence for the fake class (index 1)
-                        confidence = logits[i, 1].item()
-                        ranking[true_label].append((img_idx, confidence))
-                    img_idx += 1
-                    
-        # Sortiere für jede Klasse absteigend nach confidence:
-        for cls in ranking:
-            ranking[cls] = sorted(ranking[cls], key=lambda x: x[1], reverse=True)
-        return ranking
-
-    def get_sorted_indices(self):
-        """
-        Select indices from the ranking.
-        For grid creation, we use the top k images per class.
-        """
-        k = self.max_grids  # For each grid, we need one fake image.
-        indices = {}
-        for cls in [0, 1]:
-            cls_list = self.sorted_confs.get(cls, [])
-            indices[cls] = [idx for idx, conf in cls_list[:k * (self.grid_size[0] * self.grid_size[1] - (0 if cls == 0 else 1))]
-                           ]  # For reals, we need grid_cells-1 per grid.
-        return indices
-
-    def get_image_by_index(self, idx):
-        """
-        Gibt das Bild (als Tensor) anhand eines Indexes aus dem Dataset zurück.
-        Voraussetzung: self.dataset ist vorhanden und implementiert __getitem__.
-        """
-        if self.dataset is None:
-            raise ValueError("Kein Dataset übergeben, um Bilder per Index abzurufen.")
-        image, _, _, _ = self.dataset[idx]
-        return image
+    def pre_assess_fake_images(self):
+        fake_images = get_images_from_dataloader(self.fake_loader)
+        print(f"[DEBUG] Loaded {len(fake_images)} fake images from DataLoader.")
+        
+        correct_confidences = []   # Für Bilder, die als fake (Label 1) korrekt klassifiziert werden
+        incorrect_confidences = [] # Für Bilder, die falsch klassifiziert werden
+        
+        for img_tensor in fake_images:
+            img_tensor = img_tensor.unsqueeze(0).to(self.device)  # shape: [1, 3, H, W]
+            with torch.no_grad():
+                true_label = 1  # ground-truth für fake images
+                data_dict = {
+                    'image': img_tensor,
+                    'label': torch.tensor([true_label]).to(self.device)
+                }
+                output = self.model(data_dict)
+                logits = output['cls']
+                predicted_class = logits.argmax(dim=1).item()
+                confidence = logits[0, predicted_class].item()
+                
+                # Optional: Berechne Wahrscheinlichkeit via Softmax (falls das Modell noch nicht softmaxt)
+                probs = torch.softmax(logits, dim=1)
+                assigned_prob = probs[0, predicted_class].item()
+                
+            if predicted_class == true_label:
+                correct_confidences.append((img_tensor, confidence))
+                #print(f"[DEBUG] Correct fake: assigned probability = {assigned_prob:.4f}, confidence = {confidence:.4f}")
+            else:
+                incorrect_confidences.append((img_tensor, confidence))
+                #print(f"[DEBUG] Misclassified fake: predicted {predicted_class} (true {true_label}), assigned probability = {assigned_prob:.4f}, confidence = {confidence:.4f}")
+        
+        if correct_confidences:
+            correct_confidences.sort(key=lambda x: x[1], reverse=True)
+            ranked = [tensor for tensor, conf in correct_confidences]
+        else:
+            incorrect_confidences.sort(key=lambda x: x[1])
+            ranked = [tensor for tensor, conf in incorrect_confidences]
+        
+        return ranked
 
     def save_ranking(self, ranking, file_path):
+        # Da wir nun Tensoren (anstatt Dateipfade) ranken, speichern wir diese mittels pickle.
         with open(file_path, "wb") as f:
             pickle.dump(ranking, f)
 
@@ -219,45 +251,31 @@ class RankedGPGCreator:
             print(f"[DEBUG] Found {len(existing_files)} existing grid files in {self.output_dir_3ch}. Skipping grid creation.")
             return
 
-        print(f"[DEBUG] Creating grids using sorted indices. Output folder: {self.output_folder}")
-        sorted_indices = self.get_sorted_indices()
-        print(f"[DEBUG] Selected sorted indices: {sorted_indices}")
-        
-        # Define ranked_real and ranked_fake from sorted_indices
-        ranked_real = sorted_indices.get(0, [])
-        ranked_fake = sorted_indices.get(1, [])
-
         n_imgs = int(self.grid_size[0]) * int(self.grid_size[1])
         grid_count = 0
         side = int(np.sqrt(n_imgs))  # Assumes a square grid.
         
-        # For each grid, select one fake and (n_imgs - 1) reals.
+        # Kopien der Rankings, damit das Original erhalten bleibt.
+        ranked_real = self.real_images_ranked.copy()
+        ranked_fake = self.fake_images_ranked.copy()
+        
         while grid_count < self.max_grids:
             if len(ranked_fake) < 1:
                 print("[DEBUG] Not enough fake images left, stopping grid creation.")
                 break
             if len(ranked_real) < (n_imgs - 1):
-                print(f"[DEBUG] Not enough real images (need {n_imgs-1}), stopping grid creation.")
+                print(f"[DEBUG] Not enough ranked real images (need {n_imgs-1}), stopping grid creation.")
                 break
-
-            fake_idx = ranked_fake.pop(0)
-            fake_img = self.get_image_by_index(fake_idx)
-            selected_real_indices = ranked_real[:n_imgs - 1]
+            
+            fake_img = ranked_fake.pop(0)
+            selected_real = ranked_real[:n_imgs - 1]
             ranked_real = ranked_real[n_imgs - 1:]
-            selected_real = [self.get_image_by_index(idx) for idx in selected_real_indices]
             
             images = selected_real + [fake_img]
             random.shuffle(images)
             
-            # Find the index of fake_img using torch.equal.
-            fake_index = None
-            for i, img in enumerate(images):
-                if torch.equal(img, fake_img):
-                    fake_index = i
-                    break
-            if fake_index is None:
-                raise ValueError("Fake image not found in the grid images list.")
-                
+            # Bestimme den Index des Fake-Bildes im Grid
+            fake_index = images.index(fake_img)
             final_fake_index = (fake_index % side) * side + (fake_index // side)
             print(f"[DEBUG] Creating grid {grid_count} using fake image. Original fake index: {fake_index}, Final fake index: {final_fake_index}")
             
@@ -275,12 +293,19 @@ class RankedGPGCreator:
             torch.save(grid_tensor, path_3ch)
             print(f"[DEBUG] Saved 3-channel grid tensor to: {path_3ch}")
             
+            six_ch_tensor = torch.cat([grid_tensor, 1.0 - grid_tensor], dim=1)
+            path_6ch = os.path.join(self.output_dir_6ch, base_name)
+            torch.save(six_ch_tensor, path_6ch)
+            print(f"[DEBUG] Saved 6-channel grid tensor to: {path_6ch}")
+            
             grid_count += 1
 
         print("[DEBUG] Grid creation complete.")
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Evaluate grids using a specified model and XAI method.")
+    parser.add_argument("--real_dir", type=str, default=REAL_DIR, help="Directory with real images.")
+    parser.add_argument("--fake_dir", type=str, default=FAKE_DIR, help="Directory with fake images.")
     parser.add_argument("--base_output_dir", type=str, default=BASE_OUTPUT_DIR, help="Base output directory for grids.")
     parser.add_argument("--max_grids", type=int, default=MAX_GRIDS, help="Maximum number of grids to create.")
     parser.add_argument("--xai_method", type=str, default=XAI_METHOD, choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
@@ -292,6 +317,7 @@ def main():
     args = parse_arguments()
     grid_size = (args.grid_split, args.grid_split)
     print(f"[DEBUG] XAI: {args.xai_method}, Base: {args.base_output_dir}, Model: {args.model_path}, Grid: {args.grid_split}x{args.grid_split}")
+    print(f"[DEBUG] Real: {args.real_dir}, Fake: {args.fake_dir}, Max grids: {args.max_grids}")
     
     # Load configuration.
     config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
@@ -318,15 +344,16 @@ def main():
     
     # Instanziere den RankedGPGCreator und übergebe zusätzlich den DataLoader.
     grid_creator = RankedGPGCreator(
+        real_dir=args.real_dir,
+        fake_dir=args.fake_dir,
         base_output_dir=args.base_output_dir,
         grid_size=grid_size,
         max_grids=args.max_grids,
         model=model,
         model_name=model_name,
         weights_name=weights_name,
-        real_loader=test_loader,  # or your test DataLoader
-        fake_loader=test_loader,  # if you don't have a separate fake_loader, pass the same one
-        dataset=test_loader.dataset  # Pass the dataset instance here!
+        real_loader=test_loader,   # Nutze den DataLoader für reale Bilder
+        fake_loader=test_loader    # Falls nötig, auch für Fake-Bilder (oder separaten Loader)
     )
     grid_creator.create_GPG_grids()
 

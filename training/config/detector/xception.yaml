@@ -1,8 +1,10 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/testing_bench
+log_dir: /home/ma/ma_ma/ma_lineuman/Interpretable-Deep-Fake-Detection/logs/testing_bench
 
 # model setting
-pretrained: #/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/xception_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/xception/logs/xception_2025-02-08-09-13-00/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+pretrained: /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/xception_best.pth 
+# /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/xception/logs/xception_2025-02-08-09-13-00/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/xception-b5690688.pth   
+# path to a pre-trained model, if using one
 model_name: xception   # model name
 backbone_name: xception  # backbone name
 
