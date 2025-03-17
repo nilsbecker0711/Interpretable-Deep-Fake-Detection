@@ -24,7 +24,7 @@ from loss import LOSSFUNC
 
 logger = logging.getLogger(__name__)
 
-@DETECTOR.register_module(module_name='vgg19_v2_bcos')
+@DETECTOR.register_module(module_name='vgg11_v2_bcos')
 class VGGBcosDetector(AbstractDetector):
     def __init__(self, config):
         super().__init__()
@@ -67,16 +67,20 @@ class VGGBcosDetector(AbstractDetector):
     def features(self, data_dict: dict) -> torch.tensor:
         return self.backbone.features(data_dict['image'])
 
-    def classifier2(self, features: torch.tensor) -> torch.tensor:
+    def classifier2(self, features: torch.tensor) -> torch.tensor: #Unused
         #print(features.shape)
         #print(self.backbone.classifier(features))
         return self.backbone.classifier(features)
     
-    def classifier(self, features: torch.tensor) -> torch.tensor: #UNUSED!!!
+    def classifier(self, features: torch.tensor) -> torch.tensor:
         #print(features.shape)
         pred = self.backbone.classifier(features)  # [32, 2, 7, 7]
         #pred = F.adaptive_avg_pool2d(pred, 1)  # Pool to [32, 2, 1, 1]
         #pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
+        pred = F.adaptive_avg_pool2d(pred, (1, 1))
+        pred = torch.flatten(pred, 1)
+        #pred = self.backbone.logit_layer(pred)
+        #logger.info(f'Pred: {pred}')
         return pred
         
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
@@ -85,6 +89,9 @@ class VGGBcosDetector(AbstractDetector):
         #pred = F.adaptive_avg_pool2d(pred, 1)
         #pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
         #print(pred.shape)
+        #print(label.shape)
+        #print(f'Pred: = {pred}')
+        #print(f'Label: = {label}')
         loss = self.loss_func(pred, label)
         loss_dict = {'overall': loss}
         return loss_dict
@@ -92,10 +99,8 @@ class VGGBcosDetector(AbstractDetector):
     def get_train_metrics(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
         pred = pred_dict['cls']
-        pred = F.adaptive_avg_pool2d(pred, 1)  # Pool to [32, 2, 1, 1]
-        pred = pred.view(pred.shape[0], -1)  # Flatten to [32, 2]
-        print(pred.shape)
         # compute metrics for batch data
+        #print(calculate_metrics_for_train(label.detach(), pred.detach()))
         auc, eer, acc, ap, rc, f1 = calculate_metrics_for_train(label.detach(), pred.detach())
         metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc': rc, 'f1': f1}
         return metric_batch_dict
@@ -103,7 +108,7 @@ class VGGBcosDetector(AbstractDetector):
     def forward(self, data_dict: dict, inference=False) -> dict:
         features = self.features(data_dict)
         #print(features.shape)
-        pred = self.classifier2(features)
+        pred = self.classifier(features)
         pred = torch.clamp(pred, min=-100, max=100)
         prob = torch.softmax(pred, dim = 1)[:, 1]
         # prob = torch.sigmoid(pred)

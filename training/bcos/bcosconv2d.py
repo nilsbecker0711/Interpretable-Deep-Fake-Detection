@@ -10,6 +10,7 @@ from torch import Tensor
 
 from .common import DetachableModule
 
+
 __all__ = ["NormedConv2d", "BcosConv2d", "BcosConv2dWithScale"]
 
 
