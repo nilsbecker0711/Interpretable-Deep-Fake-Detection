@@ -51,14 +51,14 @@ class Convnext_Bcos_Detector(AbstractDetector):
         # logit_temperature: Optional[float] = None,
         # **kwargs: Any,
         ## CHANGE THIS HERE FOR THE CLUSTER TO NOT MAP LOCATION CPU
-        
-        state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
-        for name, weights in state_dict.items():
-            if 'pointwise' in name:
-                state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
-        backbone.load_state_dict(state_dict, False)
-        logger.info('Load pretrained model successfully!')
+        if config['pretrained'] != 'None':
+            state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
+            for name, weights in state_dict.items():
+                if 'pointwise' in name:
+                    state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
+            state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
+            backbone.load_state_dict(state_dict, False)
+            logger.info('Load pretrained model successfully!')
         return backbone
 
     def build_loss(self, config):
@@ -71,7 +71,7 @@ class Convnext_Bcos_Detector(AbstractDetector):
         return self.backbone.features(data_dict['image']) #32,3,256,256
 
     def classifier(self, features: torch.tensor) -> torch.tensor:
-        return self.backbone.classifier(features)
+        return self.backbone.classifier_impl(features)
     
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
@@ -85,8 +85,8 @@ class Convnext_Bcos_Detector(AbstractDetector):
         label = data_dict['label']
         pred = pred_dict['cls']
         # compute metrics for batch data
-        auc, eer, acc, ap = calculate_metrics_for_train(label.detach(), pred.detach())
-        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap}
+        auc, eer, acc, ap, rc, f1 = calculate_metrics_for_train(label.detach(), pred.detach())
+        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc':rc, 'f1':f1}
         # we dont compute the video-level metrics for training
         self.video_names = []
         return metric_batch_dict
