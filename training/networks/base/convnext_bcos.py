@@ -153,7 +153,7 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.mode = convnext_config["mode"]
         stochastic_depth_prob = convnext_config["stochastic_depth_prob"] #consider having this change with the block_setting
         layer_scale = float(convnext_config["layer_scale"])
-        num_classes = convnext_config["num_classes"]
+        #num_classes = convnext_config["num_classes"]
         self.num_classes = convnext_config["num_classes"]
         in_chans = convnext_config["in_chans"]
         block = None
@@ -248,13 +248,17 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.classifier = nn.Sequential(
             norm_layer(lastconv_output_channels),
             conv_layer(
-                lastconv_output_channels, num_classes, kernel_size=1, bias=False
+                lastconv_output_channels, self.num_classes, kernel_size=1, bias=False
             ),
         )
-        self.num_classes = self.num_classes
+        #self.num_classes = num_classes
+        
+        #declare here as none to test
+        logit_bias = None
+        logit_temperature = None
         self.logit_layer = LogitLayer(
             logit_temperature=logit_temperature,
-            logit_bias=logit_bias or -math.log(num_classes - 1),
+            logit_bias=logit_bias or -math.log(self.num_classes - 1),
         )
 
         for m in self.modules():

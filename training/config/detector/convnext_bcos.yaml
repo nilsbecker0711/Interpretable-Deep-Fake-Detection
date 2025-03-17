@@ -18,16 +18,20 @@ backbone_config:
   # block: Optional[Callable[..., nn.Module]] = None
   # conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER
   # norm_layer: Optional[Callable[..., nn.Module]] = None
-  logit_bias:  None
+#THESE LOGIT PARAMS DO NOT WORK RN - EXPLICITLY DEFINED AS NONE IN CODE
+  logit_bias:  None 
   logit_temperature: None
   # **kwargs: Any
 
 
 # dataset 
-# CHANGE BACK - TOBY CHANGED BC OF PERMISSION DENIED 
-all_dataset: 'FaceShifter' #[FaceForensics++, FF-F2F] #FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
-train_dataset: 'FaceShifter' #[FaceForensics++, FF-F2F] #[FaceForensics++]
-test_dataset: 'FaceShifter' #[FaceForensics++, FF-F2F] #[FaceForensics++] #, DeepFakeDetection]
+#all_dataset: #[df-tp-ffhq] #[FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
+#train_dataset: #[df-tp-ffhq] #[FaceForensics++]
+#test_dataset: #[df-tp-ffhq] #[FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
+train_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c40  # compression-level for videos
 train_batchSize: 32   # training batch size
@@ -40,7 +44,8 @@ with_landmark: false   # whether to include facial landmark information in the i
 
 
 # data augmentation
-use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+dataset_type: "bcos"
+use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.0

@@ -71,7 +71,7 @@ class Convnext_Bcos_Detector(AbstractDetector):
         return self.backbone.features(data_dict['image']) #32,3,256,256
 
     def classifier(self, features: torch.tensor) -> torch.tensor:
-        return self.backbone.classifier(features)
+        return self.backbone.classifier_impl(features)
     
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
@@ -85,8 +85,8 @@ class Convnext_Bcos_Detector(AbstractDetector):
         label = data_dict['label']
         pred = pred_dict['cls']
         # compute metrics for batch data
-        auc, eer, acc, ap = calculate_metrics_for_train(label.detach(), pred.detach())
-        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap}
+        auc, eer, acc, ap, rc, f1 = calculate_metrics_for_train(label.detach(), pred.detach())
+        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc':rc, 'f1':f1}
         # we dont compute the video-level metrics for training
         self.video_names = []
         return metric_batch_dict
