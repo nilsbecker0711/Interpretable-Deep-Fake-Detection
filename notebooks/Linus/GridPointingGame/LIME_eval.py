@@ -27,18 +27,13 @@ class LIMEEvaluator:
     LIMEEvaluator loads a detector model using the provided configuration
     and provides methods for generating LIME explanations on pre-saved grid tensors.
     """
-    def __init__(self, config, model=None):
+    def __init__(self, config, model=None, device=None):
         self.config = config
-        if model is None:
-            print("Registered models:", DETECTOR.data.keys())
-            model_class = DETECTOR[self.config['model_name']]
-            self.model = model_class(self.config)
-        else:
-            self.model = model
-        
+        self.model = model
+        self.device = device
         self.model.eval()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+        
         print(f"[DEBUG] Loaded {self.model.__class__.__name__} model onto {self.device}")
 
         self.transform = transforms.ToTensor()
@@ -165,7 +160,7 @@ class LIMEEvaluator:
                 grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
             else:
                 grid_accuracy = 0
-            print(f"[DEBUG] For grid {os.path.basename(path)}: true position {true_fake_pos}, predicted {fake_pred}, grid metric: {grid_accuracy:.3f}")
+            print(f"[DEBUG] For grid {os.path.basename(path)}: true position {true_fake_pos}, predicted {fake_pred}, grid accuracy: {grid_accuracy:.3f}")
 
             # Left: Original image
             ax[0].imshow(img_np)
