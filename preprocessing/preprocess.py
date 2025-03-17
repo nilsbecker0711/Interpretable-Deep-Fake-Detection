@@ -233,7 +233,8 @@ def video_manipulate(
 
     # Define face detector and predictor models
     face_detector = dlib.get_frontal_face_detector()
-    predictor_path = 'D:\GIT Repos\Interpretable-Deep-Fake-Detection\preprocessing\dlib_tools\shape_predictor_81_face_landmarks.dat'
+    #predictor_path = 'D:\GIT Repos\Interpretable-Deep-Fake-Detection\preprocessing\dlib_tools\shape_predictor_81_face_landmarks.dat'
+    predictor_path = "/home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/preprocessing/dlib_tools/shape_predictor_81_face_landmarks.dat"
     ## Check if predictor path exists
     if not os.path.exists(predictor_path):
         logger.error(f"Predictor path does not exist: {predictor_path}")
@@ -413,8 +414,8 @@ def preprocess(dataset_path, mask_path, mode, num_frames, stride, logger):
 
 if __name__ == '__main__':
     # from config.yaml load parameters
-    #yaml_path = './config.yaml'
-    yaml_path = 'preprocessing\config.yaml'
+    yaml_path = './config.yaml'
+    #yaml_path = 'preprocessing\config.yaml'
     # open the yaml file
     try:
         with open(yaml_path, 'r') as f:
@@ -435,7 +436,7 @@ if __name__ == '__main__':
     print(dataset_path)
 
     # Create logger
-    log_path = f'preprocessing/logs/{dataset_name}.log'
+    log_path = f'./logs/{dataset_name}.log'
     logger = create_logger(log_path)
 
     # Define dataset path based on the input arguments
