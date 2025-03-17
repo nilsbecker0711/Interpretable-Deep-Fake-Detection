@@ -53,7 +53,7 @@ def calculate_metrics_for_train(label, output):
                                                  pos_label=1)
     except:
         # for the case when we only have one sample
-        return None, None, accuracy, ap
+        return None, None, accuracy, ap, None, None
 
     if np.isnan(fpr[0]) or np.isnan(tpr[0]):
         # for the case when all the samples within a batch is fake/real
