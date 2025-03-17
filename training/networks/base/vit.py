@@ -34,7 +34,7 @@ import torch
 from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch import Tensor, nn
-from bcos.modules import BcosConv2d, LogitLayer, norms
+from bcos.modules import DetachableGNLayerNorm2d, BcosConv2d, LogitLayer, norms, BcosLinear
 
 from bcos.modules.common import DetachableModule
 from metrics.registry import BACKBONE
@@ -61,7 +61,6 @@ def exists(x: Any) -> bool:
 
 def pair(t: Any) -> Tuple[Any, Any]:
     return t if isinstance(t, tuple) else (t, t)
-
 
 # classes
 class PosEmbSinCos2d(nn.Module):
@@ -144,6 +143,8 @@ class Attention(DetachableModule):
         self.to_out = linear_layer(inner_dim, dim, bias=False)
 
     def forward(self, x: Tensor) -> Tensor:
+        print(x.shape)
+        # x= x.unsqueeze(-1)
         x = self.norm(x)
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=self.heads), qkv)
@@ -234,33 +235,40 @@ class SimpleViT(nn.Module):
     def __init__(self, vit_config):
         #_warn_if_not_called_from_bcos_models_pretrained_or_torch_hub()
         super(SimpleViT, self).__init__()
+        image_size=14
+        patch_size=1
+        depth=12- 1  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
+        dim=384 // 2
+        heads=6 // 2
+        mlp_dim=1536 // 2
+        conv_stem=None#[24, 48, 96, 192]
+
         num_classes = vit_config['num_classes']
-        dim = vit_config['dim']
-        depth = vit_config['depth']
-        heads = vit_config['heads']
-        mlp_dim = vit_config['mlp_dim']
+        # dim = 384 // 2 #vit_config['dim']
+        # depth = 12 #vit_config['depth']
+        # heads = vit_config['heads']
+        # mlp_dim = vit_config['mlp_dim']
         channels = vit_config.get('channels', 6)  # Default to 6 if not provided
-        norm2d_layer = vit_config.get('norm2d_layer', None)
-        conv2d_layer = vit_config.get('conv2d_layer', None)
-        image_size = vit_config['image_size']
-        patch_size = vit_config['patch_size']
         b = vit_config['b']
         max_out = vit_config['max_out']
-        
+        # image_size = vit_config['image_size']
+        # patch_size = vit_config['patch_size']
 
         #_ = kwargs  # Ignore additional experiment parameters...
         image_height, image_width = pair(image_size)
         patch_height, patch_width = pair(patch_size)
 
-        linear_layer = BcosLinear(b=b, max_out=max_out) # in_features: int, out_features: int, bias: bool = False, device=None, dtype=None,
-        #vit_config.get('linear_layer', None)
-        norm_layer = norms.NoBias(norms.DetachablePositionNorm2d)  #vit_config.get('norm_layer', None)
+        linear_layer = BcosLinear #(b=b, max_out=max_out) # in_features: int, out_features: int, bias: bool = False, device=None, dtype=None,
+        conv2d_layer = BcosConv2d #(b=b, max_out=1) # vit_config.get('conv2d_layer', None)
+
+        norm_layer = norms.NoBias(nn.LayerNorm) #norms.NoBias(norms.DetachablePositionNorm2d)#norms.NoBias(norms.BatchNormUncentered2d) #vit_config.get('norm_layer', None)
+        norm2d_layer = norms.NoBias(nn.LayerNorm) #norms.NoBias(norms.DetachablePositionNorm2d)#vit_config.get('norm2d_layer', None)
         act_layer = nn.Identity #vit_config.get('act_layer', None)
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
         assert exists(act_layer), "Provide a activation layer class!"
         
-        conv_stem = vit_config.get('conv_stem', None)  # Default to None if not provided
+        # conv_stem = vit_config.get('conv_stem', None)  # Default to None if not provided
         if conv_stem:
             assert exists(
                 conv2d_layer
@@ -296,7 +304,7 @@ class SimpleViT(nn.Module):
                     p1=patch_height,
                     p2=patch_width,
                 ),
-                linear=linear_layer(self.patch_dim, dim),
+                linear=linear_layer(self.patch_dim, dim),#, b=b, max_out=max_out),
             )
         )
         self.positional_embedding = PosEmbSinCos2d()
@@ -317,7 +325,7 @@ class SimpleViT(nn.Module):
         self.linear_head = nn.Sequential(
             OrderedDict(
                 norm=norm_layer(dim),
-                linear=linear_layer(dim, num_classes),
+                linear=linear_layer(dim, num_classes),# b=b, max_out=max_out),
             )
         )
         self.logit_bias = vit_config['logit_bias']
@@ -325,24 +333,25 @@ class SimpleViT(nn.Module):
         #TODO: adapt sequential of model then logit layer BcosSequential(model, self.logit_layer)
 
     def forward(self, img):
-        x = self.features(inp)
+        x = self.features(img)
         out = self.classifier(x)
         return out
 
     def features(self, inp):
-        x = self.to_patch_embedding(img)
+        print(inp.shape)
+        x = self.to_patch_embedding(inp)
         pe = self.positional_embedding(x)
         x = rearrange(x, "b ... d -> b (...) d") + pe
 
+        print(x.shape)
         x = self.transformer(x)
         x = x.mean(dim=1)
-
         x = self.to_latent(x)
         return x
     
     def classifier(self, x):
         x = self.linear_head(x)
-        x = logit_layer(x)
+        x = self.logit_layer(x)
         return x
 
     def initialize_weights(self, module):
@@ -359,7 +368,7 @@ class SimpleViT(nn.Module):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
         # Recursively apply to custom modules
-        elif isinstance(module, (Bottleneck, BasicBlock, BcosConv2d)):
+        elif isinstance(module, (BcosConv2d, LogitLayer, BcosLinear, FeedForward, Encoder, nn.Identity)):
             for submodule in module.children():
                 self.initialize_weights(submodule)
         # Ignore activation, pooling, and sequential layers

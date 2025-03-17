@@ -518,7 +518,7 @@ class DeepfakeBcosDataset(data.Dataset):
         transformed = self.transform(img) #**kwargs)
         
         # Get the augmented image, landmark, and mask
-        augmented_img = transformed#['image']
+        augmented_img = transformed #['image']
         if landmark is not None:
             augmented_landmark = transformed.get('keypoints')
         if mask is not None:

@@ -37,6 +37,7 @@ from torch.hub import load_state_dict_from_url
 # from torch.utils.model_zoo import load_url as load_state_dict_from_url
 # from torchvision.models.utils import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
+from bcos import BcosUtilMixin
 
 
 
@@ -260,7 +261,7 @@ class Bottleneck(nn.Module):
 
 
 @BACKBONE.register_module(module_name="resnet34_bcos_v2_minimal")
-class ResNet34_bcos_v2_minimal(nn.Module):
+class ResNet34_bcos_v2_minimal(BcosUtilMixin, nn.Module):
     def __init__(
         self, resnet_config
     ):

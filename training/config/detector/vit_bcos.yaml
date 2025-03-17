@@ -24,22 +24,22 @@ backbone_config:
   # mode: Original
   #small_inputs: false
   #stochastic_depth_prob: 0.0
-  logit_bias: #None
+  logit_bias: 1.0 #None
   logit_temperature: 1 #None
   b: 1.25
-  image_size: 14 # Union[int, Tuple[int, int]],
-  patch_size: 1 # Union[int, Tuple[int, int]],
-  dim: 192
-  depth: 11 # 12-1
-  heads: 3
-  mlp_dim: 768
-  max_out: 1
+  image_size: 224 #14 # Union[int, Tuple[int, int]],
+  patch_size: 16 # Union[int, Tuple[int, int]],
+  dim: 384 #192
+  depth: 12 # 12-1
+  heads: 6
+  mlp_dim: 1536
+  max_out: 1.0
   #linear_layer: Callable[..., nn.Module] = None,
   #norm_layer: Callable[..., nn.Module] = None,
   #act_layer: Callable[..., nn.Module] = None,
   #norm2d_layer: Callable[..., nn.Module] = None,
   #conv2d_layer: Callable[..., nn.Module] = None,
-  conv_stem: [24, 48, 96, 192]
+  conv_stem: #[24, 48, 96, 192]
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
