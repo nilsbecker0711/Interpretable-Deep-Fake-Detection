@@ -36,3 +36,6 @@ label_dict:
   # Roop
   roop_Real: 0
   roop_Fake: 1
+  #df-tp-ffhq
+  ffhq_imgs: 0
+  stylegan2_psi1.0: 1
