@@ -17,6 +17,8 @@ from .inception_bcos_detector import InceptionBcosDetector
 from .xception_detector import XceptionDetector
 from .vgg2_bcos_detector import VGGBcosDetector
 from .vit_bcos_detector import ViTBcosDetector
+from .convnext_bcos_dector import Convnext_Bcos_Detector
+from .vgg19_v2_bcos_detector import VGGBcosDetector
 
 """ from .facexray_detector import FaceXrayDetector
 from .facexray_detector import FaceXrayDetector

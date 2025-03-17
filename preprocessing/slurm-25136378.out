@@ -1,167 +1,0 @@
-Running on uc2n249.localdomain
-Date: Mo 13. Jan 12:21:13 CET 2025
-Python version: Python 3.9.18
-Environment: # conda environments:
-#
-new_env                  /home/ma/ma_ma/ma_tischuet/.conda/envs/new_env
-base                     /opt/bwhpc/common/devel/miniconda/23.9.0-py3.9.15
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP_general
-                         /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_backup
-                      *  /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
-2025-01-13 12:21:46,387 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:22:05,625 - WARNING - No faces in frame 563 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40/videos/720.mp4
-2025-01-13 12:22:05,654 - INFO - Current time: 2025-01-13 12:22:05
- 10%|█         | 1/10 [00:14<02:09, 14.40s/it]2025-01-13 12:22:07,004 - INFO - Current time: 2025-01-13 12:22:07
- 20%|██        | 2/10 [00:15<00:53,  6.72s/it]2025-01-13 12:22:15,693 - INFO - Current time: 2025-01-13 12:22:15
- 30%|███       | 3/10 [00:24<00:53,  7.62s/it]2025-01-13 12:22:16,017 - INFO - Current time: 2025-01-13 12:22:16
- 40%|████      | 4/10 [00:24<00:28,  4.74s/it]2025-01-13 12:22:16,256 - INFO - Current time: 2025-01-13 12:22:16
- 50%|█████     | 5/10 [00:24<00:15,  3.12s/it]2025-01-13 12:22:16,409 - INFO - Current time: 2025-01-13 12:22:16
- 60%|██████    | 6/10 [00:25<00:08,  2.11s/it]2025-01-13 12:22:16,490 - INFO - Current time: 2025-01-13 12:22:16
-2025-01-13 12:22:16,573 - INFO - Current time: 2025-01-13 12:22:16
- 80%|████████  | 8/10 [00:25<00:02,  1.11s/it]2025-01-13 12:22:18,251 - INFO - Current time: 2025-01-13 12:22:18
- 90%|█████████ | 9/10 [00:26<00:01,  1.26s/it]2025-01-13 12:22:36,343 - INFO - Current time: 2025-01-13 12:22:36
-100%|██████████| 10/10 [00:45<00:00,  5.82s/it]100%|██████████| 10/10 [00:45<00:00,  4.51s/it]
-2025-01-13 12:22:36,344 - INFO - Total time taken: 0.83 minutes
-2025-01-13 12:22:36,349 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40
-2025-01-13 12:22:40,070 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:22:40,819 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 12:22:41,794 - WARNING - No faces in frame 18 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-2025-01-13 12:22:41,952 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
-2025-01-13 12:22:41,962 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 12:22:58,579 - WARNING - No faces in frame 609 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__walking_down_indoor_hall_disgust.mp4
-2025-01-13 12:23:15,798 - WARNING - No faces in frame 559 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-2025-01-13 12:23:15,805 - INFO - Current time: 2025-01-13 12:23:15
- 10%|█         | 1/10 [00:35<05:15, 35.09s/it]2025-01-13 12:23:15,844 - WARNING - No faces in frame 552 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 12:23:15,851 - INFO - Current time: 2025-01-13 12:23:15
-2025-01-13 12:23:16,132 - INFO - Current time: 2025-01-13 12:23:16
- 30%|███       | 3/10 [00:35<01:04,  9.22s/it]2025-01-13 12:23:16,319 - INFO - Current time: 2025-01-13 12:23:16
- 40%|████      | 4/10 [00:35<00:36,  6.09s/it]2025-01-13 12:23:16,573 - WARNING - No faces in frame 535 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
-2025-01-13 12:23:16,579 - INFO - Current time: 2025-01-13 12:23:16
- 50%|█████     | 5/10 [00:35<00:20,  4.16s/it]2025-01-13 12:23:16,869 - WARNING - No faces in frame 1093 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__podium_speech_happy.mp4
-2025-01-13 12:23:16,876 - INFO - Current time: 2025-01-13 12:23:16
- 60%|██████    | 6/10 [00:36<00:11,  2.92s/it]2025-01-13 12:23:17,164 - INFO - Current time: 2025-01-13 12:23:17
- 70%|███████   | 7/10 [00:36<00:06,  2.09s/it]2025-01-13 12:23:17,240 - WARNING - No faces in frame 802 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 12:23:17,245 - INFO - Current time: 2025-01-13 12:23:17
-2025-01-13 12:23:17,950 - INFO - Current time: 2025-01-13 12:23:17
- 90%|█████████ | 9/10 [00:37<00:01,  1.29s/it]2025-01-13 12:23:18,266 - INFO - Current time: 2025-01-13 12:23:18
-100%|██████████| 10/10 [00:37<00:00,  1.04s/it]100%|██████████| 10/10 [00:37<00:00,  3.76s/it]
-2025-01-13 12:23:18,266 - INFO - Total time taken: 0.70 minutes
-2025-01-13 12:23:18,277 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40
-2025-01-13 12:23:18,277 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
-2025-01-13 12:23:18,277 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
-2025-01-13 12:23:18,277 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/183_253.mp4
-2025-01-13 12:23:18,277 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/183_253.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:23:31,012 - INFO - Current time: 2025-01-13 12:23:31
- 10%|█         | 1/10 [00:08<01:16,  8.49s/it]2025-01-13 12:23:31,984 - INFO - Current time: 2025-01-13 12:23:31
- 20%|██        | 2/10 [00:09<00:32,  4.07s/it]2025-01-13 12:23:40,966 - INFO - Current time: 2025-01-13 12:23:40
- 30%|███       | 3/10 [00:18<00:44,  6.31s/it]2025-01-13 12:23:41,073 - INFO - Current time: 2025-01-13 12:23:41
- 40%|████      | 4/10 [00:18<00:23,  3.86s/it]2025-01-13 12:23:41,750 - INFO - Current time: 2025-01-13 12:23:41
- 50%|█████     | 5/10 [00:19<00:13,  2.71s/it]2025-01-13 12:23:41,808 - INFO - Current time: 2025-01-13 12:23:41
-2025-01-13 12:23:41,921 - INFO - Current time: 2025-01-13 12:23:41
- 70%|███████   | 7/10 [00:19<00:04,  1.38s/it]2025-01-13 12:23:42,712 - INFO - Current time: 2025-01-13 12:23:42
- 80%|████████  | 8/10 [00:20<00:02,  1.22s/it]2025-01-13 12:23:43,640 - INFO - Current time: 2025-01-13 12:23:43
- 90%|█████████ | 9/10 [00:21<00:01,  1.14s/it]2025-01-13 12:24:02,194 - INFO - Current time: 2025-01-13 12:24:02
-100%|██████████| 10/10 [00:39<00:00,  6.06s/it]100%|██████████| 10/10 [00:39<00:00,  3.97s/it]
-2025-01-13 12:24:02,195 - INFO - Total time taken: 0.73 minutes
-2025-01-13 12:24:02,203 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40
-2025-01-13 12:24:02,203 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
-2025-01-13 12:24:02,203 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
-2025-01-13 12:24:02,203 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40/videos/183_253.mp4
-2025-01-13 12:24:02,203 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40/videos/183_253.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:24:14,626 - INFO - Current time: 2025-01-13 12:24:14
- 10%|█         | 1/10 [00:08<01:12,  8.08s/it]2025-01-13 12:24:15,781 - INFO - Current time: 2025-01-13 12:24:15
- 20%|██        | 2/10 [00:09<00:32,  4.01s/it]2025-01-13 12:24:25,204 - INFO - Current time: 2025-01-13 12:24:25
- 30%|███       | 3/10 [00:18<00:45,  6.48s/it]2025-01-13 12:24:25,522 - INFO - Current time: 2025-01-13 12:24:25
- 40%|████      | 4/10 [00:18<00:24,  4.05s/it]2025-01-13 12:24:25,660 - INFO - Current time: 2025-01-13 12:24:25
- 50%|█████     | 5/10 [00:19<00:13,  2.64s/it]2025-01-13 12:24:25,741 - INFO - Current time: 2025-01-13 12:24:25
-2025-01-13 12:24:25,941 - INFO - Current time: 2025-01-13 12:24:25
- 70%|███████   | 7/10 [00:19<00:04,  1.37s/it]2025-01-13 12:24:26,354 - INFO - Current time: 2025-01-13 12:24:26
- 80%|████████  | 8/10 [00:19<00:02,  1.12s/it]2025-01-13 12:24:26,375 - INFO - Current time: 2025-01-13 12:24:26
-2025-01-13 12:24:48,756 - INFO - Current time: 2025-01-13 12:24:48
-100%|██████████| 10/10 [00:42<00:00,  5.47s/it]100%|██████████| 10/10 [00:42<00:00,  4.22s/it]
-2025-01-13 12:24:48,757 - INFO - Total time taken: 0.78 minutes
-2025-01-13 12:24:48,761 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40
-2025-01-13 12:24:48,765 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
-2025-01-13 12:24:48,766 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
-2025-01-13 12:24:48,768 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/183_253.mp4
-2025-01-13 12:24:48,768 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/183_253.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:25:01,550 - INFO - Current time: 2025-01-13 12:25:01
- 10%|█         | 1/10 [00:08<01:15,  8.36s/it]2025-01-13 12:25:02,566 - INFO - Current time: 2025-01-13 12:25:02
- 20%|██        | 2/10 [00:09<00:32,  4.04s/it]2025-01-13 12:25:11,544 - INFO - Current time: 2025-01-13 12:25:11
- 30%|███       | 3/10 [00:18<00:44,  6.30s/it]2025-01-13 12:25:11,646 - INFO - Current time: 2025-01-13 12:25:11
- 40%|████      | 4/10 [00:18<00:23,  3.85s/it]2025-01-13 12:25:11,954 - INFO - Current time: 2025-01-13 12:25:11
- 50%|█████     | 5/10 [00:18<00:12,  2.57s/it]2025-01-13 12:25:12,000 - INFO - Current time: 2025-01-13 12:25:12
-2025-01-13 12:25:12,228 - INFO - Current time: 2025-01-13 12:25:12
- 70%|███████   | 7/10 [00:19<00:04,  1.34s/it]2025-01-13 12:25:12,796 - INFO - Current time: 2025-01-13 12:25:12
- 80%|████████  | 8/10 [00:19<00:02,  1.13s/it]2025-01-13 12:25:12,911 - INFO - Current time: 2025-01-13 12:25:12
- 90%|█████████ | 9/10 [00:19<00:00,  1.17it/s]2025-01-13 12:25:32,902 - INFO - Current time: 2025-01-13 12:25:32
-100%|██████████| 10/10 [00:39<00:00,  6.26s/it]100%|██████████| 10/10 [00:39<00:00,  3.97s/it]
-2025-01-13 12:25:32,903 - INFO - Total time taken: 0.74 minutes
-2025-01-13 12:25:32,912 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40
-2025-01-13 12:25:32,912 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
-2025-01-13 12:25:32,912 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
-2025-01-13 12:25:32,912 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/183_253.mp4
-2025-01-13 12:25:32,912 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/183_253.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:25:45,506 - INFO - Current time: 2025-01-13 12:25:45
- 10%|█         | 1/10 [00:08<01:15,  8.42s/it]2025-01-13 12:25:46,598 - INFO - Current time: 2025-01-13 12:25:46
- 20%|██        | 2/10 [00:09<00:32,  4.11s/it]2025-01-13 12:25:55,456 - INFO - Current time: 2025-01-13 12:25:55
- 30%|███       | 3/10 [00:18<00:43,  6.28s/it]2025-01-13 12:25:55,862 - INFO - Current time: 2025-01-13 12:25:55
- 40%|████      | 4/10 [00:18<00:23,  3.96s/it]2025-01-13 12:25:55,921 - INFO - Current time: 2025-01-13 12:25:55
-2025-01-13 12:25:56,057 - INFO - Current time: 2025-01-13 12:25:56
- 60%|██████    | 6/10 [00:18<00:07,  1.91s/it]2025-01-13 12:25:56,125 - INFO - Current time: 2025-01-13 12:25:56
-2025-01-13 12:25:56,849 - INFO - Current time: 2025-01-13 12:25:56
- 80%|████████  | 8/10 [00:19<00:02,  1.26s/it]2025-01-13 12:25:57,209 - INFO - Current time: 2025-01-13 12:25:57
- 90%|█████████ | 9/10 [00:20<00:01,  1.05s/it]2025-01-13 12:26:16,463 - INFO - Current time: 2025-01-13 12:26:16
-100%|██████████| 10/10 [00:39<00:00,  5.63s/it]100%|██████████| 10/10 [00:39<00:00,  3.94s/it]
-2025-01-13 12:26:16,464 - INFO - Total time taken: 0.73 minutes
-2025-01-13 12:26:16,470 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:26:29,081 - INFO - Current time: 2025-01-13 12:26:29
- 10%|█         | 1/10 [00:08<01:16,  8.45s/it]2025-01-13 12:26:30,167 - INFO - Current time: 2025-01-13 12:26:30
- 20%|██        | 2/10 [00:09<00:32,  4.12s/it]2025-01-13 12:26:39,101 - INFO - Current time: 2025-01-13 12:26:39
- 30%|███       | 3/10 [00:18<00:44,  6.32s/it]2025-01-13 12:26:39,416 - INFO - Current time: 2025-01-13 12:26:39
- 40%|████      | 4/10 [00:18<00:23,  3.95s/it]2025-01-13 12:26:39,554 - INFO - Current time: 2025-01-13 12:26:39
- 50%|█████     | 5/10 [00:18<00:12,  2.57s/it]2025-01-13 12:26:39,723 - INFO - Current time: 2025-01-13 12:26:39
- 60%|██████    | 6/10 [00:19<00:07,  1.76s/it]2025-01-13 12:26:39,762 - INFO - Current time: 2025-01-13 12:26:39
-2025-01-13 12:26:40,916 - INFO - Current time: 2025-01-13 12:26:40
- 80%|████████  | 8/10 [00:20<00:02,  1.18s/it]2025-01-13 12:26:41,763 - INFO - Current time: 2025-01-13 12:26:41
- 90%|█████████ | 9/10 [00:21<00:01,  1.10s/it]2025-01-13 12:27:00,138 - INFO - Current time: 2025-01-13 12:27:00
-100%|██████████| 10/10 [00:39<00:00,  5.78s/it]100%|██████████| 10/10 [00:39<00:00,  3.95s/it]
-2025-01-13 12:27:00,138 - INFO - Total time taken: 0.73 minutes
-2025-01-13 12:27:00,151 - INFO - 10 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40
-2025-01-13 12:27:00,151 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
-2025-01-13 12:27:00,151 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
-2025-01-13 12:27:00,151 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_11__talking_against_wall__9229VVZ3.mp4
-2025-01-13 12:27:00,151 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_11__talking_against_wall__9229VVZ3.mp4
-  0%|          | 0/10 [00:00<?, ?it/s]2025-01-13 12:27:05,656 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
-2025-01-13 12:27:05,864 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
-2025-01-13 12:27:39,870 - INFO - Current time: 2025-01-13 12:27:39
- 10%|█         | 1/10 [00:35<05:18, 35.36s/it]2025-01-13 12:27:39,947 - INFO - Current time: 2025-01-13 12:27:39
-2025-01-13 12:27:40,039 - INFO - Current time: 2025-01-13 12:27:40
- 30%|███       | 3/10 [00:35<01:04,  9.23s/it]2025-01-13 12:27:40,070 - INFO - Current time: 2025-01-13 12:27:40
-2025-01-13 12:27:40,158 - INFO - Current time: 2025-01-13 12:27:40
- 50%|█████     | 5/10 [00:35<00:22,  4.52s/it]2025-01-13 12:27:40,279 - INFO - Current time: 2025-01-13 12:27:40
-2025-01-13 12:27:40,688 - WARNING - No faces in frame 669 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
-2025-01-13 12:27:40,695 - INFO - Current time: 2025-01-13 12:27:40
- 70%|███████   | 7/10 [00:36<00:08,  2.72s/it]2025-01-13 12:27:40,714 - WARNING - No faces in frame 649 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
-2025-01-13 12:27:40,721 - INFO - Current time: 2025-01-13 12:27:40
-2025-01-13 12:27:40,746 - INFO - Current time: 2025-01-13 12:27:40
-2025-01-13 12:27:41,082 - INFO - Current time: 2025-01-13 12:27:41
-100%|██████████| 10/10 [00:36<00:00,  1.49s/it]100%|██████████| 10/10 [00:36<00:00,  3.66s/it]
-2025-01-13 12:27:41,083 - INFO - Total time taken: 0.68 minutes
-2025-01-13 12:27:41,102 - INFO - Face cropping complete!
-
-============================= JOB FEEDBACK =============================
-
-NodeName=uc2n[249,252-253,255]
-Job ID: 25136378
-Cluster: uc2
-User/Group: ma_tischuet/ma_ma
-State: COMPLETED (exit code 0)
-Nodes: 4
-Cores per node: 80
-CPU Utilized: 00:34:14
-CPU Efficiency: 1.54% of 1-13:09:20 core-walltime
-Job Wall-clock time: 00:06:58
-Memory Utilized: 5.91 GB
-Memory Efficiency: 3.03% of 195.31 GB

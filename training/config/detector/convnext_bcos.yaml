@@ -2,31 +2,36 @@
 log_dir: /home/ma/ma_ma/ma_tofuchs/Interpretable-Deep-Fake-Detection/logs/convnext
 
 # model setting
-pretrained: /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/convnext_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/xception/logs/xception_2025-02-08-09-13-00/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+pretrained: None #/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/convnext_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/xception/logs/xception_2025-02-08-09-13-00/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
 model_name: convnext_bcos  # model name
 backbone_name: convnext_bcos  # backbone name
 
 #backbone setting
 backbone_config:
   mode: original
-  stochastic_depth_prob: 0.1  # probability for stochastic depth regularization
+  stochastic_depth_prob: 0.1  #could also be changed to match the block setting
+  num_classes: 2
   layer_scale: 1e-6           # initial scaling factor for layer outputs
-  # block_setting: List[CNBlockConfig]
-  stochastic_depth_prob: 0.0
-  layer_scale: 1e-6
+  # block setting set for tiny but should be changed every time 
+  block_setting: tiny #stick with tiny for now and see if half decent results come out
   in_chans: 6
   # block: Optional[Callable[..., nn.Module]] = None
   # conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER
   # norm_layer: Optional[Callable[..., nn.Module]] = None
-  logit_bias:  None
+#THESE LOGIT PARAMS DO NOT WORK RN - EXPLICITLY DEFINED AS NONE IN CODE
+  logit_bias:  None 
   logit_temperature: None
   # **kwargs: Any
 
 
-# dataset
+# dataset 
+#all_dataset: #[df-tp-ffhq] #[FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
+#train_dataset: #[df-tp-ffhq] #[FaceForensics++]
+#test_dataset: #[df-tp-ffhq] #[FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, DeepFakeDetection]
+test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c40  # compression-level for videos
 train_batchSize: 32   # training batch size
@@ -39,7 +44,8 @@ with_landmark: false   # whether to include facial landmark information in the i
 
 
 # data augmentation
-use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+dataset_type: "bcos"
+use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.0
@@ -61,7 +67,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0002  # learning rate
+    lr: 0.0002  # learning rate #orig: 0.0002
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer

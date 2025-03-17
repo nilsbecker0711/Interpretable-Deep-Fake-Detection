@@ -73,6 +73,8 @@ class CNBlock(nn.Module):
             ),
             # Permute([0, 3, 1, 2]),
         )
+        print("dim:", dim, "type:", type(dim))
+        print("layer_scale:", layer_scale, "type:", type(layer_scale))
         self.layer_scale = nn.Parameter(torch.ones(dim, 1, 1) * layer_scale)
         self.stochastic_depth = StochasticDepth(stochastic_depth_prob, "row")
 
@@ -105,21 +107,65 @@ class CNBlockConfig:
 
 @BACKBONE.register_module(module_name='convnext_bcos')
 class BcosConvNeXt(BcosUtilMixin, nn.Module):
-    def __init__(
-        self,
-        block_setting: List[CNBlockConfig],
-        stochastic_depth_prob: float = 0.0,
-        layer_scale: float = 1e-6,
-        num_classes: int = 1000,
-        in_chans: int = 6,
-        block: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
-        logit_bias: Optional[float] = None,
-        logit_temperature: Optional[float] = None,
-        **kwargs: Any,
-    ) -> None:
+    def __init__( self, convnext_config ):
         super().__init__()
+        block_setting = convnext_config['block_setting']
+        
+        if convnext_config['block_setting'] == "tiny":
+              block_setting =[
+        CNBlockConfig(96, 192, 3),
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 9),
+        CNBlockConfig(768, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "small":
+                block_setting = [
+        CNBlockConfig(96, 192, 3),
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 27),
+        CNBlockConfig(768, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "atto":
+                block_setting = [
+        CNBlockConfig(40, 80, 2),
+        CNBlockConfig(80, 160, 2),
+        CNBlockConfig(160, 320, 6),
+        CNBlockConfig(320, None, 2),
+    ]
+        elif convnext_config['block_setting'] == "base":
+                block_setting = [
+        CNBlockConfig(128, 256, 3),
+        CNBlockConfig(256, 512, 3),
+        CNBlockConfig(512, 1024, 27),
+        CNBlockConfig(1024, None, 3),
+    ]
+        elif convnext_config['block_setting'] == "large":
+                block_setting = [
+        CNBlockConfig(192, 384, 3),
+        CNBlockConfig(384, 768, 3),
+        CNBlockConfig(768, 1536, 27),
+        CNBlockConfig(1536, None, 3),
+    ]
+    #     stochastic_depth_prob: float = 0.0,
+    #     layer_scale: float = 1e-6,
+    #     num_classes: int = 1000,
+    #     in_chans: int = 6,
+        self.mode = convnext_config["mode"]
+        stochastic_depth_prob = convnext_config["stochastic_depth_prob"] #consider having this change with the block_setting
+        layer_scale = float(convnext_config["layer_scale"])
+        #num_classes = convnext_config["num_classes"]
+        self.num_classes = convnext_config["num_classes"]
+        in_chans = convnext_config["in_chans"]
+        block = None
+        conv_layer = DEFAULT_CONV_LAYER
+        self.conv_layer = DEFAULT_CONV_LAYER
+        norm_layer = DEFAULT_NORM_LAYER
+        self.norm_layer = DEFAULT_NORM_LAYER
+        logit_bias = convnext_config["logit_bias"]
+        logit_temperature = convnext_config["logit_temperature"]
+    #     **kwargs: Any,
+    # ) -> None:
+
         # _log_api_usage_once(self)
 
         if not block_setting:
@@ -202,13 +248,17 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.classifier = nn.Sequential(
             norm_layer(lastconv_output_channels),
             conv_layer(
-                lastconv_output_channels, num_classes, kernel_size=1, bias=False
+                lastconv_output_channels, self.num_classes, kernel_size=1, bias=False
             ),
         )
-        self.num_classes = num_classes
+        #self.num_classes = num_classes
+        
+        #declare here as none to test
+        logit_bias = None
+        logit_temperature = None
         self.logit_layer = LogitLayer(
             logit_temperature=logit_temperature,
-            logit_bias=logit_bias or -math.log(num_classes - 1),
+            logit_bias=logit_bias or -math.log(self.num_classes - 1),
         )
 
         for m in self.modules():
@@ -216,17 +266,26 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
                 nn.init.trunc_normal_(m.weight, std=0.02)
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
-
-    def _forward_impl(self, x: Tensor) -> Tensor:
-        x = self.features(x)
-        x = self.classifier(x)
+        
+    def classifier_impl(self, features):
+        x = self.classifier(features)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.logit_layer(x)
         return x
+    # def _forward_impl(self, x: Tensor) -> Tensor:
+    #     x = self.features(x)
+    #     x = self.classifier(x)
+    #     x = self.avgpool(x)
+    #     x = torch.flatten(x, 1)
+    #     x = self.logit_layer(x)
+    #     return x
 
-    def forward(self, x: Tensor) -> Tensor:
-        return self._forward_impl(x)
+    def forward(self, inp: Tensor) -> Tensor:
+        x = self.features(inp)
+        out = self.classifier_impl(x)
+        return out
+    
 
     def get_classifier(self) -> nn.Module:
         """Returns the classifier part of the model. Note this comes before global pooling."""

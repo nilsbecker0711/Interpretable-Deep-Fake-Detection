@@ -37,7 +37,7 @@ class BcosVGG(BcosUtilMixin, nn.Module):
         self,
         features: nn.Module,
         num_classes: int = 1000,
-        init_weights: bool = True,
+        init_weights: bool = False,
         conv_layer: Callable[..., nn.Module] = None,
         #logit_bias: Optional[float] = None,
         #logit_temperature: Optional[float] = None,
@@ -48,22 +48,24 @@ class BcosVGG(BcosUtilMixin, nn.Module):
         self.temperature = config["temperature"]
         self.features = features
         # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        self.classifier = nn.Sequential(
-            conv_layer(512, 4096, kernel_size=7, padding=3, scale_fact=1000),
-            # nn.ReLU(True),
-            # nn.Dropout(),
-            conv_layer(4096, 4096, scale_fact=1000),
-            # nn.ReLU(True),
-            # nn.Dropout(),
-            conv_layer(4096, num_classes, scale_fact=1000),
-            #MyAdaptiveAvgPool2d((1, 1)),
-        )
-        self.num_classes = num_classes
-        
         self.logit_layer = LogitLayer(
             logit_temperature=self.temperature,
             logit_bias=self.logit_bias #or -math.log(num_classes - 1),
         )
+        self.classifier = nn.Sequential(
+            conv_layer(512, 4096, kernel_size=7, padding=3, scale_fact=50),
+            # nn.ReLU(True),
+            # nn.Dropout(),
+            conv_layer(4096, 4096, scale_fact=50),
+            # nn.ReLU(True),
+            # nn.Dropout(),
+            conv_layer(4096, num_classes, scale_fact=50),
+            
+            #MyAdaptiveAvgPool2d((1, 1)),
+        )
+        self.num_classes = num_classes
+        
+        
         if init_weights:
             self._initialize_weights()
 
@@ -125,7 +127,7 @@ def make_layers(
         else:
             v = cast(int, v)
             conv2d = conv_layer(
-                in_channels, v, kernel_size=3, padding=1, stride=stride, scale_fact=1000
+                in_channels, v, kernel_size=3, padding=1, stride=stride, scale_fact=50
             )
             if not isinstance(norm_layer, nn.Identity):
                 layers += [conv2d, norm_layer(v)]  # , nn.ReLU(inplace=True)]
@@ -258,6 +260,6 @@ def vgg19_bnu(
 ) -> BcosVGG:
     return _vgg("vgg19_bnu", "E", pretrained, progress, **kwargs)
 
-@BACKBONE.register_module(module_name="vgg19_v2_bcos")
+@BACKBONE.register_module(module_name="vgg11_v2_bcos")
 def vgg(vgg_config) -> BcosVGG:
-    return _vgg("vgg_19", "E", config = vgg_config, norm_layer=nn.Identity)
+    return _vgg("vgg", "A", config = vgg_config, norm_layer=nn.Identity)
