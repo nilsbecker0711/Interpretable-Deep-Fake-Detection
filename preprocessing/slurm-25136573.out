@@ -1,101 +1,0 @@
-Running on uc2n156.localdomain
-Date: Mo 13. Jan 13:54:15 CET 2025
-Python version: Python 3.9.18
-Environment: # conda environments:
-#
-new_env                  /home/ma/ma_ma/ma_tischuet/.conda/envs/new_env
-base                     /opt/bwhpc/common/devel/miniconda/23.9.0-py3.9.15
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP_general
-                         /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_backup
-                      *  /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
-2025-01-13 13:54:47,647 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:55:06,627 - INFO - Current time: 2025-01-13 13:55:06
- 20%|██        | 1/5 [00:16<01:04, 16.25s/it]2025-01-13 13:55:14,809 - INFO - Current time: 2025-01-13 13:55:14
- 40%|████      | 2/5 [00:24<00:34, 11.50s/it]2025-01-13 13:55:15,524 - INFO - Current time: 2025-01-13 13:55:15
- 60%|██████    | 3/5 [00:25<00:13,  6.58s/it]2025-01-13 13:55:15,543 - INFO - Current time: 2025-01-13 13:55:15
-2025-01-13 13:55:15,597 - INFO - Current time: 2025-01-13 13:55:15
-100%|██████████| 5/5 [00:25<00:00,  5.04s/it]
-2025-01-13 13:55:15,598 - INFO - Total time taken: 0.47 minutes
-2025-01-13 13:55:15,601 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:55:18,864 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 13:55:19,000 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 13:55:34,425 - WARNING - No faces in frame 609 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__walking_down_indoor_hall_disgust.mp4
-2025-01-13 13:55:51,422 - WARNING - No faces in frame 552 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 13:55:51,428 - INFO - Current time: 2025-01-13 13:55:51
- 20%|██        | 1/5 [00:33<02:14, 33.70s/it]2025-01-13 13:55:51,807 - INFO - Current time: 2025-01-13 13:55:51
- 40%|████      | 2/5 [00:34<00:42, 14.10s/it]2025-01-13 13:55:52,039 - INFO - Current time: 2025-01-13 13:55:52
- 60%|██████    | 3/5 [00:34<00:15,  7.77s/it]2025-01-13 13:55:52,124 - WARNING - No faces in frame 802 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 13:55:52,129 - INFO - Current time: 2025-01-13 13:55:52
-2025-01-13 13:55:53,018 - INFO - Current time: 2025-01-13 13:55:53
-100%|██████████| 5/5 [00:35<00:00,  3.65s/it]100%|██████████| 5/5 [00:35<00:00,  7.06s/it]
-2025-01-13 13:55:53,019 - INFO - Total time taken: 0.62 minutes
-2025-01-13 13:55:53,028 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40
-2025-01-13 13:55:53,030 - INFO - 5 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:56:04,619 - INFO - Current time: 2025-01-13 13:56:04
- 20%|██        | 1/5 [00:09<00:37,  9.42s/it]2025-01-13 13:56:13,408 - INFO - Current time: 2025-01-13 13:56:13
- 40%|████      | 2/5 [00:18<00:27,  9.05s/it]2025-01-13 13:56:13,683 - INFO - Current time: 2025-01-13 13:56:13
- 60%|██████    | 3/5 [00:18<00:10,  5.04s/it]2025-01-13 13:56:13,694 - INFO - Current time: 2025-01-13 13:56:13
-2025-01-13 13:56:14,231 - INFO - Current time: 2025-01-13 13:56:14
-100%|██████████| 5/5 [00:19<00:00,  2.34s/it]100%|██████████| 5/5 [00:19<00:00,  3.81s/it]
-2025-01-13 13:56:14,231 - INFO - Total time taken: 0.35 minutes
-2025-01-13 13:56:14,234 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40
-2025-01-13 13:56:14,235 - INFO - 5 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:56:25,626 - INFO - Current time: 2025-01-13 13:56:25
- 20%|██        | 1/5 [00:09<00:38,  9.50s/it]2025-01-13 13:56:35,319 - INFO - Current time: 2025-01-13 13:56:35
- 40%|████      | 2/5 [00:19<00:28,  9.61s/it]2025-01-13 13:56:35,482 - INFO - Current time: 2025-01-13 13:56:35
- 60%|██████    | 3/5 [00:19<00:10,  5.30s/it]2025-01-13 13:56:35,619 - INFO - Current time: 2025-01-13 13:56:35
- 80%|████████  | 4/5 [00:19<00:03,  3.26s/it]2025-01-13 13:56:35,749 - INFO - Current time: 2025-01-13 13:56:35
-100%|██████████| 5/5 [00:19<00:00,  2.13s/it]100%|██████████| 5/5 [00:19<00:00,  3.92s/it]
-2025-01-13 13:56:35,749 - INFO - Total time taken: 0.36 minutes
-2025-01-13 13:56:35,751 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40
-2025-01-13 13:56:35,753 - INFO - 5 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:56:47,381 - INFO - Current time: 2025-01-13 13:56:47
- 20%|██        | 1/5 [00:09<00:38,  9.68s/it]2025-01-13 13:56:56,559 - INFO - Current time: 2025-01-13 13:56:56
- 40%|████      | 2/5 [00:18<00:28,  9.38s/it]2025-01-13 13:56:56,722 - INFO - Current time: 2025-01-13 13:56:56
- 60%|██████    | 3/5 [00:19<00:10,  5.17s/it]2025-01-13 13:56:56,848 - INFO - Current time: 2025-01-13 13:56:56
- 80%|████████  | 4/5 [00:19<00:03,  3.18s/it]2025-01-13 13:56:56,959 - INFO - Current time: 2025-01-13 13:56:56
-100%|██████████| 5/5 [00:19<00:00,  2.07s/it]100%|██████████| 5/5 [00:19<00:00,  3.85s/it]
-2025-01-13 13:56:56,960 - INFO - Total time taken: 0.35 minutes
-2025-01-13 13:56:56,964 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40
-2025-01-13 13:56:56,967 - INFO - 5 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:57:08,666 - INFO - Current time: 2025-01-13 13:57:08
- 20%|██        | 1/5 [00:09<00:38,  9.60s/it]2025-01-13 13:57:17,514 - INFO - Current time: 2025-01-13 13:57:17
- 40%|████      | 2/5 [00:18<00:27,  9.16s/it]2025-01-13 13:57:17,921 - INFO - Current time: 2025-01-13 13:57:17
- 60%|██████    | 3/5 [00:18<00:10,  5.16s/it]2025-01-13 13:57:17,963 - INFO - Current time: 2025-01-13 13:57:17
-2025-01-13 13:57:18,619 - INFO - Current time: 2025-01-13 13:57:18
-100%|██████████| 5/5 [00:19<00:00,  2.44s/it]100%|██████████| 5/5 [00:19<00:00,  3.91s/it]
-2025-01-13 13:57:18,619 - INFO - Total time taken: 0.36 minutes
-2025-01-13 13:57:18,623 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:57:29,705 - INFO - Current time: 2025-01-13 13:57:29
- 20%|██        | 1/5 [00:09<00:36,  9.14s/it]2025-01-13 13:57:38,290 - INFO - Current time: 2025-01-13 13:57:38
- 40%|████      | 2/5 [00:17<00:26,  8.81s/it]2025-01-13 13:57:38,548 - INFO - Current time: 2025-01-13 13:57:38
- 60%|██████    | 3/5 [00:17<00:09,  4.91s/it]2025-01-13 13:57:38,759 - INFO - Current time: 2025-01-13 13:57:38
- 80%|████████  | 4/5 [00:18<00:03,  3.05s/it]2025-01-13 13:57:38,858 - INFO - Current time: 2025-01-13 13:57:38
-100%|██████████| 5/5 [00:18<00:00,  3.66s/it]
-2025-01-13 13:57:38,858 - INFO - Total time taken: 0.34 minutes
-2025-01-13 13:57:38,862 - INFO - 5 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40
-2025-01-13 13:57:38,865 - INFO - 5 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
-  0%|          | 0/5 [00:00<?, ?it/s]2025-01-13 13:58:15,592 - INFO - Current time: 2025-01-13 13:58:15
- 20%|██        | 1/5 [00:34<02:18, 34.53s/it]2025-01-13 13:58:16,203 - INFO - Current time: 2025-01-13 13:58:16
- 40%|████      | 2/5 [00:35<00:43, 14.58s/it]2025-01-13 13:58:16,346 - INFO - Current time: 2025-01-13 13:58:16
- 60%|██████    | 3/5 [00:35<00:15,  7.99s/it]2025-01-13 13:58:17,522 - INFO - Current time: 2025-01-13 13:58:17
- 80%|████████  | 4/5 [00:36<00:05,  5.30s/it]2025-01-13 13:58:17,775 - INFO - Current time: 2025-01-13 13:58:17
-100%|██████████| 5/5 [00:36<00:00,  3.48s/it]100%|██████████| 5/5 [00:36<00:00,  7.34s/it]
-2025-01-13 13:58:17,776 - INFO - Total time taken: 0.65 minutes
-2025-01-13 13:58:17,786 - INFO - Face cropping complete!
-
-============================= JOB FEEDBACK =============================
-
-NodeName=uc2n[156-159]
-Job ID: 25136573
-Cluster: uc2
-User/Group: ma_tischuet/ma_ma
-State: COMPLETED (exit code 0)
-Nodes: 4
-Cores per node: 80
-CPU Utilized: 00:16:01
-CPU Efficiency: 1.10% of 1-00:10:40 core-walltime
-Job Wall-clock time: 00:04:32
-Memory Utilized: 2.45 GB
-Memory Efficiency: 1.25% of 195.31 GB
