@@ -15,7 +15,6 @@ import random
 from PIL import Image
 from train import prepare_testing_data
 
-
 # Evaluators.
 #from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  # Adjust the import path if needed.
@@ -25,10 +24,7 @@ from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
-XAI_METHOD = "lime"
-BASE_OUTPUT_DIR = "datasets/GPG_grids"
-GRID_SPLIT = 3
-MAX_GRIDS = 2
+
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
 
 ADDITIONAL_ARGS = {
@@ -95,40 +91,50 @@ class Analyser:
         self.save_results(results)
 
     def save_results(self, results):
-        save_path = join(self.trainer.save_path,  self.get_save_folder())
-        os.makedirs(save_path, exist_ok=True)
-        for k, v in results.items():
-            np.savetxt(join(save_path, "{}.np".format(k)), v)
+        """
+        Expects 'results' to be a tuple: (raw_results, overall).
+        Saves raw_results in 'results.pkl' and overall in 'overall.pkl'.
+        """
+        raw_results, overall = results
 
-        with open(join(save_path, "config.log"), "w") as file:
-            for k, v in self.get_config().items():
-                k_v_str = "{k}: {v}".format(k=k, v=v)
-                print(k_v_str)
-                file.writelines([k_v_str, "\n"])
+        # Save the raw (per-image) results.
+        raw_results_file = os.path.join("results", "results.pkl")
+        os.makedirs(os.path.dirname(raw_results_file), exist_ok=True)
+        with open(raw_results_file, "wb") as f:
+            pickle.dump(raw_results, f)
+        print(f"Raw results saved to {raw_results_file}")
 
-    def get_save_folder(self, epoch=None):
-        raise NotImplementedError("Need to implement get_save_folder function.")
+        # Save the overall (aggregated) results.
+        overall_file = os.path.join("results", "overall.pkl")
+        os.makedirs(os.path.dirname(overall_file), exist_ok=True)
+        with open(overall_file, "wb") as f:
+            pickle.dump(overall, f)
+        print(f"Overall results saved to {overall_file}")
 
-    def get_config(self):
-        config = self.config
-        config.update({"epoch": self.trainer.epoch})
-        return config
-
-    def load_results(self, epoch=None):
-        save_path = join(self.trainer.save_path,  self.get_save_folder(epoch))
-        # print("Trying to load results from", save_path)
-        if not os.path.exists(save_path):
-            return
-        results = dict()
-        files = [f for f in os.listdir(save_path) if f.endswith(".np")]
-        for file in files:
-            results[file[:-3]] = np.loadtxt(join(save_path, file))
-        self.results = results
+    def load_results(self, load_overall=False):
+        """
+        Loads results from disk.
+        
+        Parameters:
+            load_overall (bool): If True, loads the overall results; otherwise, loads the raw per-image results.
+        
+        Returns:
+            The loaded results.
+        """
+        if load_overall:
+            file_path = os.path.join("results", "overall.pkl")
+        else:
+            file_path = os.path.join("results", "results.pkl")
+            
+        with open(file_path, "rb") as f:
+            loaded = pickle.load(f)
+        print(f"Results loaded from {file_path}")
+        return loaded
 
 class RankedGPGCreator(Analyser):
-    def __init__(self, base_output_dir, grid_size=(3, 3),xai_method=None,  max_grids=2, plotting_only=False,
+    def __init__(self, base_output_dir, grid_size=(3, 3),xai_method=None,  max_grids=3, plotting_only=False,
                  model=None, model_name="default", weights_name="default",
-                 loader=None, dataset=None):
+                 loader=None, dataset=None, device=None):
         """
         Args:
             base_output_dir (str): Base directory in which to save grids.
@@ -254,56 +260,64 @@ class RankedGPGCreator(Analyser):
         return ranking
 
     def analysis(self):
-        metric = []
-        xai_method = self.xai_method
+        """
+        Main analysis function that:
+        - Loads grid tensors from disk.
+        - Instantiates the evaluator based on the selected XAI method.
+        - Evaluates all images using the evaluator.
+        - Extracts the per-image grid accuracy.
+        - Computes overall localisation metric percentiles.
         
-        # Optionale Ausgabe: Inspektion der erstellten Grids
+        Returns:
+            A dictionary with the overall localisation metric, percentiles, and raw evaluator results.
+        """
+        xai_method = self.xai_method
+        device = self.device
+
+        # Inspect the grid directory and load grid tensor paths.
         grid_dir = os.path.join(grid_creator.output_folder, "3ch")
         grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
         print(f"[DEBUG] Found {len(grid_paths)} grid tensors for evaluation in {grid_dir}.")
-    
-        # Lade die Grid-Tensoren.
+
+        # Load the grid tensors.
         preprocessed_tensors = []
         for grid_path in grid_paths:
             grid_tensor = torch.load(grid_path, map_location=device)
             print(f"[DEBUG] Loaded grid tensor from {grid_path} with shape: {grid_tensor.shape}")
             preprocessed_tensors.append(grid_tensor)
 
-        # Instanziiere den Evaluator unter Verwendung des bereits geladenen Modells.
+        # Instantiate the evaluator based on the selected XAI method.
         if xai_method == "bcos":
-            evaluator = BCOSEvaluator(config, model=model, device=device) 
-            
+            evaluator = BCOSEvaluator(config, model=model, device=device)
         elif xai_method == "lime":
             evaluator = LIMEEvaluator(config, model=model, device=device)
-            
         elif xai_method == "gradcam":
-            # evaluator = GradCamEvaluator(config, model=model, device=device)  # Uncomment if implemented.
             print("[DEBUG] GradCAM evaluator not implemented.")
             return
-            
         else:
-            raise ValueError(f"Unknown xai_method: {args.xai_method}")
-    
-            
-            # calculate the attributions for all classes that are participating
-            attributions = xai_method.attribute_selection(multi_img, tgts).sum(1, keepdim=True)
-            if smooth:
-                attributions = F.avg_pool2d(attributions, smooth, stride=1, padding=(smooth - 1) // 2)
-            # Only compare positive attributions
-            attributions = attributions.clamp(0)
-            # Calculate the relative amount of attributions per region. Use avg_pool for simplicity.
-            with torch.no_grad():
-                contribs = F.avg_pool2d(attributions, single_shape, stride=single_shape).permute(0, 1, 3, 2).reshape(
-                    attributions.shape[0], -1)
-                total = contribs.sum(1, keepdim=True)
-            contribs = to_numpy(torch.where(total * contribs > 0, contribs/total, torch.zeros_like(contribs)))
-            metric.append([contrib[idx] for idx, contrib in enumerate(contribs)])
-            print("{:>6.2f}% of processing complete".format(100*(count+1.)/sample_size), flush=True)
-            
-        result = np.array(metric).flatten()
-        print("Percentiles of localisation accuracy (25, 50, 75, 100): ", np.percentile(result, [25, 50, 75, 100]))
+            raise ValueError(f"Unknown xai_method: {xai_method}")
+
+        # Evaluate all the grids using the evaluator.
+        results = evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=args.grid_split)
         
-        return {"localisation_metric": result}
+        # Extract the grid_accuracy value from each result.
+        grid_accuracies = [res["grid_accuracy"] for res in results]
+
+        # Convert the list to a NumPy array.
+        grid_accuracies_array = np.array(grid_accuracies)
+
+        # Compute percentiles for overall localisation accuracy.
+        percentiles = np.percentile(grid_accuracies_array, [25, 50, 75, 100])
+        print("Percentiles of localisation accuracy (25, 50, 75, 100):", percentiles)
+
+        # Return an overall dictionary.
+        overall = {
+            "localisation_metric": grid_accuracies_array,
+            "percentiles": percentiles,
+            "raw_results": results  # Optional: include raw evaluator results
+        }
+
+        return overall, results
 
     def create_GPG_grids(self):
         """
@@ -382,56 +396,66 @@ class RankedGPGCreator(Analyser):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Evaluate grids using a specified model and XAI method.")
-    parser.add_argument("--base_output_dir", type=str, default=BASE_OUTPUT_DIR, help="Base output directory for grids.")
-    parser.add_argument("--max_grids", type=int, default=MAX_GRIDS, help="Maximum number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default=XAI_METHOD, choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
+    parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids", help="Base output directory for grids.")
+    parser.add_argument("--max_grids", type=int, default=2, help="Maximum number of grids to create.")
+    parser.add_argument("--xai_method", type=str, default="lime", choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
     parser.add_argument("--model_path", type=str, default=MODEL_PATH, help="Path to model configuration file.")
-    parser.add_argument("--grid_split", type=int, default=GRID_SPLIT, help="Grid size for evaluation (e.g. 3 for a 3x3 grid).")
+    parser.add_argument("--grid_split", type=int, default=3, help="Grid size for evaluation (e.g. 3 for a 3x3 grid).")
     return parser.parse_args()
+
 
 def main():
     args = parse_arguments()
     grid_size = (args.grid_split, args.grid_split)
     print(f"[DEBUG] XAI: {args.xai_method}, Base: {args.base_output_dir}, Model: {args.model_path}, Grid: {args.grid_split}x{args.grid_split}")
     
+
     # Load configuration.
     config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
     
+
     # Load the model.
     model = load_model(config)
     model.eval()
-    # For Debugging auf der CPU bleiben wir auf CPU
+
+
+    # Set device.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     print(f"[DEBUG] Loaded {model.__class__.__name__} model onto {device}")
     
+
     # Extrahiere Modell- und Gewichtsnamen für den Ausgabepfad.
     model_name = config.get("model_name", "defaultModel")
     pretrained_path = config['pretrained']
     if not os.path.exists(pretrained_path):
         raise FileNotFoundError(f"Gewichtedatei nicht gefunden: {pretrained_path}")
     weights_name = os.path.basename(pretrained_path).split('.')[0]
-        
+
+
+    # Set Dataloader    
     test_data_loaders = prepare_testing_data(config)
     test_loader = test_data_loaders[list(test_data_loaders.keys())[0]]
     
+
     # Instanziere den RankedGPGCreator und übergebe zusätzlich den DataLoader.
     grid_creator = RankedGPGCreator(
         base_output_dir=args.base_output_dir,
         grid_size=grid_size,
-        xai_method=xai_method,
+        xai_method=args.xai_method,
         max_grids=args.max_grids,
         model=model,
         model_name=model_name,
         weights_name=weights_name,
-        loader=test_loader,  # or your test DataLoader
-        dataset=test_loader.dataset  # Pass the dataset instance here!
+        loader=test_loader, 
+        dataset=test_loader.dataset,
+        device=device
     )
-    grid_creator.create_GPG_grids()
-    grid_creator.analysis()
+    
 
-    # Führe die Evaluation durch.
-    evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=args.grid_split)
+    grid_creator.create_GPG_grids()
+    grid_creator.run()
+    grid_creator.load_results(load_overall=False)
 
 if __name__ == "__main__":
     main()
