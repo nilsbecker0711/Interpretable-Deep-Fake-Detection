@@ -15,3 +15,4 @@ from metrics.registry import BACKBONE
 # from .xception_sladd import Xception_SLADD
 # from .bcosconv2d import NormedConv2d, BcosConv2d
 import bcos.modules as modules
+from .common import BcosUtilMixin

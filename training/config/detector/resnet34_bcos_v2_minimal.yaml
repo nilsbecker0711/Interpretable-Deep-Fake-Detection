@@ -3,9 +3,7 @@ log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resne
 
 # model setting -> old
 freeze: false
-pretrained: # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
-# pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_2025-02-12-17-52-32/test/avg/ckpt_best.pth
-# pretrained: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/resnet_from_scratch_runs/logs/resnet34_bcos_2025-02-08-09-15-43/test/avg/ckpt_best.pth #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_v2_minimal_2025-03-10-09-20-41/test/avg/ckpt_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: resnet34_bcos_v2_minimal   # model name
 backbone_name: resnet34_bcos_v2_minimal  # backbone name
@@ -25,7 +23,7 @@ backbone_config:
   #mode: Original
   #log_temperature: 1
   logit_bias: #[0.5, 0.5]
-  b: 1.25
+  b: 2
   # inplanes
 
 # dataset
@@ -34,8 +32,8 @@ train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c40  # compression-level for videos
-train_batchSize: 16   # training batch size
-test_batchSize: 16   # test batch size
+train_batchSize: 64   # training batch size
+test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 224   # resolution of output image to network
@@ -43,7 +41,7 @@ with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-add_inverse_channels: false #true
+#add_inverse_channels: false #true
 
 
 # data augmentation
@@ -83,12 +81,12 @@ optimizer:
   gradient_clipping: false
 
 # training config
-lr_scheduler: warmup_cosine # step   # learning rate scheduler
+lr_scheduler: cosine # step   # learning rate scheduler
 lr_eta_min: 0
 lr_T_max: 200
 # lr_step: 4
 # lr_gamma: 0.2
-nEpochs: 10   # number of epochs to train for
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 500   # interval iterations for recording

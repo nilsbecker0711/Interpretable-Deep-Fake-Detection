@@ -37,6 +37,7 @@ from torch.hub import load_state_dict_from_url
 # from torch.utils.model_zoo import load_url as load_state_dict_from_url
 # from torchvision.models.utils import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
+from bcos import BcosUtilMixin
 
 
 
@@ -260,12 +261,13 @@ class Bottleneck(nn.Module):
 
 
 @BACKBONE.register_module(module_name="resnet34_bcos_v2_minimal")
-class ResNet34_bcos_v2_minimal(nn.Module):
+class ResNet34_bcos_v2_minimal(BcosUtilMixin, nn.Module):
     def __init__(
         self, resnet_config
     ):
         super(ResNet34_bcos_v2_minimal, self).__init__()
         self.inplanes = 64
+        inplanes = 64
         self.b = resnet_config["b"]
         self.groups = resnet_config["groups"]
         self.base_width = resnet_config["base_width"]
@@ -288,19 +290,19 @@ class ResNet34_bcos_v2_minimal(nn.Module):
 
         self.bn1 = BatchNorm2dUncenteredNoBias(self.inplanes)
 
-        self.layer1 = self._make_layer(block, self.inplanes, layers[0])
-        self.layer2 = self._make_layer(block, self.inplanes * 2, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, self.inplanes * 4, layers[2], stride=2)
+        self.layer1 = self._make_layer(block, inplanes, layers[0])
+        self.layer2 = self._make_layer(block, inplanes * 2, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, inplanes * 4, layers[2], stride=2)
         try:
-            self.layer4 = self._make_layer(block, self.inplanes * 8, layers[3], stride=2)
-            last_ch = self.inplanes * 8
+            self.layer4 = self._make_layer(block, inplanes * 8, layers[3], stride=2)
+            last_ch = inplanes * 8
         except IndexError:
             self.layer4 = None
-            last_ch = self.inplanes * 4
+            last_ch = inplanes * 4
 
         self.num_features = last_ch * block.expansion
+        # self.num_features = 4096
 
-        self.num_features = 4096
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.fc = BcosConv2d(

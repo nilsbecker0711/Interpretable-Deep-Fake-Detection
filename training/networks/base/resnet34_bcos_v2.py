@@ -15,7 +15,7 @@ from torchvision.ops import StochasticDepth
 import torch.nn as nn
 import torch.nn.functional as F
 from metrics.registry import BACKBONE
-
+import contextlib
 
 from bcos.modules import BcosConv2d, LogitLayer, norms
 from bcos.common import BcosUtilMixin
@@ -34,10 +34,10 @@ from typing import Type, Any, Callable, Union, List, Optional
 
 
 DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
+#DEFAULT_NORM_LAYER = norms.BatchNorm2dUncenteredNoBias
 DEFAULT_CONV_LAYER = BcosConv2d
 
 logger = logging.getLogger(__name__)
-
 
 def conv3x3(
     in_planes: int,
@@ -46,6 +46,7 @@ def conv3x3(
     groups: int = 1,
     dilation: int = 1,
     conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
+    b: float = 2
 ):
     """3x3 convolution with padding"""
     return conv_layer(
@@ -57,14 +58,15 @@ def conv3x3(
         groups=groups,
         bias=False,
         dilation=dilation,
+        b=b
     )
-
 
 def conv1x1(
     in_planes: int,
     out_planes: int,
     stride: int = 1,
     conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
+    b: float = 2
 ):
     """1x1 convolution"""
     return conv_layer(
@@ -73,11 +75,12 @@ def conv1x1(
         kernel_size=1,
         stride=stride,
         bias=False,
+        b=b
     )
 
 
 class BasicBlock(nn.Module):
-    expansion = 1
+    expansion: int = 1
 
     def __init__(
         self,
@@ -92,6 +95,7 @@ class BasicBlock(nn.Module):
         conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
         # act_layer: Callable[..., nn.Module] = None,
         stochastic_depth_prob: float = 0.0,
+        b: float = 2
     ):
         super(BasicBlock, self).__init__()
         if norm_layer is None:
@@ -100,20 +104,11 @@ class BasicBlock(nn.Module):
             raise ValueError("BasicBlock only supports groups=1 and base_width=64")
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
-        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv3x3(
-            inplanes,
-            planes,
-            stride,
-            conv_layer=conv_layer,
-        )
+        self.conv1 = conv3x3(inplanes, planes, stride=stride, conv_layer=conv_layer, b=b)
         self.bn1 = norm_layer(planes)
-        # self.act = act_layer(inplace=True)
-        self.conv2 = conv3x3(
-            planes,
-            planes,
-            conv_layer=conv_layer,
-        )
+        #self.bn1 = BatchNorm2dUncenteredNoBias(planes)
+        self.conv2 = conv3x3(planes, planes, conv_layer=conv_layer, b=b)
+        #self.bn2 = BatchNorm2dUncenteredNoBias(planes)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
@@ -125,7 +120,6 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         identity = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         # out = self.act(out)
@@ -138,10 +132,7 @@ class BasicBlock(nn.Module):
 
         if self.downsample is not None:
             identity = self.downsample(x)
-
         out += identity
-        # out = self.act(out)
-
         return out
 
 
@@ -167,32 +158,20 @@ class Bottleneck(nn.Module):
         conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER,
         # act_layer: Callable[..., nn.Module] = None,
         stochastic_depth_prob: float = 0.0,
+        b: float = 2
     ) -> None:
         super(Bottleneck, self).__init__()
         width = int(planes * (base_width / 64.0)) * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv1x1(
-            inplanes,
-            width,
-            conv_layer=conv_layer,
-        )
+        self.conv1 = conv1x1(inplanes, width, conv_layer=conv_layer, b=b)
+        # self.bn1 = BatchNorm2dUncenteredNoBias(width)
         self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(
-            width,
-            width,
-            stride,
-            groups,
-            dilation,
-            conv_layer=conv_layer,
-        )
+        self.conv2 = conv3x3(width, width, stride, groups, dilation, conv_layer=conv_layer, b=b)
+        # self.bn2 = BatchNorm2dUncenteredNoBias(width)
         self.bn2 = norm_layer(width)
-        self.conv3 = conv1x1(
-            width,
-            planes * self.expansion,
-            conv_layer=conv_layer,
-        )
+        self.conv3 = conv1x1(width, planes * self.expansion, conv_layer=conv_layer, b=b)
+        # self.bn3 = BatchNorm2dUncenteredNoBias(planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
-        # self.act = act_layer(inplace=True)
         self.downsample = downsample
         self.stride = stride
         self.stochastic_depth = (
@@ -239,8 +218,26 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         Args:
             resnet_config: configuration file with the dict format
         """
-        self.mode = resnet_config["mode"]
+        self.inplanes = 64 # KAI: can be set to a different dynamical value
+        # KAI: need to define this as well for the layers, since it is otherwise updated 
+        # in each call of self._make_layer...
+        inplanes = 64 
+        self.b = resnet_config['b']
+        #self.mode = resnet_config["mode"]
+        self.groups = resnet_config["groups"]
+        self.base_width = resnet_config["base_width"]
 
+        self.num_classes = resnet_config["num_classes"]
+        block = BasicBlock
+        layers = [3, 4, 6, 3]
+        n = len(layers)  # number of stages
+        #self.short_cat = resnet_config["short_cat"]
+        self.dilation = 1
+
+        self._norm_layer = DEFAULT_NORM_LAYER
+        norm_layer = DEFAULT_NORM_LAYER
+        self._conv_layer = DEFAULT_CONV_LAYER
+        conv_layer = DEFAULT_CONV_LAYER
         # ------------- NEW ------------------
 
         # if kwargs:
@@ -251,30 +248,15 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         # else:
         #     norm_layer = nn.Identity
         #     norm_layer = DEFAULT_NORM_LAYER
-        self._norm_layer = DEFAULT_NORM_LAYER
-        norm_layer = DEFAULT_NORM_LAYER
         # if "conv_layer" in resnet_config.keys():
         #     self._conv_layer = resnet_config["conv_layer"]
         # else:
-        conv_layer = DEFAULT_CONV_LAYER
-        self._conv_layer = DEFAULT_CONV_LAYER
         # self._act_layer = act_layer
-        
 
-        self.inplanes = 64 # KAI: can be set to a different dynamical value
-        self.dilation = 1
-
-        self.num_classes = resnet_config["num_classes"]
-        # resnet34 parameters
-
-
-        block = BasicBlock
-        layers = [3, 4, 6, 3]
-
-        n = len(layers)  # number of stages
         # if resnet_config["replace_stride_with_dilation"] is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
+
         replace_stride_with_dilation = [False] * (n - 1)
         if len(replace_stride_with_dilation) != n - 1:
             raise ValueError(
@@ -282,9 +264,6 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                 f"or a {n - 1}-element tuple, got {replace_stride_with_dilation}"
             )
         
-        self.groups = resnet_config["groups"]
-        self.short_cat = resnet_config["short_cat"]
-        self.base_width = resnet_config["base_width"]
         in_chans = resnet_config["in_chans"]
         stochastic_depth_prob = resnet_config["stochastic_depth_prob"]
 
@@ -293,6 +272,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                 in_chans,
                 self.inplanes,
                 conv_layer=conv_layer,
+                b = self.b
             )
             self.pool = None
         else:
@@ -302,64 +282,78 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                 kernel_size=7,
                 stride=2,
                 padding=3,
+                b = self.b
             )
             self.pool = nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
 
         self.bn1 = norm_layer(self.inplanes)
+        # self.bn1 = BatchNorm2dUncenteredNoBias(self.inplanes)
         # self.act = act_layer(inplace=True)
 
         self.__total_num_blocks = sum(layers)
         self.__num_blocks = 0
         self.layer1 = self._make_layer(
             block,
-            self.inplanes,
+            inplanes,
             layers[0],
             stochastic_depth_prob=stochastic_depth_prob,
+            b = self.b
         )
         self.layer2 = self._make_layer(
             block,
-            self.inplanes * 2,
+            inplanes * 2,
             layers[1],
             stride=2,
             dilate=replace_stride_with_dilation[0],
             stochastic_depth_prob=stochastic_depth_prob,
+            b = self.b
         )
+        print(self.inplanes)
         self.layer3 = self._make_layer(
             block,
-            self.inplanes * 4,
+            inplanes * 4,
             layers[2],
             stride=2,
             dilate=replace_stride_with_dilation[1],
             stochastic_depth_prob=stochastic_depth_prob,
+            b = self.b
         )
         try:
             self.layer4 = self._make_layer(
                 block,
-                self.inplanes * 8,
+                inplanes * 8,
                 layers[3],
                 stride=2,
                 dilate=replace_stride_with_dilation[2],
                 stochastic_depth_prob=stochastic_depth_prob,
+                b = self.b
             )
-            last_ch = self.inplanes * 8
+            last_ch = inplanes * 8
         except IndexError:
             self.layer4 = None
-            last_ch = self.inplanes * 4
+            last_ch = inplanes * 4
 
-        self.num_features = last_ch * block.expansion
+        self.num_features = last_ch * block.expansion #(4096 * 4) * 1
+        #self.num_features = self.inplanes  # 4096
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.fc = conv_layer(
             self.num_features,
             self.num_classes,
             kernel_size=1,
+            b=self.b
         )
-        logit_bias = None
+        # logit_bias = None
+        self.logit_bias = (
+            resnet_config["logit_bias"]
+            if resnet_config["logit_bias"] is not None
+            else math.log(1 / (self.num_classes - 1))
+        )
         logit_temperature = None
         # self.fc = BcosConv2d(512 * block.expansion, self.num_classes, kernel_size=1, max_out=2)  # Adjusted for classification
         self.logit_layer = LogitLayer(
-            logit_temperature=logit_temperature,
-            logit_bias=logit_bias or -math.log(self.num_classes - 1),
+            logit_temperature=resnet_config["logit_temperature"],
+            logit_bias=self.logit_bias or -math.log(self.num_classes - 1),
         )
 
         for m in self.modules():
@@ -390,6 +384,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         stride: int = 1,
         dilate: bool = False,
         stochastic_depth_prob: float = 0.0,
+        b: float= 1.25,
     ) -> nn.Sequential:
         norm_layer = self._norm_layer
         conv_layer = self._conv_layer
@@ -406,6 +401,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                     planes * block.expansion,
                     stride,
                     conv_layer=conv_layer,
+                    b=b 
                 ),
                 norm_layer(planes * block.expansion),
             )
@@ -426,6 +422,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                 stochastic_depth_prob=stochastic_depth_prob
                 * self.__num_blocks
                 / (self.__total_num_blocks - 1),
+                b=b,
             )
         )
         self.__num_blocks += 1
@@ -444,6 +441,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
                     stochastic_depth_prob=stochastic_depth_prob
                     * self.__num_blocks
                     / (self.__total_num_blocks - 1),
+                    b=b,
                 )
             )
             self.__num_blocks += 1
@@ -451,24 +449,17 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         return nn.Sequential(*layers)
 
 
-    def _resnet_impl(self, x):
-        '''Kai: Basically the forward implementation up to the point of the avgpool and fc layer.'''
-        x = self.conv1(x)
+    def features(self, inp):
+        x = self.conv1(inp)
         x = self.bn1(x)
         # x = self.act(x)
         if self.pool is not None:
             x = self.pool(x)
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         if self.layer4 is not None:
             x = self.layer4(x)
-        return x
-
-
-    def features(self, inp):
-        x = self._resnet_impl(inp)
         return x
 
     def classifier(self, features):
@@ -488,6 +479,7 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         x = self.fc(features)
         x = self.avgpool(x)
         x = x.flatten(1)
+        # x = x + self.logit_bias
         x = self.logit_layer(x)
         return x
 
@@ -495,3 +487,45 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         x = self.features(inp)
         out = self.classifier(x)
         return out
+
+    def initialize_weights(self, module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.BatchNorm2d):
+            nn.init.constant_(module.weight, 1)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.Linear):
+            nn.init.xavier_normal_(module.weight)# or nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        # Recursively apply to custom modules
+        elif isinstance(module, (Bottleneck, BasicBlock, BcosConv2d)):
+            for submodule in module.children():
+                self.initialize_weights(submodule)
+        # Ignore activation, pooling, and sequential layers
+        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
+            pass  # Do nothing
+        else:
+            print(f'unknown module type {type(module)}')
+
+    def freeze(self):
+        # Freeze all layers except the fc layer
+        for param in self.parameters():
+            param.requires_grad = False  # Freeze all parameters
+
+        for param in self.fc.parameters():
+            param.requires_grad = True  # Unfreeze the fc layer
+
+
+    @contextlib.contextmanager
+    def explanation_mode(self):
+        for m in self.modules():
+            if hasattr(m, "set_explanation_mode"):
+                m.set_explanation_mode(True)
+        yield
+        for m in self.modules():
+            if hasattr(m, "set_explanation_mode"):
+                m.set_explanation_mode(False)

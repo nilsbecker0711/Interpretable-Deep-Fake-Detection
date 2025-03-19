@@ -1,1284 +1,0 @@
-Running on uc2n119.localdomain
-Date: Mo 13. Jan 11:53:18 CET 2025
-Python version: Python 3.9.18
-Environment: # conda environments:
-#
-new_env                  /home/ma/ma_ma/ma_tischuet/.conda/envs/new_env
-base                     /opt/bwhpc/common/devel/miniconda/23.9.0-py3.9.15
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP
-                         /pfs/work7/workspace/scratch/ma_tischuet-team-project-hws-2024/envs/TP_general
-                         /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_backup
-                      *  /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
-2025-01-13 11:53:59,102 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 11:55:08,628 - INFO - Current time: 2025-01-13 11:55:08
-  1%|          | 1/100 [00:33<55:05, 33.39s/it]2025-01-13 11:55:09,203 - INFO - Current time: 2025-01-13 11:55:09
-  2%|▏         | 2/100 [00:33<23:00, 14.09s/it]2025-01-13 11:55:09,778 - INFO - Current time: 2025-01-13 11:55:09
-  3%|▎         | 3/100 [00:34<12:48,  7.92s/it]2025-01-13 11:55:11,036 - INFO - Current time: 2025-01-13 11:55:11
-  4%|▍         | 4/100 [00:35<08:27,  5.29s/it]2025-01-13 11:55:11,391 - INFO - Current time: 2025-01-13 11:55:11
-  5%|▌         | 5/100 [00:37<06:07,  3.87s/it]2025-01-13 11:55:12,397 - INFO - Current time: 2025-01-13 11:55:12
-2025-01-13 11:55:13,224 - INFO - Current time: 2025-01-13 11:55:13
-  7%|▋         | 7/100 [00:37<03:16,  2.12s/it]2025-01-13 11:55:13,461 - INFO - Current time: 2025-01-13 11:55:13
-  8%|▊         | 8/100 [00:38<02:28,  1.62s/it]2025-01-13 11:55:14,386 - INFO - Current time: 2025-01-13 11:55:14
-  9%|▉         | 9/100 [00:39<02:19,  1.54s/it]2025-01-13 11:55:15,153 - INFO - Current time: 2025-01-13 11:55:15
- 10%|█         | 10/100 [00:39<01:49,  1.21s/it]2025-01-13 11:55:15,925 - INFO - Current time: 2025-01-13 11:55:15
- 11%|█         | 11/100 [00:41<01:53,  1.27s/it]2025-01-13 11:55:17,331 - INFO - Current time: 2025-01-13 11:55:17
- 12%|█▏        | 12/100 [00:42<01:39,  1.13s/it]2025-01-13 11:55:17,398 - INFO - Current time: 2025-01-13 11:55:17
-2025-01-13 11:55:18,557 - INFO - Current time: 2025-01-13 11:55:18
- 14%|█▍        | 14/100 [00:43<01:17,  1.12it/s]2025-01-13 11:55:20,861 - INFO - Current time: 2025-01-13 11:55:20
- 15%|█▌        | 15/100 [00:45<01:44,  1.23s/it]2025-01-13 11:55:20,880 - INFO - Current time: 2025-01-13 11:55:20
-2025-01-13 11:55:20,884 - INFO - Current time: 2025-01-13 11:55:20
-2025-01-13 11:55:21,251 - INFO - Current time: 2025-01-13 11:55:21
- 18%|█▊        | 18/100 [00:46<00:57,  1.42it/s]2025-01-13 11:55:22,093 - WARNING - No faces in frame 563 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40/videos/720.mp4
-2025-01-13 11:55:22,803 - INFO - Current time: 2025-01-13 11:55:22
- 19%|█▉        | 19/100 [00:48<01:15,  1.08it/s]2025-01-13 11:55:23,344 - INFO - Current time: 2025-01-13 11:55:23
-2025-01-13 11:55:23,405 - INFO - Current time: 2025-01-13 11:55:23
-2025-01-13 11:55:23,876 - WARNING - No faces in frame 464 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40/videos/266.mp4
-2025-01-13 11:55:23,961 - INFO - Current time: 2025-01-13 11:55:23
- 22%|██▏       | 22/100 [00:48<00:46,  1.67it/s]2025-01-13 11:55:24,009 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:24,095 - INFO - Current time: 2025-01-13 11:55:24
- 24%|██▍       | 24/100 [00:48<00:33,  2.28it/s]2025-01-13 11:55:24,114 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:24,141 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:24,142 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:24,733 - INFO - Current time: 2025-01-13 11:55:24
- 28%|██▊       | 28/100 [00:49<00:22,  3.20it/s]2025-01-13 11:55:24,761 - WARNING - No faces in frame 412 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/youtube/c40/videos/644.mp4
-2025-01-13 11:55:24,783 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:24,871 - INFO - Current time: 2025-01-13 11:55:24
- 30%|███       | 30/100 [00:49<00:17,  4.01it/s]2025-01-13 11:55:24,932 - INFO - Current time: 2025-01-13 11:55:24
-2025-01-13 11:55:25,099 - INFO - Current time: 2025-01-13 11:55:25
- 32%|███▏      | 32/100 [00:49<00:14,  4.70it/s]2025-01-13 11:55:25,487 - INFO - Current time: 2025-01-13 11:55:25
- 33%|███▎      | 33/100 [00:50<00:16,  4.16it/s]2025-01-13 11:55:25,511 - INFO - Current time: 2025-01-13 11:55:25
-2025-01-13 11:55:25,574 - INFO - Current time: 2025-01-13 11:55:25
-2025-01-13 11:55:25,654 - INFO - Current time: 2025-01-13 11:55:25
- 36%|███▌      | 36/100 [00:50<00:10,  6.00it/s]2025-01-13 11:55:25,710 - INFO - Current time: 2025-01-13 11:55:25
-2025-01-13 11:55:26,027 - INFO - Current time: 2025-01-13 11:55:26
- 38%|███▊      | 38/100 [00:50<00:10,  5.84it/s]2025-01-13 11:55:26,028 - INFO - Current time: 2025-01-13 11:55:26
-2025-01-13 11:55:26,101 - INFO - Current time: 2025-01-13 11:55:26
-2025-01-13 11:55:26,305 - INFO - Current time: 2025-01-13 11:55:26
- 41%|████      | 41/100 [00:51<00:08,  7.02it/s]2025-01-13 11:55:26,391 - INFO - Current time: 2025-01-13 11:55:26
-2025-01-13 11:55:27,057 - INFO - Current time: 2025-01-13 11:55:27
- 43%|████▎     | 43/100 [00:51<00:11,  4.92it/s]2025-01-13 11:55:29,358 - INFO - Current time: 2025-01-13 11:55:29
- 44%|████▍     | 44/100 [00:54<00:29,  1.87it/s]2025-01-13 11:55:29,503 - INFO - Current time: 2025-01-13 11:55:29
- 45%|████▌     | 45/100 [00:54<00:25,  2.16it/s]2025-01-13 11:55:30,077 - INFO - Current time: 2025-01-13 11:55:30
- 46%|████▌     | 46/100 [00:54<00:26,  2.06it/s]2025-01-13 11:55:34,513 - INFO - Current time: 2025-01-13 11:55:34
- 47%|████▋     | 47/100 [00:59<01:13,  1.39s/it]2025-01-13 11:55:35,881 - INFO - Current time: 2025-01-13 11:55:35
- 48%|████▊     | 48/100 [01:00<01:12,  1.39s/it]2025-01-13 11:55:35,971 - INFO - Current time: 2025-01-13 11:55:35
-2025-01-13 11:55:35,981 - INFO - Current time: 2025-01-13 11:55:35
- 50%|█████     | 50/100 [01:00<00:41,  1.19it/s]2025-01-13 11:55:36,070 - INFO - Current time: 2025-01-13 11:55:36
-2025-01-13 11:55:36,727 - INFO - Current time: 2025-01-13 11:55:36
- 52%|█████▏    | 52/100 [01:01<00:31,  1.51it/s]2025-01-13 11:55:36,790 - INFO - Current time: 2025-01-13 11:55:36
-2025-01-13 11:55:36,869 - INFO - Current time: 2025-01-13 11:55:36
- 54%|█████▍    | 54/100 [01:01<00:21,  2.19it/s]2025-01-13 11:55:36,974 - INFO - Current time: 2025-01-13 11:55:36
- 55%|█████▌    | 55/100 [01:01<00:17,  2.59it/s]2025-01-13 11:55:37,022 - INFO - Current time: 2025-01-13 11:55:37
-2025-01-13 11:55:37,075 - INFO - Current time: 2025-01-13 11:55:37
- 57%|█████▋    | 57/100 [01:01<00:11,  3.76it/s]2025-01-13 11:55:37,099 - INFO - Current time: 2025-01-13 11:55:37
-2025-01-13 11:55:37,367 - INFO - Current time: 2025-01-13 11:55:37
- 59%|█████▉    | 59/100 [01:02<00:09,  4.45it/s]2025-01-13 11:55:37,475 - INFO - Current time: 2025-01-13 11:55:37
-2025-01-13 11:55:38,175 - INFO - Current time: 2025-01-13 11:55:38
- 61%|██████    | 61/100 [01:02<00:11,  3.53it/s]2025-01-13 11:55:38,195 - INFO - Current time: 2025-01-13 11:55:38
-2025-01-13 11:55:38,319 - INFO - Current time: 2025-01-13 11:55:38
- 63%|██████▎   | 63/100 [01:03<00:07,  4.64it/s]2025-01-13 11:55:38,388 - INFO - Current time: 2025-01-13 11:55:38
-2025-01-13 11:55:38,487 - INFO - Current time: 2025-01-13 11:55:38
- 65%|██████▌   | 65/100 [01:03<00:06,  5.73it/s]2025-01-13 11:55:38,855 - INFO - Current time: 2025-01-13 11:55:38
-2025-01-13 11:55:38,896 - INFO - Current time: 2025-01-13 11:55:38
- 67%|██████▋   | 67/100 [01:03<00:06,  5.44it/s]2025-01-13 11:55:38,964 - INFO - Current time: 2025-01-13 11:55:38
-2025-01-13 11:55:39,011 - INFO - Current time: 2025-01-13 11:55:39
- 69%|██████▉   | 69/100 [01:03<00:04,  6.89it/s]2025-01-13 11:55:39,081 - INFO - Current time: 2025-01-13 11:55:39
-2025-01-13 11:55:39,130 - INFO - Current time: 2025-01-13 11:55:39
- 71%|███████   | 71/100 [01:03<00:03,  8.39it/s]2025-01-13 11:55:39,152 - INFO - Current time: 2025-01-13 11:55:39
-2025-01-13 11:55:39,280 - INFO - Current time: 2025-01-13 11:55:39
- 73%|███████▎  | 73/100 [01:04<00:02,  9.45it/s]2025-01-13 11:55:39,447 - INFO - Current time: 2025-01-13 11:55:39
-2025-01-13 11:55:39,823 - INFO - Current time: 2025-01-13 11:55:39
- 75%|███████▌  | 75/100 [01:04<00:03,  6.42it/s]2025-01-13 11:55:40,039 - INFO - Current time: 2025-01-13 11:55:40
-2025-01-13 11:55:40,236 - INFO - Current time: 2025-01-13 11:55:40
- 77%|███████▋  | 77/100 [01:04<00:03,  5.85it/s]2025-01-13 11:55:40,527 - INFO - Current time: 2025-01-13 11:55:40
- 78%|███████▊  | 78/100 [01:05<00:04,  5.20it/s]2025-01-13 11:55:40,718 - INFO - Current time: 2025-01-13 11:55:40
- 79%|███████▉  | 79/100 [01:05<00:04,  5.21it/s]2025-01-13 11:55:40,989 - INFO - Current time: 2025-01-13 11:55:40
- 80%|████████  | 80/100 [01:05<00:04,  4.77it/s]2025-01-13 11:55:41,466 - INFO - Current time: 2025-01-13 11:55:41
- 81%|████████  | 81/100 [01:06<00:05,  3.64it/s]2025-01-13 11:55:42,251 - INFO - Current time: 2025-01-13 11:55:42
- 82%|████████▏ | 82/100 [01:07<00:07,  2.46it/s]2025-01-13 11:55:42,403 - INFO - Current time: 2025-01-13 11:55:42
- 83%|████████▎ | 83/100 [01:07<00:05,  2.96it/s]2025-01-13 11:55:43,107 - INFO - Current time: 2025-01-13 11:55:43
- 84%|████████▍ | 84/100 [01:07<00:07,  2.28it/s]2025-01-13 11:55:43,838 - INFO - Current time: 2025-01-13 11:55:43
- 85%|████████▌ | 85/100 [01:08<00:07,  1.92it/s]2025-01-13 11:55:47,531 - INFO - Current time: 2025-01-13 11:55:47
- 86%|████████▌ | 86/100 [01:12<00:20,  1.44s/it]2025-01-13 11:55:48,747 - INFO - Current time: 2025-01-13 11:55:48
- 87%|████████▋ | 87/100 [01:13<00:17,  1.37s/it]2025-01-13 11:55:49,374 - INFO - Current time: 2025-01-13 11:55:49
- 88%|████████▊ | 88/100 [01:14<00:13,  1.15s/it]2025-01-13 11:55:50,726 - INFO - Current time: 2025-01-13 11:55:50
- 89%|████████▉ | 89/100 [01:15<00:13,  1.21s/it]2025-01-13 11:55:51,630 - INFO - Current time: 2025-01-13 11:55:51
- 90%|█████████ | 90/100 [01:16<00:11,  1.12s/it]2025-01-13 11:55:52,278 - INFO - Current time: 2025-01-13 11:55:52
- 91%|█████████ | 91/100 [01:17<00:08,  1.02it/s]2025-01-13 11:55:52,937 - INFO - Current time: 2025-01-13 11:55:52
- 92%|█████████▏| 92/100 [01:17<00:07,  1.13it/s]2025-01-13 11:55:54,514 - INFO - Current time: 2025-01-13 11:55:54
- 93%|█████████▎| 93/100 [01:19<00:07,  1.09s/it]2025-01-13 11:55:54,915 - INFO - Current time: 2025-01-13 11:55:54
- 94%|█████████▍| 94/100 [01:19<00:05,  1.13it/s]2025-01-13 11:55:58,024 - INFO - Current time: 2025-01-13 11:55:58
- 95%|█████████▌| 95/100 [01:22<00:07,  1.55s/it]2025-01-13 11:55:58,600 - INFO - Current time: 2025-01-13 11:55:58
- 96%|█████████▌| 96/100 [01:23<00:05,  1.26s/it]2025-01-13 11:56:07,484 - INFO - Current time: 2025-01-13 11:56:07
- 97%|█████████▋| 97/100 [01:32<00:10,  3.54s/it]2025-01-13 11:56:08,437 - INFO - Current time: 2025-01-13 11:56:08
- 98%|█████████▊| 98/100 [01:33<00:05,  2.77s/it]2025-01-13 11:56:09,601 - INFO - Current time: 2025-01-13 11:56:09
- 99%|█████████▉| 99/100 [01:34<00:02,  2.29s/it]2025-01-13 11:56:09,671 - INFO - Current time: 2025-01-13 11:56:09
-100%|██████████| 100/100 [01:34<00:00,  1.06it/s]
-2025-01-13 11:56:09,671 - INFO - Total time taken: 2.18 minutes
-2025-01-13 11:56:09,858 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40
-2025-01-13 11:56:15,630 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-2025-01-13 11:56:16,190 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__outside_talking_pan_laughing.mp4
-2025-01-13 11:56:16,747 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__exit_phone_room.mp4
-2025-01-13 11:56:18,643 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__outside_talking_pan_laughing.mp4
-2025-01-13 11:56:19,012 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__exit_phone_room.mp4
-2025-01-13 11:56:20,348 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:56:20,950 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:23,976 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__kitchen_pan.mp4
-2025-01-13 11:56:27,335 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__exit_phone_room.mp4
-2025-01-13 11:56:28,506 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:29,499 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:30,966 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:56:32,814 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:33,119 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:56:34,596 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/11__kitchen_pan.mp4
-2025-01-13 11:56:34,601 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:56:36,346 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__exit_phone_room.mp4
-2025-01-13 11:56:37,422 - WARNING - No faces in frame 18 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-2025-01-13 11:56:37,720 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:38,208 - WARNING - No faces in frame 9 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__exit_phone_room.mp4
-2025-01-13 11:56:39,585 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:40,106 - WARNING - No faces in frame 18 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:56:40,107 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:40,107 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:56:41,614 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/15__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:44,778 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/17__kitchen_pan.mp4
-2025-01-13 11:56:44,796 - WARNING - No faces in frame 14 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:56:44,799 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 11:56:46,108 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:56:46,627 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__outside_talking_pan_laughing.mp4
-2025-01-13 11:56:47,643 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__walking_down_street_outside_angry.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 11:56:48,295 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:56:48,307 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__kitchen_pan.mp4
-2025-01-13 11:56:49,570 - WARNING - No faces in frame 14 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:56:49,630 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__kitchen_pan.mp4
-2025-01-13 11:56:50,600 - WARNING - No faces in frame 19 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__exit_phone_room.mp4
-2025-01-13 11:56:51,189 - WARNING - No faces in frame 18 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:51,780 - WARNING - No faces in frame 27 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:51,832 - WARNING - No faces in frame 23 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__kitchen_pan.mp4
-2025-01-13 11:56:51,907 - WARNING - No faces in frame 29 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:56:51,961 - WARNING - No faces in frame 37 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:56:52,201 - WARNING - No faces in frame 24 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:56:52,201 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/22__kitchen_pan.mp4
-2025-01-13 11:56:52,201 - WARNING - No faces in frame 26 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:56:52,420 - WARNING - No faces in frame 22 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/17__kitchen_pan.mp4
-2025-01-13 11:56:52,500 - WARNING - No faces in frame 29 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:56:52,631 - WARNING - No faces in frame 22 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:52,662 - WARNING - No faces in frame 25 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__kitchen_pan.mp4
-2025-01-13 11:56:52,856 - WARNING - No faces in frame 19 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:56:53,099 - WARNING - No faces in frame 29 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__talking_against_wall.mp4
-2025-01-13 11:56:53,103 - WARNING - No faces in frame 23 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__kitchen_pan.mp4
-2025-01-13 11:56:53,473 - WARNING - No faces in frame 36 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:53,515 - WARNING - No faces in frame 35 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:53,538 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__exit_phone_room.mp4
-2025-01-13 11:56:53,696 - WARNING - No faces in frame 28 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:56:53,937 - WARNING - No faces in frame 54 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:54,603 - WARNING - No faces in frame 56 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:56:55,128 - WARNING - No faces in frame 44 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:56:55,545 - WARNING - No faces in frame 49 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:56:56,278 - WARNING - No faces in frame 38 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:56:56,593 - WARNING - No faces in frame 54 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:56:56,824 - WARNING - No faces in frame 81 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:56,919 - WARNING - No faces in frame 57 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__exit_phone_room.mp4
-2025-01-13 11:56:57,411 - WARNING - No faces in frame 75 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:56:57,439 - WARNING - No faces in frame 56 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:56:57,446 - WARNING - No faces in frame 95 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__meeting_serious.mp4
-2025-01-13 11:56:57,454 - WARNING - No faces in frame 58 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:56:58,141 - WARNING - No faces in frame 88 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/16__walking_and_outside_surprised.mp4
-2025-01-13 11:56:58,507 - WARNING - No faces in frame 74 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:56:58,934 - WARNING - No faces in frame 59 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:56:58,965 - WARNING - No faces in frame 66 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__walking_down_street_outside_angry.mp4
-2025-01-13 11:56:59,091 - WARNING - No faces in frame 57 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:56:59,409 - WARNING - No faces in frame 73 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:57:00,039 - WARNING - No faces in frame 109 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:57:00,631 - WARNING - No faces in frame 126 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__meeting_serious.mp4
-2025-01-13 11:57:00,837 - WARNING - No faces in frame 84 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:57:01,433 - WARNING - No faces in frame 132 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:01,535 - WARNING - No faces in frame 63 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__walking_down_street_outside_angry.mp4
-2025-01-13 11:57:01,940 - WARNING - No faces in frame 74 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:57:02,071 - WARNING - No faces in frame 77 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:57:02,237 - WARNING - No faces in frame 99 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:57:02,497 - WARNING - No faces in frame 91 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:57:03,121 - WARNING - No faces in frame 88 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:57:03,966 - WARNING - No faces in frame 112 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:57:04,640 - WARNING - No faces in frame 96 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:57:04,659 - WARNING - No faces in frame 89 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:57:05,467 - WARNING - No faces in frame 124 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:57:05,732 - WARNING - No faces in frame 102 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:57:07,198 - WARNING - No faces in frame 103 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:57:07,437 - WARNING - No faces in frame 106 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__walking_down_street_outside_angry.mp4
-2025-01-13 11:57:07,503 - WARNING - No faces in frame 115 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:57:07,508 - WARNING - No faces in frame 190 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__meeting_serious.mp4
-2025-01-13 11:57:08,142 - WARNING - No faces in frame 163 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__walking_and_outside_surprised.mp4
-2025-01-13 11:57:08,221 - WARNING - No faces in frame 149 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:57:09,717 - WARNING - No faces in frame 142 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__kitchen_pan.mp4
-2025-01-13 11:57:11,212 - WARNING - No faces in frame 150 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/22__kitchen_pan.mp4
-2025-01-13 11:57:12,561 - WARNING - No faces in frame 146 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:57:14,616 - WARNING - No faces in frame 154 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:57:18,331 - WARNING - No faces in frame 301 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__talking_angry_couch.mp4
-2025-01-13 11:57:24,552 - WARNING - No faces in frame 349 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__meeting_serious.mp4
-2025-01-13 11:57:28,729 - WARNING - No faces in frame 441 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/16__walking_and_outside_surprised.mp4
-2025-01-13 11:57:29,660 - WARNING - No faces in frame 340 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__outside_talking_still_laughing.mp4
-2025-01-13 11:57:32,305 - WARNING - No faces in frame 485 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/16__walking_and_outside_surprised.mp4
-2025-01-13 11:57:34,536 - WARNING - No faces in frame 473 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__talking_angry_couch.mp4
-2025-01-13 11:57:38,907 - WARNING - No faces in frame 367 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:57:41,988 - WARNING - No faces in frame 559 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__talking_angry_couch.mp4
-2025-01-13 11:57:46,488 - WARNING - No faces in frame 661 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:49,205 - WARNING - No faces in frame 609 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:50,009 - WARNING - No faces in frame 708 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:52,399 - WARNING - No faces in frame 708 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:52,784 - WARNING - No faces in frame 472 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:57:54,021 - WARNING - No faces in frame 755 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:57:59,194 - WARNING - No faces in frame 532 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__hugging_happy.mp4
-2025-01-13 11:58:12,341 - WARNING - No faces in frame 633 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__hugging_happy.mp4
-2025-01-13 11:58:13,352 - WARNING - No faces in frame 351 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__exit_phone_room.mp4
-2025-01-13 11:58:14,010 - INFO - Current time: 2025-01-13 11:58:14
-  1%|          | 1/100 [01:24<2:19:43, 84.68s/it]2025-01-13 11:58:15,279 - WARNING - No faces in frame 632 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:16,959 - WARNING - No faces in frame 363 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/02__exit_phone_room.mp4
-2025-01-13 11:58:16,959 - WARNING - No faces in frame 584 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walk_down_hall_angry.mp4
-2025-01-13 11:58:17,783 - WARNING - No faces in frame 773 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__outside_talking_still_laughing.mp4
-2025-01-13 11:58:17,809 - INFO - Current time: 2025-01-13 11:58:17
-  2%|▏         | 2/100 [01:29<1:01:24, 37.60s/it]2025-01-13 11:58:18,060 - WARNING - No faces in frame 296 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__exit_phone_room.mp4
-2025-01-13 11:58:18,413 - WARNING - No faces in frame 455 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__walk_down_hall_angry.mp4
-2025-01-13 11:58:18,722 - INFO - Current time: 2025-01-13 11:58:18
-  3%|▎         | 3/100 [01:30<33:32, 20.75s/it]  2025-01-13 11:58:19,645 - INFO - Current time: 2025-01-13 11:58:19
-  4%|▍         | 4/100 [01:30<20:24, 12.75s/it]2025-01-13 11:58:19,902 - INFO - Current time: 2025-01-13 11:58:19
-2025-01-13 11:58:20,124 - WARNING - No faces in frame 682 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:22,671 - WARNING - No faces in frame 559 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__kitchen_pan.mp4
-2025-01-13 11:58:23,346 - INFO - Current time: 2025-01-13 11:58:23
-  6%|▌         | 6/100 [01:34<10:57,  6.99s/it]2025-01-13 11:58:23,351 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__walk_down_hall_angry.mp4
-2025-01-13 11:58:23,788 - WARNING - No faces in frame 712 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__outside_talking_still_laughing.mp4
-2025-01-13 11:58:23,874 - WARNING - No faces in frame 355 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:58:24,251 - WARNING - No faces in frame 460 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walk_down_hall_angry.mp4
-2025-01-13 11:58:24,291 - INFO - Current time: 2025-01-13 11:58:24
-  7%|▋         | 7/100 [01:35<08:20,  5.38s/it]2025-01-13 11:58:25,004 - INFO - Current time: 2025-01-13 11:58:25
-  8%|▊         | 8/100 [01:35<06:01,  3.93s/it]2025-01-13 11:58:28,112 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:28,112 - WARNING - No faces in frame 22 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__walk_down_hall_angry.mp4
-2025-01-13 11:58:28,285 - WARNING - No faces in frame 663 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/17__kitchen_pan.mp4
-2025-01-13 11:58:28,352 - WARNING - No faces in frame 716 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:58:29,129 - INFO - Current time: 2025-01-13 11:58:29
-  9%|▉         | 9/100 [01:39<06:03,  4.00s/it]2025-01-13 11:58:29,193 - WARNING - No faces in frame 777 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__kitchen_pan.mp4
-2025-01-13 11:58:29,194 - WARNING - No faces in frame 705 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:31,758 - WARNING - No faces in frame 23 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:31,994 - WARNING - No faces in frame 576 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/04__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:32,007 - WARNING - No faces in frame 722 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/06__kitchen_pan.mp4
-2025-01-13 11:58:32,032 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:32,612 - WARNING - No faces in frame 761 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:33,022 - WARNING - No faces in frame 44 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__walk_down_hall_angry.mp4
-2025-01-13 11:58:33,055 - WARNING - No faces in frame 803 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__kitchen_pan.mp4
-2025-01-13 11:58:33,058 - WARNING - No faces in frame 760 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__hugging_happy.mp4
-2025-01-13 11:58:33,083 - WARNING - No faces in frame 686 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/17__kitchen_pan.mp4
-2025-01-13 11:58:33,102 - WARNING - No faces in frame 625 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/01__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:33,117 - INFO - Current time: 2025-01-13 11:58:33
- 10%|█         | 10/100 [01:44<06:27,  4.30s/it]2025-01-13 11:58:33,124 - WARNING - No faces in frame 710 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__kitchen_pan.mp4
-2025-01-13 11:58:33,137 - WARNING - No faces in frame 753 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/22__kitchen_pan.mp4
-2025-01-13 11:58:33,342 - WARNING - No faces in frame 567 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/07__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:58:33,342 - WARNING - No faces in frame 846 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:33,583 - WARNING - No faces in frame 685 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:34,708 - INFO - Current time: 2025-01-13 11:58:34
- 11%|█         | 11/100 [01:46<05:10,  3.49s/it]2025-01-13 11:58:35,762 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:36,291 - INFO - Current time: 2025-01-13 11:58:36
- 12%|█▏        | 12/100 [01:46<03:50,  2.62s/it]2025-01-13 11:58:36,320 - INFO - Current time: 2025-01-13 11:58:36
-2025-01-13 11:58:36,331 - INFO - Current time: 2025-01-13 11:58:36
-2025-01-13 11:58:36,372 - INFO - Current time: 2025-01-13 11:58:36
- 15%|█▌        | 15/100 [01:47<01:40,  1.18s/it]2025-01-13 11:58:36,436 - INFO - Current time: 2025-01-13 11:58:36
-2025-01-13 11:58:37,463 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
-2025-01-13 11:58:37,534 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:38,027 - WARNING - No faces in frame 598 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walk_down_hall_angry.mp4
-2025-01-13 11:58:38,694 - WARNING - No faces in frame 20 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:38,694 - WARNING - No faces in frame 46 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:38,694 - INFO - Current time: 2025-01-13 11:58:38
- 17%|█▋        | 17/100 [01:49<01:43,  1.24s/it]2025-01-13 11:58:39,129 - WARNING - No faces in frame 619 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__exit_phone_room.mp4
-2025-01-13 11:58:39,130 - WARNING - No faces in frame 754 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/19__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:39,136 - WARNING - No faces in frame 734 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__kitchen_pan.mp4
-2025-01-13 11:58:39,179 - WARNING - No faces in frame 709 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/17__kitchen_pan.mp4
-2025-01-13 11:58:39,191 - WARNING - No faces in frame 721 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:58:39,928 - WARNING - No faces in frame 779 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/22__kitchen_pan.mp4
-2025-01-13 11:58:39,928 - WARNING - No faces in frame 817 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:58:39,932 - WARNING - No faces in frame 770 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walk_down_hall_angry.mp4
-2025-01-13 11:58:39,946 - INFO - Current time: 2025-01-13 11:58:39
- 18%|█▊        | 18/100 [01:51<01:52,  1.38s/it]2025-01-13 11:58:40,217 - WARNING - No faces in frame 16 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:40,447 - WARNING - No faces in frame 552 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/09__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:41,076 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,155 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,170 - INFO - Current time: 2025-01-13 11:58:41
- 21%|██        | 21/100 [01:51<01:00,  1.32it/s]2025-01-13 11:58:41,201 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,231 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,251 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,274 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,280 - INFO - Current time: 2025-01-13 11:58:41
- 26%|██▌       | 26/100 [01:51<00:27,  2.66it/s]2025-01-13 11:58:41,320 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,326 - INFO - Current time: 2025-01-13 11:58:41
-2025-01-13 11:58:41,910 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/28__exit_phone_room.mp4
-2025-01-13 11:58:43,560 - INFO - Current time: 2025-01-13 11:58:43
- 29%|██▉       | 29/100 [01:54<00:34,  2.03it/s]2025-01-13 11:58:43,612 - WARNING - No faces in frame 40 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:43,679 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/28__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:43,789 - WARNING - No faces in frame 69 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:43,931 - WARNING - No faces in frame 802 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__kitchen_pan.mp4
-2025-01-13 11:58:43,977 - INFO - Current time: 2025-01-13 11:58:43
-2025-01-13 11:58:44,039 - INFO - Current time: 2025-01-13 11:58:44
- 31%|███       | 31/100 [01:54<00:29,  2.30it/s]2025-01-13 11:58:44,113 - WARNING - No faces in frame 33 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:44,143 - WARNING - No faces in frame 730 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/03__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:44,173 - WARNING - No faces in frame 717 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/11__kitchen_pan.mp4
-2025-01-13 11:58:44,219 - INFO - Current time: 2025-01-13 11:58:44
-2025-01-13 11:58:44,220 - INFO - Current time: 2025-01-13 11:58:44
- 33%|███▎      | 33/100 [01:54<00:23,  2.86it/s]2025-01-13 11:58:44,446 - WARNING - No faces in frame 661 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/21__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:44,495 - INFO - Current time: 2025-01-13 11:58:44
-2025-01-13 11:58:44,507 - INFO - Current time: 2025-01-13 11:58:44
- 35%|███▌      | 35/100 [01:55<00:19,  3.37it/s]2025-01-13 11:58:44,542 - WARNING - No faces in frame 89 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__walk_down_hall_angry.mp4
-2025-01-13 11:58:44,577 - WARNING - No faces in frame 814 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:44,611 - WARNING - No faces in frame 758 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__walking_outside_cafe_disgusted.mp4
-2025-01-13 11:58:44,612 - INFO - Current time: 2025-01-13 11:58:44
- 36%|███▌      | 36/100 [01:55<00:17,  3.73it/s]2025-01-13 11:58:44,665 - INFO - Current time: 2025-01-13 11:58:44
-2025-01-13 11:58:46,291 - WARNING - No faces in frame 50 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:46,495 - INFO - Current time: 2025-01-13 11:58:46
- 38%|███▊      | 38/100 [01:57<00:29,  2.11it/s]2025-01-13 11:58:46,498 - WARNING - No faces in frame 93 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:46,549 - INFO - Current time: 2025-01-13 11:58:46
-2025-01-13 11:58:46,742 - WARNING - No faces in frame 1000 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/13__podium_speech_happy.mp4
-2025-01-13 11:58:46,754 - INFO - Current time: 2025-01-13 11:58:46
- 40%|████      | 40/100 [01:57<00:22,  2.71it/s]2025-01-13 11:58:46,808 - WARNING - No faces in frame 891 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__exit_phone_room.mp4
-2025-01-13 11:58:46,825 - INFO - Current time: 2025-01-13 11:58:46
-2025-01-13 11:58:46,974 - INFO - Current time: 2025-01-13 11:58:46
- 42%|████▏     | 42/100 [01:57<00:16,  3.45it/s]2025-01-13 11:58:47,470 - WARNING - No faces in frame 874 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walk_down_hall_angry.mp4
-2025-01-13 11:58:47,501 - INFO - Current time: 2025-01-13 11:58:47
- 43%|████▎     | 43/100 [01:58<00:18,  3.01it/s]2025-01-13 11:58:47,511 - INFO - Current time: 2025-01-13 11:58:47
-2025-01-13 11:58:47,600 - INFO - Current time: 2025-01-13 11:58:47
- 45%|████▌     | 45/100 [01:58<00:13,  4.18it/s]2025-01-13 11:58:47,758 - INFO - Current time: 2025-01-13 11:58:47
- 46%|████▌     | 46/100 [01:58<00:12,  4.43it/s]2025-01-13 11:58:47,929 - INFO - Current time: 2025-01-13 11:58:47
- 47%|████▋     | 47/100 [01:58<00:11,  4.80it/s]2025-01-13 11:58:48,213 - INFO - Current time: 2025-01-13 11:58:48
- 48%|████▊     | 48/100 [01:58<00:11,  4.42it/s]2025-01-13 11:58:48,545 - WARNING - No faces in frame 116 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:48,612 - WARNING - No faces in frame 67 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:48,762 - INFO - Current time: 2025-01-13 11:58:48
- 49%|████▉     | 49/100 [01:59<00:15,  3.25it/s]2025-01-13 11:58:48,846 - WARNING - No faces in frame 1186 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/18__podium_speech_happy.mp4
-2025-01-13 11:58:48,855 - INFO - Current time: 2025-01-13 11:58:48
-2025-01-13 11:58:48,881 - INFO - Current time: 2025-01-13 11:58:48
- 51%|█████     | 51/100 [01:59<00:09,  4.91it/s]2025-01-13 11:58:48,920 - WARNING - No faces in frame 998 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__podium_speech_happy.mp4
-2025-01-13 11:58:48,932 - INFO - Current time: 2025-01-13 11:58:48
-2025-01-13 11:58:49,520 - WARNING - No faces in frame 755 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/23__exit_phone_room.mp4
-2025-01-13 11:58:49,531 - INFO - Current time: 2025-01-13 11:58:49
- 53%|█████▎    | 53/100 [02:00<00:11,  4.02it/s]2025-01-13 11:58:49,776 - INFO - Current time: 2025-01-13 11:58:49
- 54%|█████▍    | 54/100 [02:00<00:11,  4.03it/s]2025-01-13 11:58:49,849 - WARNING - No faces in frame 1011 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/12__podium_speech_happy.mp4
-2025-01-13 11:58:49,862 - INFO - Current time: 2025-01-13 11:58:49
-2025-01-13 11:58:49,944 - INFO - Current time: 2025-01-13 11:58:49
- 56%|█████▌    | 56/100 [02:00<00:08,  5.36it/s]2025-01-13 11:58:50,019 - INFO - Current time: 2025-01-13 11:58:50
-2025-01-13 11:58:50,064 - WARNING - No faces in frame 999 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:50,088 - INFO - Current time: 2025-01-13 11:58:50
- 58%|█████▊    | 58/100 [02:00<00:06,  6.83it/s]2025-01-13 11:58:50,206 - INFO - Current time: 2025-01-13 11:58:50
- 59%|█████▉    | 59/100 [02:00<00:05,  7.11it/s]2025-01-13 11:58:50,343 - WARNING - No faces in frame 84 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:50,391 - INFO - Current time: 2025-01-13 11:58:50
- 60%|██████    | 60/100 [02:01<00:06,  6.64it/s]2025-01-13 11:58:50,407 - INFO - Current time: 2025-01-13 11:58:50
-2025-01-13 11:58:50,444 - WARNING - No faces in frame 1024 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/10__talking_against_wall.mp4
-2025-01-13 11:58:50,455 - INFO - Current time: 2025-01-13 11:58:50
-2025-01-13 11:58:50,676 - WARNING - No faces in frame 139 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:51,329 - WARNING - No faces in frame 1244 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/16__podium_speech_happy.mp4
-2025-01-13 11:58:51,336 - INFO - Current time: 2025-01-13 11:58:51
- 63%|██████▎   | 63/100 [02:01<00:08,  4.33it/s]2025-01-13 11:58:51,695 - INFO - Current time: 2025-01-13 11:58:51
- 64%|██████▍   | 64/100 [02:02<00:09,  3.92it/s]2025-01-13 11:58:52,093 - WARNING - No faces in frame 101 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:52,119 - WARNING - No faces in frame 1079 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/05__podium_speech_happy.mp4
-2025-01-13 11:58:52,133 - INFO - Current time: 2025-01-13 11:58:52
- 65%|██████▌   | 65/100 [02:02<00:10,  3.41it/s]2025-01-13 11:58:52,226 - WARNING - No faces in frame 1093 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/08__podium_speech_happy.mp4
-2025-01-13 11:58:52,305 - WARNING - No faces in frame 1085 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/20__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:52,308 - INFO - Current time: 2025-01-13 11:58:52
- 66%|██████▌   | 66/100 [02:02<00:09,  3.76it/s]2025-01-13 11:58:52,318 - INFO - Current time: 2025-01-13 11:58:52
-2025-01-13 11:58:52,337 - WARNING - No faces in frame 163 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:52,379 - INFO - Current time: 2025-01-13 11:58:52
-2025-01-13 11:58:52,795 - INFO - Current time: 2025-01-13 11:58:52
- 69%|██████▉   | 69/100 [02:03<00:06,  4.67it/s]2025-01-13 11:58:52,864 - INFO - Current time: 2025-01-13 11:58:52
-2025-01-13 11:58:53,127 - WARNING - No faces in frame 1456 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/14__walking_down_street_outside_angry.mp4
-2025-01-13 11:58:53,135 - INFO - Current time: 2025-01-13 11:58:53
- 71%|███████   | 71/100 [02:03<00:05,  5.00it/s]2025-01-13 11:58:53,645 - INFO - Current time: 2025-01-13 11:58:53
- 72%|███████▏  | 72/100 [02:04<00:07,  3.88it/s]2025-01-13 11:58:53,682 - INFO - Current time: 2025-01-13 11:58:53
-2025-01-13 11:58:53,707 - WARNING - No faces in frame 117 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:53,841 - WARNING - No faces in frame 186 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:53,979 - INFO - Current time: 2025-01-13 11:58:53
- 74%|███████▍  | 74/100 [02:04<00:05,  4.42it/s]2025-01-13 11:58:54,012 - WARNING - No faces in frame 1129 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/16__walking_down_indoor_hall_disgust.mp4
-2025-01-13 11:58:54,025 - INFO - Current time: 2025-01-13 11:58:54
-2025-01-13 11:58:54,046 - INFO - Current time: 2025-01-13 11:58:54
-2025-01-13 11:58:54,257 - INFO - Current time: 2025-01-13 11:58:54
- 77%|███████▋  | 77/100 [02:04<00:03,  5.91it/s]2025-01-13 11:58:55,139 - WARNING - No faces in frame 134 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:55,224 - WARNING - No faces in frame 209 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:55,277 - INFO - Current time: 2025-01-13 11:58:55
- 78%|███████▊  | 78/100 [02:05<00:06,  3.19it/s]2025-01-13 11:58:55,585 - INFO - Current time: 2025-01-13 11:58:55
- 79%|███████▉  | 79/100 [02:06<00:06,  3.20it/s]2025-01-13 11:58:56,322 - WARNING - No faces in frame 339 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__talking_against_wall.mp4
-2025-01-13 11:58:56,450 - WARNING - No faces in frame 151 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:58:56,544 - WARNING - No faces in frame 233 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:56,642 - INFO - Current time: 2025-01-13 11:58:56
- 80%|████████  | 80/100 [02:07<00:09,  2.11it/s]2025-01-13 11:58:56,685 - WARNING - No faces in frame 206 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__outside_talking_pan_laughing.mp4
-2025-01-13 11:58:57,844 - WARNING - No faces in frame 256 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:58:59,177 - WARNING - No faces in frame 279 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:00,475 - WARNING - No faces in frame 303 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:02,156 - WARNING - No faces in frame 678 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__podium_speech_happy.mp4
-2025-01-13 11:59:07,223 - WARNING - No faces in frame 419 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:08,738 - WARNING - No faces in frame 443 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:10,075 - WARNING - No faces in frame 466 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:12,727 - WARNING - No faces in frame 513 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:14,030 - WARNING - No faces in frame 536 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:15,295 - WARNING - No faces in frame 559 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:16,618 - WARNING - No faces in frame 583 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walk_down_hall_angry.mp4
-2025-01-13 11:59:22,057 - INFO - Current time: 2025-01-13 11:59:22
- 81%|████████  | 81/100 [02:32<02:01,  6.39s/it]2025-01-13 11:59:24,713 - INFO - Current time: 2025-01-13 11:59:24
- 82%|████████▏ | 82/100 [02:35<01:37,  5.44s/it]2025-01-13 11:59:24,761 - INFO - Current time: 2025-01-13 11:59:24
-2025-01-13 11:59:25,371 - INFO - Current time: 2025-01-13 11:59:25
- 84%|████████▍ | 84/100 [02:35<00:52,  3.30s/it]2025-01-13 11:59:25,420 - WARNING - No faces in frame 633 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/25__walking_down_street_outside_angry.mp4
-2025-01-13 11:59:25,435 - INFO - Current time: 2025-01-13 11:59:25
-2025-01-13 11:59:25,668 - WARNING - No faces in frame 712 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__outside_talking_pan_laughing.mp4
-2025-01-13 11:59:25,676 - INFO - Current time: 2025-01-13 11:59:25
- 86%|████████▌ | 86/100 [02:36<00:29,  2.12s/it]2025-01-13 11:59:25,809 - INFO - Current time: 2025-01-13 11:59:25
- 87%|████████▋ | 87/100 [02:36<00:22,  1.70s/it]2025-01-13 11:59:26,560 - WARNING - No faces in frame 522 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/26__walk_down_hall_angry.mp4
-2025-01-13 11:59:26,569 - INFO - Current time: 2025-01-13 11:59:26
- 88%|████████▊ | 88/100 [02:37<00:17,  1.48s/it]2025-01-13 11:59:26,601 - WARNING - No faces in frame 1144 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/24__podium_speech_happy.mp4
-2025-01-13 11:59:26,611 - INFO - Current time: 2025-01-13 11:59:26
-2025-01-13 11:59:26,772 - INFO - Current time: 2025-01-13 11:59:26
- 90%|█████████ | 90/100 [02:37<00:09,  1.07it/s]2025-01-13 11:59:26,799 - INFO - Current time: 2025-01-13 11:59:26
-2025-01-13 11:59:26,809 - INFO - Current time: 2025-01-13 11:59:26
-2025-01-13 11:59:26,868 - WARNING - No faces in frame 535 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/27__kitchen_pan.mp4
-2025-01-13 11:59:26,879 - INFO - Current time: 2025-01-13 11:59:26
- 93%|█████████▎| 93/100 [02:37<00:03,  1.93it/s]2025-01-13 11:59:27,508 - WARNING - No faces in frame 473 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/28__exit_phone_room.mp4
-2025-01-13 11:59:27,517 - INFO - Current time: 2025-01-13 11:59:27
-2025-01-13 11:59:28,450 - INFO - Current time: 2025-01-13 11:59:28
- 95%|█████████▌| 95/100 [02:39<00:03,  1.67it/s]2025-01-13 11:59:28,570 - INFO - Current time: 2025-01-13 11:59:28
- 96%|█████████▌| 96/100 [02:39<00:02,  1.94it/s]2025-01-13 11:59:28,605 - INFO - Current time: 2025-01-13 11:59:28
-2025-01-13 11:59:28,781 - INFO - Current time: 2025-01-13 11:59:28
- 98%|█████████▊| 98/100 [02:39<00:00,  2.66it/s]2025-01-13 11:59:29,583 - INFO - Current time: 2025-01-13 11:59:29
- 99%|█████████▉| 99/100 [02:40<00:00,  2.18it/s]2025-01-13 11:59:30,624 - WARNING - No faces in frame 1310 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/original_sequences/actors/c40/videos/28__walking_down_street_outside_angry.mp4
-2025-01-13 11:59:30,634 - INFO - Current time: 2025-01-13 11:59:30
-100%|██████████| 100/100 [02:41<00:00,  1.70it/s]100%|██████████| 100/100 [02:41<00:00,  1.61s/it]
-2025-01-13 11:59:30,634 - INFO - Total time taken: 3.35 minutes
-2025-01-13 11:59:30,946 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40
-2025-01-13 11:59:30,946 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
-2025-01-13 11:59:30,947 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/masks
-2025-01-13 11:59:30,947 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/033_097.mp4
-2025-01-13 11:59:30,947 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/033_097.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:00:29,041 - WARNING - No faces in frame 449 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/128_896.mp4
-2025-01-13 12:00:30,994 - INFO - Current time: 2025-01-13 12:00:30
-  1%|          | 1/100 [00:21<35:29, 21.51s/it]2025-01-13 12:00:32,509 - INFO - Current time: 2025-01-13 12:00:32
-  2%|▏         | 2/100 [00:23<15:55,  9.75s/it]2025-01-13 12:00:34,193 - INFO - Current time: 2025-01-13 12:00:34
-  3%|▎         | 3/100 [00:24<09:38,  5.97s/it]2025-01-13 12:00:35,247 - INFO - Current time: 2025-01-13 12:00:35
-  4%|▍         | 4/100 [00:25<06:26,  4.03s/it]2025-01-13 12:00:36,346 - INFO - Current time: 2025-01-13 12:00:36
-  5%|▌         | 5/100 [00:26<04:41,  2.97s/it]2025-01-13 12:00:36,537 - INFO - Current time: 2025-01-13 12:00:36
-  6%|▌         | 6/100 [00:26<03:10,  2.02s/it]2025-01-13 12:00:37,447 - INFO - Current time: 2025-01-13 12:00:37
-  7%|▋         | 7/100 [00:27<02:34,  1.66s/it]2025-01-13 12:00:38,099 - INFO - Current time: 2025-01-13 12:00:38
-  8%|▊         | 8/100 [00:28<02:04,  1.35s/it]2025-01-13 12:00:38,762 - INFO - Current time: 2025-01-13 12:00:38
-  9%|▉         | 9/100 [00:29<01:48,  1.20s/it]2025-01-13 12:00:39,414 - INFO - Current time: 2025-01-13 12:00:39
- 10%|█         | 10/100 [00:29<01:32,  1.02s/it]2025-01-13 12:00:40,222 - INFO - Current time: 2025-01-13 12:00:40
- 11%|█         | 11/100 [00:30<01:19,  1.12it/s]2025-01-13 12:00:40,849 - WARNING - No faces in frame 336 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/434_438.mp4
-2025-01-13 12:00:41,423 - INFO - Current time: 2025-01-13 12:00:41
- 12%|█▏        | 12/100 [00:32<01:38,  1.12s/it]2025-01-13 12:00:41,866 - INFO - Current time: 2025-01-13 12:00:41
- 13%|█▎        | 13/100 [00:32<01:15,  1.15it/s]2025-01-13 12:00:42,172 - INFO - Current time: 2025-01-13 12:00:42
- 14%|█▍        | 14/100 [00:32<00:57,  1.49it/s]2025-01-13 12:00:42,387 - INFO - Current time: 2025-01-13 12:00:42
-2025-01-13 12:00:42,783 - INFO - Current time: 2025-01-13 12:00:42
- 16%|█▌        | 16/100 [00:33<00:42,  1.99it/s]2025-01-13 12:00:43,373 - INFO - Current time: 2025-01-13 12:00:43
- 17%|█▋        | 17/100 [00:33<00:39,  2.10it/s]2025-01-13 12:00:43,993 - INFO - Current time: 2025-01-13 12:00:43
- 18%|█▊        | 18/100 [00:34<00:42,  1.94it/s]2025-01-13 12:00:45,664 - INFO - Current time: 2025-01-13 12:00:45
- 19%|█▉        | 19/100 [00:36<01:16,  1.05it/s]2025-01-13 12:00:46,125 - INFO - Current time: 2025-01-13 12:00:46
-2025-01-13 12:00:46,185 - INFO - Current time: 2025-01-13 12:00:46
-2025-01-13 12:00:46,299 - INFO - Current time: 2025-01-13 12:00:46
- 22%|██▏       | 22/100 [00:36<00:36,  2.12it/s]2025-01-13 12:00:46,313 - INFO - Current time: 2025-01-13 12:00:46
-2025-01-13 12:00:46,316 - INFO - Current time: 2025-01-13 12:00:46
-2025-01-13 12:00:46,950 - INFO - Current time: 2025-01-13 12:00:46
- 25%|██▌       | 25/100 [00:37<00:27,  2.78it/s]2025-01-13 12:00:47,090 - INFO - Current time: 2025-01-13 12:00:47
- 26%|██▌       | 26/100 [00:37<00:23,  3.11it/s]2025-01-13 12:00:47,096 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,119 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,579 - WARNING - No faces in frame 662 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Deepfakes/c40/videos/128_896.mp4
-2025-01-13 12:00:47,819 - INFO - Current time: 2025-01-13 12:00:47
- 29%|██▉       | 29/100 [00:38<00:20,  3.46it/s]2025-01-13 12:00:47,830 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,837 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,855 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,867 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,881 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:47,891 - INFO - Current time: 2025-01-13 12:00:47
-2025-01-13 12:00:48,418 - INFO - Current time: 2025-01-13 12:00:48
- 36%|███▌      | 36/100 [00:38<00:10,  5.91it/s]2025-01-13 12:00:48,680 - INFO - Current time: 2025-01-13 12:00:48
- 37%|███▋      | 37/100 [00:38<00:11,  5.58it/s]2025-01-13 12:00:49,256 - INFO - Current time: 2025-01-13 12:00:49
- 38%|███▊      | 38/100 [00:39<00:14,  4.32it/s]2025-01-13 12:00:49,353 - INFO - Current time: 2025-01-13 12:00:49
-2025-01-13 12:00:49,757 - INFO - Current time: 2025-01-13 12:00:49
- 40%|████      | 40/100 [00:40<00:14,  4.22it/s]2025-01-13 12:00:49,838 - INFO - Current time: 2025-01-13 12:00:49
-2025-01-13 12:00:50,258 - INFO - Current time: 2025-01-13 12:00:50
- 42%|████▏     | 42/100 [00:40<00:14,  4.12it/s]2025-01-13 12:00:50,415 - INFO - Current time: 2025-01-13 12:00:50
- 43%|████▎     | 43/100 [00:40<00:12,  4.43it/s]2025-01-13 12:00:51,168 - INFO - Current time: 2025-01-13 12:00:51
- 44%|████▍     | 44/100 [00:41<00:18,  3.05it/s]2025-01-13 12:00:52,456 - INFO - Current time: 2025-01-13 12:00:52
- 45%|████▌     | 45/100 [00:42<00:29,  1.87it/s]2025-01-13 12:00:54,136 - INFO - Current time: 2025-01-13 12:00:54
- 46%|████▌     | 46/100 [00:44<00:43,  1.24it/s]2025-01-13 12:00:55,685 - INFO - Current time: 2025-01-13 12:00:55
- 47%|████▋     | 47/100 [00:45<00:52,  1.01it/s]2025-01-13 12:00:57,047 - INFO - Current time: 2025-01-13 12:00:57
- 48%|████▊     | 48/100 [00:47<00:56,  1.09s/it]2025-01-13 12:00:58,225 - INFO - Current time: 2025-01-13 12:00:58
- 49%|████▉     | 49/100 [00:48<00:56,  1.11s/it]2025-01-13 12:00:58,319 - INFO - Current time: 2025-01-13 12:00:58
-2025-01-13 12:00:58,544 - INFO - Current time: 2025-01-13 12:00:58
- 51%|█████     | 51/100 [00:48<00:34,  1.44it/s]2025-01-13 12:00:58,575 - INFO - Current time: 2025-01-13 12:00:58
-2025-01-13 12:00:58,892 - INFO - Current time: 2025-01-13 12:00:58
- 53%|█████▎    | 53/100 [00:49<00:23,  2.03it/s]2025-01-13 12:00:58,991 - INFO - Current time: 2025-01-13 12:00:58
-2025-01-13 12:00:59,461 - INFO - Current time: 2025-01-13 12:00:59
- 55%|█████▌    | 55/100 [00:49<00:18,  2.39it/s]2025-01-13 12:00:59,564 - INFO - Current time: 2025-01-13 12:00:59
- 56%|█████▌    | 56/100 [00:49<00:15,  2.81it/s]2025-01-13 12:00:59,779 - INFO - Current time: 2025-01-13 12:00:59
- 57%|█████▋    | 57/100 [00:50<00:13,  3.09it/s]2025-01-13 12:00:59,857 - INFO - Current time: 2025-01-13 12:00:59
-2025-01-13 12:00:59,889 - INFO - Current time: 2025-01-13 12:00:59
- 59%|█████▉    | 59/100 [00:50<00:08,  4.58it/s]2025-01-13 12:01:00,049 - INFO - Current time: 2025-01-13 12:01:00
- 60%|██████    | 60/100 [00:50<00:08,  4.86it/s]2025-01-13 12:01:00,471 - INFO - Current time: 2025-01-13 12:01:00
- 61%|██████    | 61/100 [00:50<00:10,  3.89it/s]2025-01-13 12:01:00,521 - INFO - Current time: 2025-01-13 12:01:00
-2025-01-13 12:01:00,676 - INFO - Current time: 2025-01-13 12:01:00
- 63%|██████▎   | 63/100 [00:50<00:07,  5.14it/s]2025-01-13 12:01:00,763 - INFO - Current time: 2025-01-13 12:01:00
-2025-01-13 12:01:00,807 - INFO - Current time: 2025-01-13 12:01:00
- 65%|██████▌   | 65/100 [00:51<00:05,  6.79it/s]2025-01-13 12:01:00,954 - INFO - Current time: 2025-01-13 12:01:00
- 66%|██████▌   | 66/100 [00:51<00:05,  6.77it/s]2025-01-13 12:01:01,049 - INFO - Current time: 2025-01-13 12:01:01
-2025-01-13 12:01:01,141 - INFO - Current time: 2025-01-13 12:01:01
- 68%|██████▊   | 68/100 [00:51<00:04,  7.87it/s]2025-01-13 12:01:01,286 - INFO - Current time: 2025-01-13 12:01:01
- 69%|██████▉   | 69/100 [00:51<00:04,  7.64it/s]2025-01-13 12:01:01,394 - INFO - Current time: 2025-01-13 12:01:01
- 70%|███████   | 70/100 [00:51<00:03,  7.96it/s]2025-01-13 12:01:01,454 - INFO - Current time: 2025-01-13 12:01:01
-2025-01-13 12:01:01,517 - INFO - Current time: 2025-01-13 12:01:01
- 72%|███████▏  | 72/100 [00:51<00:02, 10.00it/s]2025-01-13 12:01:01,553 - INFO - Current time: 2025-01-13 12:01:01
-2025-01-13 12:01:01,567 - INFO - Current time: 2025-01-13 12:01:01
-2025-01-13 12:01:01,619 - INFO - Current time: 2025-01-13 12:01:01
- 75%|███████▌  | 75/100 [00:51<00:01, 14.34it/s]2025-01-13 12:01:02,001 - INFO - Current time: 2025-01-13 12:01:02
-2025-01-13 12:01:02,314 - INFO - Current time: 2025-01-13 12:01:02
- 77%|███████▋  | 77/100 [00:52<00:03,  6.48it/s]2025-01-13 12:01:02,325 - INFO - Current time: 2025-01-13 12:01:02
-2025-01-13 12:01:02,629 - INFO - Current time: 2025-01-13 12:01:02
- 79%|███████▉  | 79/100 [00:52<00:03,  6.44it/s]2025-01-13 12:01:03,362 - INFO - Current time: 2025-01-13 12:01:03
-2025-01-13 12:01:03,400 - INFO - Current time: 2025-01-13 12:01:03
- 81%|████████  | 81/100 [00:53<00:04,  4.44it/s]2025-01-13 12:01:04,060 - INFO - Current time: 2025-01-13 12:01:04
- 82%|████████▏ | 82/100 [00:54<00:05,  3.31it/s]2025-01-13 12:01:04,061 - INFO - Current time: 2025-01-13 12:01:04
-2025-01-13 12:01:04,360 - INFO - Current time: 2025-01-13 12:01:04
- 84%|████████▍ | 84/100 [00:54<00:04,  3.99it/s]2025-01-13 12:01:06,625 - INFO - Current time: 2025-01-13 12:01:06
- 85%|████████▌ | 85/100 [00:56<00:09,  1.56it/s]2025-01-13 12:01:11,234 - INFO - Current time: 2025-01-13 12:01:11
- 86%|████████▌ | 86/100 [01:01<00:21,  1.50s/it]2025-01-13 12:01:12,323 - INFO - Current time: 2025-01-13 12:01:12
- 87%|████████▋ | 87/100 [01:02<00:18,  1.40s/it]2025-01-13 12:01:12,437 - INFO - Current time: 2025-01-13 12:01:12
- 88%|████████▊ | 88/100 [01:02<00:12,  1.08s/it]2025-01-13 12:01:13,235 - INFO - Current time: 2025-01-13 12:01:13
- 89%|████████▉ | 89/100 [01:03<00:11,  1.00s/it]2025-01-13 12:01:14,567 - INFO - Current time: 2025-01-13 12:01:14
- 90%|█████████ | 90/100 [01:04<00:10,  1.09s/it]2025-01-13 12:01:14,668 - INFO - Current time: 2025-01-13 12:01:14
- 91%|█████████ | 91/100 [01:04<00:07,  1.23it/s]2025-01-13 12:01:15,777 - INFO - Current time: 2025-01-13 12:01:15
- 92%|█████████▏| 92/100 [01:06<00:07,  1.11it/s]2025-01-13 12:01:16,883 - INFO - Current time: 2025-01-13 12:01:16
- 93%|█████████▎| 93/100 [01:07<00:06,  1.04it/s]2025-01-13 12:01:17,850 - INFO - Current time: 2025-01-13 12:01:17
- 94%|█████████▍| 94/100 [01:08<00:05,  1.04it/s]2025-01-13 12:01:19,953 - INFO - Current time: 2025-01-13 12:01:19
- 95%|█████████▌| 95/100 [01:10<00:06,  1.30s/it]2025-01-13 12:01:21,509 - INFO - Current time: 2025-01-13 12:01:21
- 96%|█████████▌| 96/100 [01:11<00:05,  1.38s/it]2025-01-13 12:01:30,591 - INFO - Current time: 2025-01-13 12:01:30
- 97%|█████████▋| 97/100 [01:20<00:11,  3.67s/it]2025-01-13 12:01:31,302 - INFO - Current time: 2025-01-13 12:01:31
- 98%|█████████▊| 98/100 [01:21<00:05,  2.79s/it]2025-01-13 12:01:31,514 - INFO - Current time: 2025-01-13 12:01:31
- 99%|█████████▉| 99/100 [01:21<00:02,  2.02s/it]2025-01-13 12:01:31,925 - INFO - Current time: 2025-01-13 12:01:31
-100%|██████████| 100/100 [01:22<00:00,  1.54s/it]100%|██████████| 100/100 [01:22<00:00,  1.22it/s]
-2025-01-13 12:01:31,925 - INFO - Total time taken: 2.02 minutes
-2025-01-13 12:01:32,150 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40
-2025-01-13 12:01:32,151 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
-2025-01-13 12:01:32,151 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/masks
-2025-01-13 12:01:32,151 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40/videos/033_097.mp4
-2025-01-13 12:01:32,151 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/Face2Face/c40/videos/033_097.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:02:33,363 - INFO - Current time: 2025-01-13 12:02:33
-  1%|          | 1/100 [00:22<37:10, 22.53s/it]2025-01-13 12:02:33,899 - INFO - Current time: 2025-01-13 12:02:33
-2025-01-13 12:02:34,865 - INFO - Current time: 2025-01-13 12:02:34
-  3%|▎         | 3/100 [00:23<10:02,  6.21s/it]2025-01-13 12:02:35,435 - INFO - Current time: 2025-01-13 12:02:35
-  4%|▍         | 4/100 [00:24<06:55,  4.33s/it]2025-01-13 12:02:36,304 - INFO - Current time: 2025-01-13 12:02:36
-  5%|▌         | 5/100 [00:24<04:55,  3.11s/it]2025-01-13 12:02:36,901 - INFO - Current time: 2025-01-13 12:02:36
-  6%|▌         | 6/100 [00:25<03:36,  2.30s/it]2025-01-13 12:02:38,130 - INFO - Current time: 2025-01-13 12:02:38
-  7%|▋         | 7/100 [00:26<03:03,  1.97s/it]2025-01-13 12:02:38,760 - INFO - Current time: 2025-01-13 12:02:38
-  8%|▊         | 8/100 [00:27<02:29,  1.62s/it]2025-01-13 12:02:40,348 - INFO - Current time: 2025-01-13 12:02:40
-  9%|▉         | 9/100 [00:28<02:20,  1.54s/it]2025-01-13 12:02:40,792 - INFO - Current time: 2025-01-13 12:02:40
- 10%|█         | 10/100 [00:29<01:48,  1.21s/it]2025-01-13 12:02:42,121 - INFO - Current time: 2025-01-13 12:02:42
- 11%|█         | 11/100 [00:31<02:20,  1.58s/it]2025-01-13 12:02:43,245 - INFO - Current time: 2025-01-13 12:02:43
- 12%|█▏        | 12/100 [00:32<01:43,  1.18s/it]2025-01-13 12:02:43,513 - INFO - Current time: 2025-01-13 12:02:43
-2025-01-13 12:02:43,952 - INFO - Current time: 2025-01-13 12:02:43
- 14%|█▍        | 14/100 [00:32<01:07,  1.27it/s]2025-01-13 12:02:45,184 - INFO - Current time: 2025-01-13 12:02:45
- 15%|█▌        | 15/100 [00:33<01:12,  1.18it/s]2025-01-13 12:02:45,193 - INFO - Current time: 2025-01-13 12:02:45
-2025-01-13 12:02:46,567 - INFO - Current time: 2025-01-13 12:02:46
- 17%|█▋        | 17/100 [00:35<01:10,  1.17it/s]2025-01-13 12:02:46,942 - INFO - Current time: 2025-01-13 12:02:46
-2025-01-13 12:02:47,829 - INFO - Current time: 2025-01-13 12:02:47
- 19%|█▉        | 19/100 [00:36<01:01,  1.33it/s]2025-01-13 12:02:48,090 - INFO - Current time: 2025-01-13 12:02:48
- 20%|██        | 20/100 [00:36<00:50,  1.57it/s]2025-01-13 12:02:49,248 - INFO - Current time: 2025-01-13 12:02:49
- 21%|██        | 21/100 [00:37<00:56,  1.40it/s]2025-01-13 12:02:49,344 - INFO - Current time: 2025-01-13 12:02:49
-2025-01-13 12:02:49,360 - INFO - Current time: 2025-01-13 12:02:49
- 23%|██▎       | 23/100 [00:38<00:34,  2.21it/s]2025-01-13 12:02:49,368 - INFO - Current time: 2025-01-13 12:02:49
-2025-01-13 12:02:49,449 - INFO - Current time: 2025-01-13 12:02:49
-2025-01-13 12:02:49,965 - INFO - Current time: 2025-01-13 12:02:49
- 26%|██▌       | 26/100 [00:38<00:25,  2.96it/s]2025-01-13 12:02:50,083 - INFO - Current time: 2025-01-13 12:02:50
- 27%|██▋       | 27/100 [00:38<00:21,  3.36it/s]2025-01-13 12:02:50,135 - INFO - Current time: 2025-01-13 12:02:50
-2025-01-13 12:02:50,151 - INFO - Current time: 2025-01-13 12:02:50
-2025-01-13 12:02:50,169 - INFO - Current time: 2025-01-13 12:02:50
- 30%|███       | 30/100 [00:38<00:12,  5.40it/s]2025-01-13 12:02:50,208 - INFO - Current time: 2025-01-13 12:02:50
-2025-01-13 12:02:50,238 - INFO - Current time: 2025-01-13 12:02:50
-2025-01-13 12:02:50,717 - INFO - Current time: 2025-01-13 12:02:50
- 33%|███▎      | 33/100 [00:39<00:12,  5.43it/s]2025-01-13 12:02:50,789 - INFO - Current time: 2025-01-13 12:02:50
-2025-01-13 12:02:50,870 - INFO - Current time: 2025-01-13 12:02:50
- 35%|███▌      | 35/100 [00:39<00:09,  6.64it/s]2025-01-13 12:02:51,482 - INFO - Current time: 2025-01-13 12:02:51
-2025-01-13 12:02:51,706 - INFO - Current time: 2025-01-13 12:02:51
- 37%|███▋      | 37/100 [00:40<00:14,  4.45it/s]2025-01-13 12:02:51,857 - INFO - Current time: 2025-01-13 12:02:51
- 38%|███▊      | 38/100 [00:40<00:13,  4.69it/s]2025-01-13 12:02:52,299 - INFO - Current time: 2025-01-13 12:02:52
- 39%|███▉      | 39/100 [00:40<00:15,  3.92it/s]2025-01-13 12:02:52,393 - INFO - Current time: 2025-01-13 12:02:52
-2025-01-13 12:02:52,611 - INFO - Current time: 2025-01-13 12:02:52
- 41%|████      | 41/100 [00:41<00:13,  4.54it/s]2025-01-13 12:02:53,065 - INFO - Current time: 2025-01-13 12:02:53
- 42%|████▏     | 42/100 [00:41<00:15,  3.73it/s]2025-01-13 12:02:54,424 - INFO - Current time: 2025-01-13 12:02:54
- 43%|████▎     | 43/100 [00:43<00:29,  1.95it/s]2025-01-13 12:02:54,772 - INFO - Current time: 2025-01-13 12:02:54
- 44%|████▍     | 44/100 [00:43<00:26,  2.11it/s]2025-01-13 12:02:56,633 - INFO - Current time: 2025-01-13 12:02:56
- 45%|████▌     | 45/100 [00:45<00:45,  1.21it/s]2025-01-13 12:02:57,108 - INFO - Current time: 2025-01-13 12:02:57
- 46%|████▌     | 46/100 [00:45<00:39,  1.36it/s]2025-01-13 12:02:59,214 - INFO - Current time: 2025-01-13 12:02:59
- 47%|████▋     | 47/100 [00:47<00:58,  1.11s/it]2025-01-13 12:02:59,437 - INFO - Current time: 2025-01-13 12:02:59
- 48%|████▊     | 48/100 [00:48<00:44,  1.16it/s]2025-01-13 12:02:59,730 - INFO - Current time: 2025-01-13 12:02:59
- 49%|████▉     | 49/100 [00:48<00:35,  1.44it/s]2025-01-13 12:02:59,915 - INFO - Current time: 2025-01-13 12:02:59
- 50%|█████     | 50/100 [00:48<00:27,  1.83it/s]2025-01-13 12:03:00,091 - INFO - Current time: 2025-01-13 12:03:00
- 51%|█████     | 51/100 [00:48<00:21,  2.28it/s]2025-01-13 12:03:00,156 - INFO - Current time: 2025-01-13 12:03:00
-2025-01-13 12:03:00,422 - INFO - Current time: 2025-01-13 12:03:00
- 53%|█████▎    | 53/100 [00:49<00:14,  3.19it/s]2025-01-13 12:03:00,790 - INFO - Current time: 2025-01-13 12:03:00
- 54%|█████▍    | 54/100 [00:49<00:15,  3.06it/s]2025-01-13 12:03:01,214 - INFO - Current time: 2025-01-13 12:03:01
- 55%|█████▌    | 55/100 [00:49<00:15,  2.84it/s]2025-01-13 12:03:01,372 - INFO - Current time: 2025-01-13 12:03:01
- 56%|█████▌    | 56/100 [00:50<00:13,  3.33it/s]2025-01-13 12:03:01,744 - INFO - Current time: 2025-01-13 12:03:01
- 57%|█████▋    | 57/100 [00:50<00:13,  3.13it/s]2025-01-13 12:03:01,887 - INFO - Current time: 2025-01-13 12:03:01
- 58%|█████▊    | 58/100 [00:50<00:11,  3.71it/s]2025-01-13 12:03:01,943 - INFO - Current time: 2025-01-13 12:03:01
-2025-01-13 12:03:02,200 - INFO - Current time: 2025-01-13 12:03:02
- 60%|██████    | 60/100 [00:50<00:08,  4.57it/s]2025-01-13 12:03:02,254 - INFO - Current time: 2025-01-13 12:03:02
-2025-01-13 12:03:02,378 - INFO - Current time: 2025-01-13 12:03:02
- 62%|██████▏   | 62/100 [00:51<00:06,  5.95it/s]2025-01-13 12:03:02,397 - INFO - Current time: 2025-01-13 12:03:02
-2025-01-13 12:03:02,505 - INFO - Current time: 2025-01-13 12:03:02
- 64%|██████▍   | 64/100 [00:51<00:04,  7.66it/s]2025-01-13 12:03:02,546 - INFO - Current time: 2025-01-13 12:03:02
-2025-01-13 12:03:02,795 - INFO - Current time: 2025-01-13 12:03:02
- 66%|██████▌   | 66/100 [00:51<00:04,  7.38it/s]2025-01-13 12:03:02,823 - INFO - Current time: 2025-01-13 12:03:02
-2025-01-13 12:03:02,986 - INFO - Current time: 2025-01-13 12:03:02
- 68%|██████▊   | 68/100 [00:51<00:03,  8.17it/s]2025-01-13 12:03:03,012 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:03,025 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:03,041 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:03,053 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:03,093 - INFO - Current time: 2025-01-13 12:03:03
- 73%|███████▎  | 73/100 [00:51<00:01, 14.70it/s]2025-01-13 12:03:03,310 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:03,873 - INFO - Current time: 2025-01-13 12:03:03
-2025-01-13 12:03:04,194 - INFO - Current time: 2025-01-13 12:03:04
- 76%|███████▌  | 76/100 [00:52<00:03,  6.16it/s]2025-01-13 12:03:04,811 - INFO - Current time: 2025-01-13 12:03:04
-2025-01-13 12:03:04,912 - INFO - Current time: 2025-01-13 12:03:04
- 78%|███████▊  | 78/100 [00:53<00:04,  4.81it/s]2025-01-13 12:03:05,416 - INFO - Current time: 2025-01-13 12:03:05
-2025-01-13 12:03:05,740 - INFO - Current time: 2025-01-13 12:03:05
- 80%|████████  | 80/100 [00:54<00:05,  3.86it/s]2025-01-13 12:03:05,840 - INFO - Current time: 2025-01-13 12:03:05
- 81%|████████  | 81/100 [00:54<00:04,  4.25it/s]2025-01-13 12:03:06,181 - INFO - Current time: 2025-01-13 12:03:06
- 82%|████████▏ | 82/100 [00:54<00:04,  3.94it/s]2025-01-13 12:03:06,655 - INFO - Current time: 2025-01-13 12:03:06
- 83%|████████▎ | 83/100 [00:55<00:05,  3.35it/s]2025-01-13 12:03:07,166 - INFO - Current time: 2025-01-13 12:03:07
- 84%|████████▍ | 84/100 [00:55<00:05,  2.89it/s]2025-01-13 12:03:07,665 - INFO - Current time: 2025-01-13 12:03:07
- 85%|████████▌ | 85/100 [00:56<00:05,  2.61it/s]2025-01-13 12:03:08,277 - INFO - Current time: 2025-01-13 12:03:08
- 86%|████████▌ | 86/100 [00:56<00:06,  2.26it/s]2025-01-13 12:03:13,000 - INFO - Current time: 2025-01-13 12:03:13
- 87%|████████▋ | 87/100 [01:01<00:20,  1.59s/it]2025-01-13 12:03:14,023 - INFO - Current time: 2025-01-13 12:03:14
- 88%|████████▊ | 88/100 [01:02<00:17,  1.43s/it]2025-01-13 12:03:14,333 - INFO - Current time: 2025-01-13 12:03:14
- 89%|████████▉ | 89/100 [01:02<00:12,  1.12s/it]2025-01-13 12:03:14,334 - INFO - Current time: 2025-01-13 12:03:14
-2025-01-13 12:03:15,090 - INFO - Current time: 2025-01-13 12:03:15
- 91%|█████████ | 91/100 [01:03<00:07,  1.27it/s]2025-01-13 12:03:15,364 - INFO - Current time: 2025-01-13 12:03:15
- 92%|█████████▏| 92/100 [01:03<00:05,  1.51it/s]2025-01-13 12:03:16,734 - INFO - Current time: 2025-01-13 12:03:16
- 93%|█████████▎| 93/100 [01:05<00:05,  1.19it/s]2025-01-13 12:03:20,369 - INFO - Current time: 2025-01-13 12:03:20
- 94%|█████████▍| 94/100 [01:09<00:09,  1.59s/it]2025-01-13 12:03:22,347 - INFO - Current time: 2025-01-13 12:03:22
- 95%|█████████▌| 95/100 [01:10<00:08,  1.70s/it]2025-01-13 12:03:24,207 - INFO - Current time: 2025-01-13 12:03:24
- 96%|█████████▌| 96/100 [01:12<00:06,  1.75s/it]2025-01-13 12:03:31,040 - INFO - Current time: 2025-01-13 12:03:31
- 97%|█████████▋| 97/100 [01:19<00:09,  3.21s/it]2025-01-13 12:03:35,266 - INFO - Current time: 2025-01-13 12:03:35
- 98%|█████████▊| 98/100 [01:23<00:07,  3.51s/it]2025-01-13 12:03:35,554 - INFO - Current time: 2025-01-13 12:03:35
- 99%|█████████▉| 99/100 [01:24<00:02,  2.56s/it]2025-01-13 12:03:35,762 - INFO - Current time: 2025-01-13 12:03:35
-100%|██████████| 100/100 [01:24<00:00,  1.86s/it]100%|██████████| 100/100 [01:24<00:00,  1.18it/s]
-2025-01-13 12:03:35,762 - INFO - Total time taken: 2.06 minutes
-2025-01-13 12:03:36,026 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40
-2025-01-13 12:03:36,027 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
-2025-01-13 12:03:36,027 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/masks
-2025-01-13 12:03:36,027 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/033_097.mp4
-2025-01-13 12:03:36,027 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/033_097.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:04:36,872 - INFO - Current time: 2025-01-13 12:04:36
-  1%|          | 1/100 [00:21<36:12, 21.95s/it]2025-01-13 12:04:37,472 - INFO - Current time: 2025-01-13 12:04:37
-2025-01-13 12:04:38,525 - INFO - Current time: 2025-01-13 12:04:38
-  3%|▎         | 3/100 [00:23<09:59,  6.19s/it]2025-01-13 12:04:39,718 - INFO - Current time: 2025-01-13 12:04:39
-  4%|▍         | 4/100 [00:24<07:06,  4.44s/it]2025-01-13 12:04:39,949 - INFO - Current time: 2025-01-13 12:04:39
-2025-01-13 12:04:40,682 - INFO - Current time: 2025-01-13 12:04:40
-  6%|▌         | 6/100 [00:25<03:47,  2.42s/it]2025-01-13 12:04:41,729 - INFO - Current time: 2025-01-13 12:04:41
-  7%|▋         | 7/100 [00:26<03:18,  2.14s/it]2025-01-13 12:04:42,352 - INFO - Current time: 2025-01-13 12:04:42
-  8%|▊         | 8/100 [00:27<02:51,  1.87s/it]2025-01-13 12:04:43,184 - INFO - Current time: 2025-01-13 12:04:43
-  9%|▉         | 9/100 [00:28<02:21,  1.55s/it]2025-01-13 12:04:43,922 - INFO - Current time: 2025-01-13 12:04:43
-2025-01-13 12:04:43,932 - INFO - Current time: 2025-01-13 12:04:43
- 11%|█         | 11/100 [00:28<01:21,  1.10it/s]2025-01-13 12:04:44,493 - INFO - Current time: 2025-01-13 12:04:44
- 12%|█▏        | 12/100 [00:28<01:08,  1.29it/s]2025-01-13 12:04:45,345 - INFO - Current time: 2025-01-13 12:04:45
- 13%|█▎        | 13/100 [00:29<01:09,  1.26it/s]2025-01-13 12:04:46,305 - INFO - Current time: 2025-01-13 12:04:46
- 14%|█▍        | 14/100 [00:30<01:12,  1.19it/s]2025-01-13 12:04:46,685 - INFO - Current time: 2025-01-13 12:04:46
- 15%|█▌        | 15/100 [00:31<01:05,  1.30it/s]2025-01-13 12:04:47,492 - INFO - Current time: 2025-01-13 12:04:47
- 16%|█▌        | 16/100 [00:33<01:25,  1.01s/it]2025-01-13 12:04:48,531 - INFO - Current time: 2025-01-13 12:04:48
-2025-01-13 12:04:48,531 - INFO - Current time: 2025-01-13 12:04:48
-2025-01-13 12:04:49,029 - INFO - Current time: 2025-01-13 12:04:49
- 19%|█▉        | 19/100 [00:33<00:44,  1.82it/s]2025-01-13 12:04:50,298 - INFO - Current time: 2025-01-13 12:04:50
- 20%|██        | 20/100 [00:34<00:55,  1.43it/s]2025-01-13 12:04:50,626 - INFO - Current time: 2025-01-13 12:04:50
- 21%|██        | 21/100 [00:35<00:48,  1.62it/s]2025-01-13 12:04:50,675 - INFO - Current time: 2025-01-13 12:04:50
-2025-01-13 12:04:50,721 - INFO - Current time: 2025-01-13 12:04:50
-2025-01-13 12:04:51,340 - INFO - Current time: 2025-01-13 12:04:51
- 24%|██▍       | 24/100 [00:35<00:32,  2.32it/s]2025-01-13 12:04:51,384 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:51,398 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:51,399 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:51,447 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:51,449 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:51,477 - INFO - Current time: 2025-01-13 12:04:51
- 30%|███       | 30/100 [00:35<00:13,  5.27it/s]2025-01-13 12:04:51,481 - INFO - Current time: 2025-01-13 12:04:51
-2025-01-13 12:04:52,069 - INFO - Current time: 2025-01-13 12:04:52
- 32%|███▏      | 32/100 [00:36<00:14,  4.69it/s]2025-01-13 12:04:52,112 - INFO - Current time: 2025-01-13 12:04:52
-2025-01-13 12:04:52,186 - INFO - Current time: 2025-01-13 12:04:52
- 34%|███▍      | 34/100 [00:36<00:11,  5.63it/s]2025-01-13 12:04:52,223 - INFO - Current time: 2025-01-13 12:04:52
-2025-01-13 12:04:52,226 - INFO - Current time: 2025-01-13 12:04:52
-2025-01-13 12:04:52,842 - INFO - Current time: 2025-01-13 12:04:52
- 37%|███▋      | 37/100 [00:37<00:11,  5.27it/s]2025-01-13 12:04:52,868 - INFO - Current time: 2025-01-13 12:04:52
-2025-01-13 12:04:52,894 - INFO - Current time: 2025-01-13 12:04:52
-2025-01-13 12:04:52,972 - INFO - Current time: 2025-01-13 12:04:52
- 40%|████      | 40/100 [00:37<00:08,  7.03it/s]2025-01-13 12:04:53,239 - INFO - Current time: 2025-01-13 12:04:53
-2025-01-13 12:04:53,401 - INFO - Current time: 2025-01-13 12:04:53
- 42%|████▏     | 42/100 [00:37<00:09,  6.22it/s]2025-01-13 12:04:53,408 - WARNING - No faces in frame 412 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceSwap/c40/videos/644_657.mp4
-2025-01-13 12:04:53,448 - INFO - Current time: 2025-01-13 12:04:53
-2025-01-13 12:04:53,570 - INFO - Current time: 2025-01-13 12:04:53
- 44%|████▍     | 44/100 [00:38<00:07,  7.14it/s]2025-01-13 12:04:54,567 - INFO - Current time: 2025-01-13 12:04:54
-2025-01-13 12:04:55,648 - INFO - Current time: 2025-01-13 12:04:55
- 46%|████▌     | 46/100 [00:40<00:20,  2.64it/s]2025-01-13 12:05:00,112 - INFO - Current time: 2025-01-13 12:05:00
- 47%|████▋     | 47/100 [00:44<00:54,  1.03s/it]2025-01-13 12:05:01,109 - INFO - Current time: 2025-01-13 12:05:01
- 48%|████▊     | 48/100 [00:45<00:53,  1.02s/it]2025-01-13 12:05:01,953 - INFO - Current time: 2025-01-13 12:05:01
- 49%|████▉     | 49/100 [00:46<00:50,  1.01it/s]2025-01-13 12:05:02,814 - INFO - Current time: 2025-01-13 12:05:02
- 50%|█████     | 50/100 [00:47<00:47,  1.05it/s]2025-01-13 12:05:02,865 - INFO - Current time: 2025-01-13 12:05:02
-2025-01-13 12:05:03,030 - INFO - Current time: 2025-01-13 12:05:03
- 52%|█████▏    | 52/100 [00:47<00:29,  1.61it/s]2025-01-13 12:05:03,192 - INFO - Current time: 2025-01-13 12:05:03
- 53%|█████▎    | 53/100 [00:47<00:24,  1.93it/s]2025-01-13 12:05:03,776 - INFO - Current time: 2025-01-13 12:05:03
- 54%|█████▍    | 54/100 [00:48<00:24,  1.87it/s]2025-01-13 12:05:04,103 - INFO - Current time: 2025-01-13 12:05:04
- 55%|█████▌    | 55/100 [00:48<00:21,  2.08it/s]2025-01-13 12:05:04,216 - INFO - Current time: 2025-01-13 12:05:04
- 56%|█████▌    | 56/100 [00:48<00:16,  2.61it/s]2025-01-13 12:05:04,327 - INFO - Current time: 2025-01-13 12:05:04
- 57%|█████▋    | 57/100 [00:48<00:13,  3.25it/s]2025-01-13 12:05:04,445 - INFO - Current time: 2025-01-13 12:05:04
- 58%|█████▊    | 58/100 [00:48<00:10,  3.94it/s]2025-01-13 12:05:04,455 - INFO - Current time: 2025-01-13 12:05:04
-2025-01-13 12:05:04,531 - INFO - Current time: 2025-01-13 12:05:04
-2025-01-13 12:05:04,536 - INFO - Current time: 2025-01-13 12:05:04
-2025-01-13 12:05:04,957 - INFO - Current time: 2025-01-13 12:05:04
- 62%|██████▏   | 62/100 [00:49<00:06,  5.66it/s]2025-01-13 12:05:05,004 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,229 - INFO - Current time: 2025-01-13 12:05:05
- 64%|██████▍   | 64/100 [00:49<00:05,  6.09it/s]2025-01-13 12:05:05,243 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,298 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,323 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,352 - INFO - Current time: 2025-01-13 12:05:05
- 68%|██████▊   | 68/100 [00:49<00:03,  9.82it/s]2025-01-13 12:05:05,391 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,424 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,436 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,559 - INFO - Current time: 2025-01-13 12:05:05
- 72%|███████▏  | 72/100 [00:50<00:02, 12.26it/s]2025-01-13 12:05:05,591 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,591 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,592 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,728 - INFO - Current time: 2025-01-13 12:05:05
- 76%|███████▌  | 76/100 [00:50<00:01, 14.86it/s]2025-01-13 12:05:05,855 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:05,901 - INFO - Current time: 2025-01-13 12:05:05
- 78%|███████▊  | 78/100 [00:50<00:01, 14.04it/s]2025-01-13 12:05:05,972 - INFO - Current time: 2025-01-13 12:05:05
-2025-01-13 12:05:06,051 - INFO - Current time: 2025-01-13 12:05:06
- 80%|████████  | 80/100 [00:50<00:01, 13.87it/s]2025-01-13 12:05:06,231 - INFO - Current time: 2025-01-13 12:05:06
-2025-01-13 12:05:06,379 - INFO - Current time: 2025-01-13 12:05:06
- 82%|████████▏ | 82/100 [00:50<00:01, 10.56it/s]2025-01-13 12:05:06,533 - INFO - Current time: 2025-01-13 12:05:06
-2025-01-13 12:05:06,681 - INFO - Current time: 2025-01-13 12:05:06
- 84%|████████▍ | 84/100 [00:51<00:01,  9.16it/s]2025-01-13 12:05:07,534 - INFO - Current time: 2025-01-13 12:05:07
-2025-01-13 12:05:08,954 - INFO - Current time: 2025-01-13 12:05:08
- 86%|████████▌ | 86/100 [00:53<00:05,  2.58it/s]2025-01-13 12:05:15,250 - INFO - Current time: 2025-01-13 12:05:15
- 87%|████████▋ | 87/100 [00:59<00:17,  1.34s/it]2025-01-13 12:05:15,332 - INFO - Current time: 2025-01-13 12:05:15
-2025-01-13 12:05:15,491 - INFO - Current time: 2025-01-13 12:05:15
- 89%|████████▉ | 89/100 [00:59<00:10,  1.05it/s]2025-01-13 12:05:16,272 - INFO - Current time: 2025-01-13 12:05:16
- 90%|█████████ | 90/100 [01:00<00:09,  1.08it/s]2025-01-13 12:05:16,450 - INFO - Current time: 2025-01-13 12:05:16
- 91%|█████████ | 91/100 [01:00<00:06,  1.30it/s]2025-01-13 12:05:16,703 - INFO - Current time: 2025-01-13 12:05:16
- 92%|█████████▏| 92/100 [01:01<00:05,  1.54it/s]2025-01-13 12:05:19,150 - INFO - Current time: 2025-01-13 12:05:19
- 93%|█████████▎| 93/100 [01:03<00:07,  1.09s/it]2025-01-13 12:05:21,153 - INFO - Current time: 2025-01-13 12:05:21
- 94%|█████████▍| 94/100 [01:05<00:07,  1.33s/it]2025-01-13 12:05:22,328 - INFO - Current time: 2025-01-13 12:05:22
- 95%|█████████▌| 95/100 [01:06<00:06,  1.29s/it]2025-01-13 12:05:22,336 - INFO - Current time: 2025-01-13 12:05:22
-2025-01-13 12:05:33,749 - INFO - Current time: 2025-01-13 12:05:33
- 97%|█████████▋| 97/100 [01:18<00:09,  3.22s/it]2025-01-13 12:05:34,134 - INFO - Current time: 2025-01-13 12:05:34
- 98%|█████████▊| 98/100 [01:18<00:05,  2.55s/it]2025-01-13 12:05:34,465 - INFO - Current time: 2025-01-13 12:05:34
- 99%|█████████▉| 99/100 [01:18<00:01,  1.98s/it]2025-01-13 12:05:36,055 - INFO - Current time: 2025-01-13 12:05:36
-100%|██████████| 100/100 [01:20<00:00,  1.88s/it]100%|██████████| 100/100 [01:20<00:00,  1.24it/s]
-2025-01-13 12:05:36,055 - INFO - Total time taken: 2.00 minutes
-2025-01-13 12:05:36,259 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40
-2025-01-13 12:05:36,260 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
-2025-01-13 12:05:36,260 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/masks
-2025-01-13 12:05:36,260 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/033_097.mp4
-2025-01-13 12:05:36,260 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/033_097.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:06:38,100 - INFO - Current time: 2025-01-13 12:06:38
-  1%|          | 1/100 [00:23<39:00, 23.64s/it]2025-01-13 12:06:38,692 - INFO - Current time: 2025-01-13 12:06:38
-2025-01-13 12:06:39,421 - INFO - Current time: 2025-01-13 12:06:39
-  3%|▎         | 3/100 [00:24<10:29,  6.49s/it]2025-01-13 12:06:40,349 - INFO - Current time: 2025-01-13 12:06:40
-  4%|▍         | 4/100 [00:25<07:11,  4.49s/it]2025-01-13 12:06:41,238 - INFO - Current time: 2025-01-13 12:06:41
-  5%|▌         | 5/100 [00:26<05:12,  3.29s/it]2025-01-13 12:06:41,248 - INFO - Current time: 2025-01-13 12:06:41
-  6%|▌         | 6/100 [00:26<03:38,  2.32s/it]2025-01-13 12:06:41,813 - INFO - Current time: 2025-01-13 12:06:41
-  7%|▋         | 7/100 [00:27<02:51,  1.85s/it]2025-01-13 12:06:42,327 - INFO - Current time: 2025-01-13 12:06:42
-2025-01-13 12:06:43,615 - INFO - Current time: 2025-01-13 12:06:43
-  9%|▉         | 9/100 [00:28<02:03,  1.36s/it]2025-01-13 12:06:44,837 - INFO - Current time: 2025-01-13 12:06:44
- 10%|█         | 10/100 [00:31<02:28,  1.65s/it]2025-01-13 12:06:46,484 - INFO - Current time: 2025-01-13 12:06:46
- 11%|█         | 11/100 [00:32<02:03,  1.39s/it]2025-01-13 12:06:47,846 - INFO - Current time: 2025-01-13 12:06:47
- 12%|█▏        | 12/100 [00:33<01:51,  1.26s/it]2025-01-13 12:06:48,055 - INFO - Current time: 2025-01-13 12:06:48
-2025-01-13 12:06:48,055 - INFO - Current time: 2025-01-13 12:06:48
- 14%|█▍        | 14/100 [00:33<01:10,  1.21it/s]2025-01-13 12:06:48,594 - INFO - Current time: 2025-01-13 12:06:48
-2025-01-13 12:06:48,603 - INFO - Current time: 2025-01-13 12:06:48
-2025-01-13 12:06:48,610 - INFO - Current time: 2025-01-13 12:06:48
-2025-01-13 12:06:48,619 - INFO - Current time: 2025-01-13 12:06:48
-2025-01-13 12:06:49,773 - INFO - Current time: 2025-01-13 12:06:49
- 19%|█▉        | 19/100 [00:34<00:38,  2.13it/s]2025-01-13 12:06:50,681 - INFO - Current time: 2025-01-13 12:06:50
- 20%|██        | 20/100 [00:35<00:42,  1.87it/s]2025-01-13 12:06:50,744 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:50,753 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:50,756 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:50,760 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:50,764 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:50,774 - INFO - Current time: 2025-01-13 12:06:50
-2025-01-13 12:06:51,310 - WARNING - No faces in frame 464 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/266_252.mp4
-2025-01-13 12:06:51,346 - INFO - Current time: 2025-01-13 12:06:51
- 27%|██▋       | 27/100 [00:36<00:19,  3.72it/s]2025-01-13 12:06:51,407 - INFO - Current time: 2025-01-13 12:06:51
-2025-01-13 12:06:51,419 - INFO - Current time: 2025-01-13 12:06:51
-2025-01-13 12:06:51,431 - INFO - Current time: 2025-01-13 12:06:51
-2025-01-13 12:06:51,469 - INFO - Current time: 2025-01-13 12:06:51
- 31%|███       | 31/100 [00:36<00:13,  5.24it/s]2025-01-13 12:06:51,475 - INFO - Current time: 2025-01-13 12:06:51
-2025-01-13 12:06:51,938 - WARNING - No faces in frame 412 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/644_657.mp4
-2025-01-13 12:06:51,971 - INFO - Current time: 2025-01-13 12:06:51
- 33%|███▎      | 33/100 [00:36<00:13,  4.90it/s]2025-01-13 12:06:52,008 - INFO - Current time: 2025-01-13 12:06:52
-2025-01-13 12:06:52,045 - INFO - Current time: 2025-01-13 12:06:52
-2025-01-13 12:06:52,100 - WARNING - No faces in frame 336 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/NeuralTextures/c40/videos/434_438.mp4
-2025-01-13 12:06:52,169 - INFO - Current time: 2025-01-13 12:06:52
- 36%|███▌      | 36/100 [00:37<00:10,  6.15it/s]2025-01-13 12:06:52,338 - INFO - Current time: 2025-01-13 12:06:52
-2025-01-13 12:06:52,672 - INFO - Current time: 2025-01-13 12:06:52
- 38%|███▊      | 38/100 [00:37<00:11,  5.51it/s]2025-01-13 12:06:52,820 - INFO - Current time: 2025-01-13 12:06:52
- 39%|███▉      | 39/100 [00:37<00:10,  5.65it/s]2025-01-13 12:06:53,393 - INFO - Current time: 2025-01-13 12:06:53
- 40%|████      | 40/100 [00:38<00:14,  4.16it/s]2025-01-13 12:06:53,488 - INFO - Current time: 2025-01-13 12:06:53
-2025-01-13 12:06:53,790 - INFO - Current time: 2025-01-13 12:06:53
- 42%|████▏     | 42/100 [00:38<00:13,  4.41it/s]2025-01-13 12:06:53,858 - INFO - Current time: 2025-01-13 12:06:53
-2025-01-13 12:06:54,163 - INFO - Current time: 2025-01-13 12:06:54
- 44%|████▍     | 44/100 [00:39<00:12,  4.66it/s]2025-01-13 12:06:54,187 - INFO - Current time: 2025-01-13 12:06:54
-2025-01-13 12:06:54,434 - INFO - Current time: 2025-01-13 12:06:54
- 46%|████▌     | 46/100 [00:39<00:10,  5.26it/s]2025-01-13 12:07:02,292 - INFO - Current time: 2025-01-13 12:07:02
- 47%|████▋     | 47/100 [00:47<01:23,  1.57s/it]2025-01-13 12:07:02,446 - INFO - Current time: 2025-01-13 12:07:02
- 48%|████▊     | 48/100 [00:47<01:06,  1.28s/it]2025-01-13 12:07:02,508 - INFO - Current time: 2025-01-13 12:07:02
-2025-01-13 12:07:02,753 - INFO - Current time: 2025-01-13 12:07:02
- 50%|█████     | 50/100 [00:47<00:43,  1.16it/s]2025-01-13 12:07:03,036 - INFO - Current time: 2025-01-13 12:07:03
- 51%|█████     | 51/100 [00:47<00:36,  1.35it/s]2025-01-13 12:07:03,113 - INFO - Current time: 2025-01-13 12:07:03
-2025-01-13 12:07:03,294 - INFO - Current time: 2025-01-13 12:07:03
- 53%|█████▎    | 53/100 [00:48<00:24,  1.95it/s]2025-01-13 12:07:03,395 - INFO - Current time: 2025-01-13 12:07:03
- 54%|█████▍    | 54/100 [00:48<00:19,  2.34it/s]2025-01-13 12:07:03,425 - INFO - Current time: 2025-01-13 12:07:03
-2025-01-13 12:07:03,549 - INFO - Current time: 2025-01-13 12:07:03
- 56%|█████▌    | 56/100 [00:48<00:13,  3.38it/s]2025-01-13 12:07:03,638 - INFO - Current time: 2025-01-13 12:07:03
-2025-01-13 12:07:03,768 - INFO - Current time: 2025-01-13 12:07:03
- 58%|█████▊    | 58/100 [00:48<00:09,  4.34it/s]2025-01-13 12:07:04,113 - INFO - Current time: 2025-01-13 12:07:04
- 59%|█████▉    | 59/100 [00:49<00:10,  3.95it/s]2025-01-13 12:07:04,260 - INFO - Current time: 2025-01-13 12:07:04
- 60%|██████    | 60/100 [00:49<00:09,  4.35it/s]2025-01-13 12:07:04,536 - INFO - Current time: 2025-01-13 12:07:04
- 61%|██████    | 61/100 [00:49<00:09,  4.15it/s]2025-01-13 12:07:04,611 - INFO - Current time: 2025-01-13 12:07:04
-2025-01-13 12:07:05,088 - INFO - Current time: 2025-01-13 12:07:05
- 63%|██████▎   | 63/100 [00:50<00:09,  3.92it/s]2025-01-13 12:07:05,272 - INFO - Current time: 2025-01-13 12:07:05
- 64%|██████▍   | 64/100 [00:50<00:08,  4.18it/s]2025-01-13 12:07:05,394 - INFO - Current time: 2025-01-13 12:07:05
- 65%|██████▌   | 65/100 [00:50<00:07,  4.75it/s]2025-01-13 12:07:05,395 - INFO - Current time: 2025-01-13 12:07:05
-2025-01-13 12:07:05,459 - INFO - Current time: 2025-01-13 12:07:05
-2025-01-13 12:07:05,460 - INFO - Current time: 2025-01-13 12:07:05
-2025-01-13 12:07:05,789 - INFO - Current time: 2025-01-13 12:07:05
- 69%|██████▉   | 69/100 [00:50<00:04,  6.88it/s]2025-01-13 12:07:05,848 - INFO - Current time: 2025-01-13 12:07:05
-2025-01-13 12:07:05,981 - INFO - Current time: 2025-01-13 12:07:05
- 71%|███████   | 71/100 [00:50<00:03,  7.63it/s]2025-01-13 12:07:06,108 - INFO - Current time: 2025-01-13 12:07:06
- 72%|███████▏  | 72/100 [00:51<00:03,  7.68it/s]2025-01-13 12:07:06,274 - INFO - Current time: 2025-01-13 12:07:06
- 73%|███████▎  | 73/100 [00:51<00:03,  7.28it/s]2025-01-13 12:07:06,275 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,335 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,432 - INFO - Current time: 2025-01-13 12:07:06
- 76%|███████▌  | 76/100 [00:51<00:02, 10.17it/s]2025-01-13 12:07:06,440 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,695 - INFO - Current time: 2025-01-13 12:07:06
- 78%|███████▊  | 78/100 [00:51<00:02,  9.22it/s]2025-01-13 12:07:06,765 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,829 - INFO - Current time: 2025-01-13 12:07:06
- 80%|████████  | 80/100 [00:51<00:01, 10.43it/s]2025-01-13 12:07:06,944 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,973 - INFO - Current time: 2025-01-13 12:07:06
- 82%|████████▏ | 82/100 [00:51<00:01, 11.21it/s]2025-01-13 12:07:06,977 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:06,977 - INFO - Current time: 2025-01-13 12:07:06
-2025-01-13 12:07:07,110 - INFO - Current time: 2025-01-13 12:07:07
- 85%|████████▌ | 85/100 [00:52<00:01, 13.97it/s]2025-01-13 12:07:09,124 - INFO - Current time: 2025-01-13 12:07:09
-2025-01-13 12:07:15,864 - INFO - Current time: 2025-01-13 12:07:15
- 87%|████████▋ | 87/100 [01:00<00:16,  1.24s/it]2025-01-13 12:07:15,897 - INFO - Current time: 2025-01-13 12:07:15
-2025-01-13 12:07:15,991 - INFO - Current time: 2025-01-13 12:07:15
- 89%|████████▉ | 89/100 [01:00<00:10,  1.09it/s]2025-01-13 12:07:16,598 - INFO - Current time: 2025-01-13 12:07:16
-2025-01-13 12:07:16,943 - INFO - Current time: 2025-01-13 12:07:16
- 91%|█████████ | 91/100 [01:01<00:07,  1.27it/s]2025-01-13 12:07:17,576 - INFO - Current time: 2025-01-13 12:07:17
- 92%|█████████▏| 92/100 [01:02<00:06,  1.31it/s]2025-01-13 12:07:21,607 - INFO - Current time: 2025-01-13 12:07:21
- 93%|█████████▎| 93/100 [01:06<00:09,  1.40s/it]2025-01-13 12:07:22,171 - INFO - Current time: 2025-01-13 12:07:22
- 94%|█████████▍| 94/100 [01:07<00:07,  1.22s/it]2025-01-13 12:07:23,408 - INFO - Current time: 2025-01-13 12:07:23
- 95%|█████████▌| 95/100 [01:08<00:06,  1.22s/it]2025-01-13 12:07:23,603 - INFO - Current time: 2025-01-13 12:07:23
- 96%|█████████▌| 96/100 [01:08<00:03,  1.04it/s]2025-01-13 12:07:34,678 - INFO - Current time: 2025-01-13 12:07:34
- 97%|█████████▋| 97/100 [01:19<00:10,  3.65s/it]2025-01-13 12:07:35,398 - INFO - Current time: 2025-01-13 12:07:35
- 98%|█████████▊| 98/100 [01:20<00:05,  2.84s/it]2025-01-13 12:07:35,713 - INFO - Current time: 2025-01-13 12:07:35
- 99%|█████████▉| 99/100 [01:20<00:02,  2.13s/it]2025-01-13 12:07:36,611 - INFO - Current time: 2025-01-13 12:07:36
-100%|██████████| 100/100 [01:21<00:00,  1.78s/it]100%|██████████| 100/100 [01:21<00:00,  1.23it/s]
-2025-01-13 12:07:36,611 - INFO - Total time taken: 2.01 minutes
-2025-01-13 12:07:36,783 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:08:37,920 - INFO - Current time: 2025-01-13 12:08:37
-  1%|          | 1/100 [00:22<37:11, 22.54s/it]2025-01-13 12:08:38,839 - INFO - Current time: 2025-01-13 12:08:38
-  2%|▏         | 2/100 [00:23<16:02,  9.82s/it]2025-01-13 12:08:40,227 - INFO - Current time: 2025-01-13 12:08:40
-  3%|▎         | 3/100 [00:26<10:35,  6.55s/it]2025-01-13 12:08:41,501 - INFO - Current time: 2025-01-13 12:08:41
-  4%|▍         | 4/100 [00:26<06:29,  4.06s/it]2025-01-13 12:08:41,734 - INFO - Current time: 2025-01-13 12:08:41
-2025-01-13 12:08:41,734 - INFO - Current time: 2025-01-13 12:08:41
-2025-01-13 12:08:43,048 - INFO - Current time: 2025-01-13 12:08:43
-  7%|▋         | 7/100 [00:27<02:51,  1.84s/it]2025-01-13 12:08:43,363 - INFO - Current time: 2025-01-13 12:08:43
-2025-01-13 12:08:44,106 - INFO - Current time: 2025-01-13 12:08:44
-  9%|▉         | 9/100 [00:28<01:57,  1.30s/it]2025-01-13 12:08:44,538 - INFO - Current time: 2025-01-13 12:08:44
- 10%|█         | 10/100 [00:29<01:44,  1.16s/it]2025-01-13 12:08:45,543 - INFO - Current time: 2025-01-13 12:08:45
- 11%|█         | 11/100 [00:30<01:36,  1.08s/it]2025-01-13 12:08:46,641 - INFO - Current time: 2025-01-13 12:08:46
- 12%|█▏        | 12/100 [00:31<01:39,  1.13s/it]2025-01-13 12:08:46,865 - INFO - Current time: 2025-01-13 12:08:46
-2025-01-13 12:08:47,762 - WARNING - No faces in frame 336 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40/videos/434_438.mp4
-2025-01-13 12:08:48,631 - INFO - Current time: 2025-01-13 12:08:48
- 14%|█▍        | 14/100 [00:33<01:28,  1.03s/it]2025-01-13 12:08:48,908 - INFO - Current time: 2025-01-13 12:08:48
- 15%|█▌        | 15/100 [00:33<01:14,  1.14it/s]2025-01-13 12:08:49,366 - INFO - Current time: 2025-01-13 12:08:49
- 16%|█▌        | 16/100 [00:34<01:16,  1.10it/s]2025-01-13 12:08:50,001 - INFO - Current time: 2025-01-13 12:08:50
-2025-01-13 12:08:50,331 - INFO - Current time: 2025-01-13 12:08:50
- 18%|█▊        | 18/100 [00:34<00:49,  1.66it/s]2025-01-13 12:08:51,081 - INFO - Current time: 2025-01-13 12:08:51
- 19%|█▉        | 19/100 [00:35<00:56,  1.43it/s]2025-01-13 12:08:52,885 - INFO - Current time: 2025-01-13 12:08:52
- 20%|██        | 20/100 [00:37<01:12,  1.10it/s]2025-01-13 12:08:52,940 - INFO - Current time: 2025-01-13 12:08:52
-2025-01-13 12:08:53,552 - INFO - Current time: 2025-01-13 12:08:53
- 22%|██▏       | 22/100 [00:38<00:52,  1.50it/s]2025-01-13 12:08:53,609 - INFO - Current time: 2025-01-13 12:08:53
-2025-01-13 12:08:53,761 - INFO - Current time: 2025-01-13 12:08:53
- 24%|██▍       | 24/100 [00:38<00:34,  2.18it/s]2025-01-13 12:08:53,778 - INFO - Current time: 2025-01-13 12:08:53
-2025-01-13 12:08:53,783 - INFO - Current time: 2025-01-13 12:08:53
-2025-01-13 12:08:53,787 - INFO - Current time: 2025-01-13 12:08:53
-2025-01-13 12:08:53,793 - INFO - Current time: 2025-01-13 12:08:53
-2025-01-13 12:08:54,392 - INFO - Current time: 2025-01-13 12:08:54
- 29%|██▉       | 29/100 [00:39<00:19,  3.70it/s]2025-01-13 12:08:54,422 - INFO - Current time: 2025-01-13 12:08:54
-2025-01-13 12:08:54,467 - INFO - Current time: 2025-01-13 12:08:54
-2025-01-13 12:08:54,534 - INFO - Current time: 2025-01-13 12:08:54
- 32%|███▏      | 32/100 [00:39<00:13,  5.09it/s]2025-01-13 12:08:54,544 - INFO - Current time: 2025-01-13 12:08:54
-2025-01-13 12:08:55,034 - WARNING - No faces in frame 412 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/FaceShifter/c40/videos/644_657.mp4
-2025-01-13 12:08:55,069 - INFO - Current time: 2025-01-13 12:08:55
- 34%|███▍      | 34/100 [00:39<00:14,  4.70it/s]2025-01-13 12:08:55,093 - INFO - Current time: 2025-01-13 12:08:55
-2025-01-13 12:08:55,287 - INFO - Current time: 2025-01-13 12:08:55
- 36%|███▌      | 36/100 [00:39<00:11,  5.38it/s]2025-01-13 12:08:55,550 - INFO - Current time: 2025-01-13 12:08:55
- 37%|███▋      | 37/100 [00:40<00:12,  5.06it/s]2025-01-13 12:08:55,584 - INFO - Current time: 2025-01-13 12:08:55
-2025-01-13 12:08:55,902 - INFO - Current time: 2025-01-13 12:08:55
- 39%|███▉      | 39/100 [00:40<00:11,  5.22it/s]2025-01-13 12:08:55,979 - INFO - Current time: 2025-01-13 12:08:55
-2025-01-13 12:08:56,047 - INFO - Current time: 2025-01-13 12:08:56
- 41%|████      | 41/100 [00:40<00:09,  6.45it/s]2025-01-13 12:08:56,172 - INFO - Current time: 2025-01-13 12:08:56
- 42%|████▏     | 42/100 [00:40<00:08,  6.67it/s]2025-01-13 12:08:58,281 - INFO - Current time: 2025-01-13 12:08:58
- 43%|████▎     | 43/100 [00:42<00:31,  1.83it/s]2025-01-13 12:08:58,322 - INFO - Current time: 2025-01-13 12:08:58
-2025-01-13 12:08:59,979 - INFO - Current time: 2025-01-13 12:08:59
- 45%|████▌     | 45/100 [00:44<00:36,  1.52it/s]2025-01-13 12:09:02,190 - INFO - Current time: 2025-01-13 12:09:02
- 46%|████▌     | 46/100 [00:46<00:52,  1.02it/s]2025-01-13 12:09:02,804 - INFO - Current time: 2025-01-13 12:09:02
- 47%|████▋     | 47/100 [00:47<00:47,  1.11it/s]2025-01-13 12:09:03,703 - INFO - Current time: 2025-01-13 12:09:03
- 48%|████▊     | 48/100 [00:48<00:46,  1.11it/s]2025-01-13 12:09:04,332 - INFO - Current time: 2025-01-13 12:09:04
- 49%|████▉     | 49/100 [00:48<00:42,  1.21it/s]2025-01-13 12:09:04,579 - INFO - Current time: 2025-01-13 12:09:04
- 50%|█████     | 50/100 [00:49<00:33,  1.49it/s]2025-01-13 12:09:04,683 - INFO - Current time: 2025-01-13 12:09:04
- 51%|█████     | 51/100 [00:49<00:25,  1.96it/s]2025-01-13 12:09:04,812 - INFO - Current time: 2025-01-13 12:09:04
- 52%|█████▏    | 52/100 [00:49<00:19,  2.48it/s]2025-01-13 12:09:04,952 - INFO - Current time: 2025-01-13 12:09:04
- 53%|█████▎    | 53/100 [00:49<00:15,  3.06it/s]2025-01-13 12:09:05,003 - INFO - Current time: 2025-01-13 12:09:05
-2025-01-13 12:09:05,110 - INFO - Current time: 2025-01-13 12:09:05
- 55%|█████▌    | 55/100 [00:49<00:09,  4.66it/s]2025-01-13 12:09:05,559 - INFO - Current time: 2025-01-13 12:09:05
- 56%|█████▌    | 56/100 [00:50<00:11,  3.68it/s]2025-01-13 12:09:05,612 - INFO - Current time: 2025-01-13 12:09:05
-2025-01-13 12:09:05,678 - INFO - Current time: 2025-01-13 12:09:05
- 58%|█████▊    | 58/100 [00:50<00:07,  5.42it/s]2025-01-13 12:09:05,689 - INFO - Current time: 2025-01-13 12:09:05
-2025-01-13 12:09:05,845 - INFO - Current time: 2025-01-13 12:09:05
- 60%|██████    | 60/100 [00:50<00:05,  6.80it/s]2025-01-13 12:09:06,084 - INFO - Current time: 2025-01-13 12:09:06
-2025-01-13 12:09:06,103 - INFO - Current time: 2025-01-13 12:09:06
- 62%|██████▏   | 62/100 [00:50<00:05,  7.10it/s]2025-01-13 12:09:06,136 - INFO - Current time: 2025-01-13 12:09:06
-2025-01-13 12:09:06,153 - INFO - Current time: 2025-01-13 12:09:06
-2025-01-13 12:09:06,360 - INFO - Current time: 2025-01-13 12:09:06
- 65%|██████▌   | 65/100 [00:50<00:04,  8.52it/s]2025-01-13 12:09:06,689 - INFO - Current time: 2025-01-13 12:09:06
-2025-01-13 12:09:06,800 - INFO - Current time: 2025-01-13 12:09:06
- 67%|██████▋   | 67/100 [00:51<00:04,  6.80it/s]2025-01-13 12:09:06,914 - INFO - Current time: 2025-01-13 12:09:06
- 68%|██████▊   | 68/100 [00:51<00:04,  7.08it/s]2025-01-13 12:09:07,083 - INFO - Current time: 2025-01-13 12:09:07
- 69%|██████▉   | 69/100 [00:51<00:04,  6.81it/s]2025-01-13 12:09:07,091 - INFO - Current time: 2025-01-13 12:09:07
-2025-01-13 12:09:07,656 - INFO - Current time: 2025-01-13 12:09:07
- 71%|███████   | 71/100 [00:52<00:05,  5.07it/s]2025-01-13 12:09:07,659 - INFO - Current time: 2025-01-13 12:09:07
-2025-01-13 12:09:08,578 - INFO - Current time: 2025-01-13 12:09:08
- 73%|███████▎  | 73/100 [00:53<00:07,  3.49it/s]2025-01-13 12:09:08,925 - INFO - Current time: 2025-01-13 12:09:08
- 74%|███████▍  | 74/100 [00:53<00:07,  3.35it/s]2025-01-13 12:09:09,291 - INFO - Current time: 2025-01-13 12:09:09
- 75%|███████▌  | 75/100 [00:53<00:07,  3.19it/s]2025-01-13 12:09:09,320 - INFO - Current time: 2025-01-13 12:09:09
-2025-01-13 12:09:09,372 - INFO - Current time: 2025-01-13 12:09:09
-2025-01-13 12:09:09,805 - INFO - Current time: 2025-01-13 12:09:09
- 78%|███████▊  | 78/100 [00:54<00:05,  4.09it/s]2025-01-13 12:09:10,028 - INFO - Current time: 2025-01-13 12:09:10
- 79%|███████▉  | 79/100 [00:54<00:05,  4.16it/s]2025-01-13 12:09:10,065 - INFO - Current time: 2025-01-13 12:09:10
-2025-01-13 12:09:10,092 - INFO - Current time: 2025-01-13 12:09:10
-2025-01-13 12:09:10,791 - INFO - Current time: 2025-01-13 12:09:10
- 82%|████████▏ | 82/100 [00:55<00:04,  4.05it/s]2025-01-13 12:09:12,479 - INFO - Current time: 2025-01-13 12:09:12
- 83%|████████▎ | 83/100 [00:57<00:08,  2.01it/s]2025-01-13 12:09:13,378 - INFO - Current time: 2025-01-13 12:09:13
- 84%|████████▍ | 84/100 [00:57<00:09,  1.73it/s]2025-01-13 12:09:14,213 - INFO - Current time: 2025-01-13 12:09:14
- 85%|████████▌ | 85/100 [00:58<00:09,  1.57it/s]2025-01-13 12:09:18,756 - INFO - Current time: 2025-01-13 12:09:18
- 86%|████████▌ | 86/100 [01:03<00:22,  1.58s/it]2025-01-13 12:09:18,997 - INFO - Current time: 2025-01-13 12:09:18
- 87%|████████▋ | 87/100 [01:03<00:16,  1.23s/it]2025-01-13 12:09:19,501 - INFO - Current time: 2025-01-13 12:09:19
- 88%|████████▊ | 88/100 [01:04<00:12,  1.04s/it]2025-01-13 12:09:20,146 - INFO - Current time: 2025-01-13 12:09:20
- 89%|████████▉ | 89/100 [01:04<00:10,  1.08it/s]2025-01-13 12:09:21,706 - INFO - Current time: 2025-01-13 12:09:21
- 90%|█████████ | 90/100 [01:06<00:11,  1.11s/it]2025-01-13 12:09:21,777 - INFO - Current time: 2025-01-13 12:09:21
-2025-01-13 12:09:21,969 - INFO - Current time: 2025-01-13 12:09:21
- 92%|█████████▏| 92/100 [01:06<00:05,  1.49it/s]2025-01-13 12:09:22,369 - INFO - Current time: 2025-01-13 12:09:22
- 93%|█████████▎| 93/100 [01:06<00:04,  1.65it/s]2025-01-13 12:09:24,196 - INFO - Current time: 2025-01-13 12:09:24
- 94%|█████████▍| 94/100 [01:08<00:05,  1.09it/s]2025-01-13 12:09:27,062 - INFO - Current time: 2025-01-13 12:09:27
- 95%|█████████▌| 95/100 [01:11<00:07,  1.44s/it]2025-01-13 12:09:28,170 - INFO - Current time: 2025-01-13 12:09:28
- 96%|█████████▌| 96/100 [01:12<00:05,  1.35s/it]2025-01-13 12:09:36,404 - INFO - Current time: 2025-01-13 12:09:36
- 97%|█████████▋| 97/100 [01:21<00:09,  3.30s/it]2025-01-13 12:09:37,548 - INFO - Current time: 2025-01-13 12:09:37
- 98%|█████████▊| 98/100 [01:22<00:05,  2.68s/it]2025-01-13 12:09:37,808 - INFO - Current time: 2025-01-13 12:09:37
- 99%|█████████▉| 99/100 [01:22<00:01,  1.97s/it]2025-01-13 12:09:38,936 - INFO - Current time: 2025-01-13 12:09:38
-100%|██████████| 100/100 [01:23<00:00,  1.72s/it]100%|██████████| 100/100 [01:23<00:00,  1.20it/s]
-2025-01-13 12:09:38,936 - INFO - Total time taken: 2.04 minutes
-2025-01-13 12:09:39,140 - INFO - 100 videos found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40
-2025-01-13 12:09:39,141 - ERROR - No masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
-2025-01-13 12:09:39,141 - INFO - 0 masks found in /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/masks
-2025-01-13 12:09:39,141 - ERROR - No mask for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_02__outside_talking_still_laughing__YVGY8LOK.mp4
-2025-01-13 12:09:39,141 - ERROR - Mask path not found for video /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_02__outside_talking_still_laughing__YVGY8LOK.mp4
-2025-01-13 12:09:46,601 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_15__outside_talking_pan_laughing__SB6PMCO0.mp4
-2025-01-13 12:09:47,676 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_14__outside_talking_pan_laughing__3IUBEKCT.mp4
-2025-01-13 12:09:49,057 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_15__secret_conversation__MZWH8ATN.mp4
-2025-01-13 12:09:49,058 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/03_18__walking_outside_cafe_disgusted__22UBC0BS.mp4
-2025-01-13 12:09:53,201 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:09:53,202 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_28__exit_phone_room__U9LRLJ6N.mp4
-2025-01-13 12:09:54,619 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_16__exit_phone_room__B62WCGUN.mp4
-2025-01-13 12:09:54,996 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_18__outside_talking_pan_laughing__DEA1TCLN.mp4
-2025-01-13 12:09:57,535 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_20__kitchen_pan__6SUW7063.mp4
-2025-01-13 12:09:59,177 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_03__outside_talking_pan_laughing__IFSURI9X.mp4
-2025-01-13 12:10:00,331 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_03__walking_outside_cafe_disgusted__F0YYEA5W.mp4
-2025-01-13 12:10:01,631 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_20__outside_talking_pan_laughing__KV6Q7D6C.mp4
-2025-01-13 12:10:03,126 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_20__kitchen_pan__98NUQ3E6.mp4
-2025-01-13 12:10:03,129 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_07__kitchen_pan__N9CWME71.mp4
-2025-01-13 12:10:03,614 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_03__kitchen_pan__8DTEGQ54.mp4
-2025-01-13 12:10:04,363 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/11_18__walking_outside_cafe_disgusted__R1NMCHKG.mp4
-2025-01-13 12:10:05,127 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_13__kitchen_pan__21H6XSPE.mp4
-2025-01-13 12:10:05,128 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
-2025-01-13 12:10:06,966 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/12_18__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:10:09,054 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:12,445 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/14_21__exit_phone_room__IRKML4J0.mp4
-2025-01-13 12:10:13,065 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/14_15__kitchen_pan__RF38N10R.mp4
-2025-01-13 12:10:13,071 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/15_04__kitchen_pan__46TJ9IOJ.mp4
-2025-01-13 12:10:19,269 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_15__kitchen_pan__V5VHLCOW.mp4
-  0%|          | 0/100 [00:00<?, ?it/s]2025-01-13 12:10:19,275 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/17_08__exit_phone_room__CFIY1YEQ.mp4
-2025-01-13 12:10:19,502 - WARNING - No faces in frame 9 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:19,517 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/19_23__outside_talking_pan_laughing__H4SUVFTL.mp4
-2025-01-13 12:10:19,525 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_12__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:10:19,799 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_07__outside_talking_pan_laughing__5VT4USF9.mp4
-2025-01-13 12:10:22,174 - WARNING - No faces in frame 19 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/14_21__exit_phone_room__IRKML4J0.mp4
-2025-01-13 12:10:22,316 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/19_24__kitchen_pan__NPZW2Z9L.mp4
-2025-01-13 12:10:22,383 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_09__kitchen_pan__HG1S0KHA.mp4
-2025-01-13 12:10:22,793 - WARNING - No faces in frame 18 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:22,854 - WARNING - No faces in frame 22 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_12__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:10:28,800 - WARNING - No faces in frame 37 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:31,157 - WARNING - No faces in frame 47 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:31,191 - WARNING - No faces in frame 83 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:32,065 - WARNING - No faces in frame 94 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_25__walking_and_outside_surprised__MI9BDQ7M.mp4
-2025-01-13 12:10:33,404 - WARNING - No faces in frame 56 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:34,637 - WARNING - No faces in frame 105 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:10:34,702 - WARNING - No faces in frame 111 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:35,742 - WARNING - No faces in frame 66 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:37,861 - WARNING - No faces in frame 138 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:38,471 - WARNING - No faces in frame 75 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:40,920 - WARNING - No faces in frame 149 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_15__kitchen_pan__V5VHLCOW.mp4
-2025-01-13 12:10:41,132 - WARNING - No faces in frame 85 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:41,619 - WARNING - No faces in frame 166 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:42,678 - WARNING - No faces in frame 87 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:10:43,589 - WARNING - No faces in frame 79 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_09__hugging_happy__LPT427RY.mp4
-2025-01-13 12:10:43,591 - WARNING - No faces in frame 94 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:44,731 - WARNING - No faces in frame 168 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:10:45,278 - WARNING - No faces in frame 194 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:46,014 - WARNING - No faces in frame 103 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:47,649 - WARNING - No faces in frame 112 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:10:48,034 - WARNING - No faces in frame 113 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:49,993 - WARNING - No faces in frame 124 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:10:50,459 - WARNING - No faces in frame 122 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:52,629 - WARNING - No faces in frame 132 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:55,184 - WARNING - No faces in frame 149 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:10:55,354 - WARNING - No faces in frame 277 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:10:55,363 - WARNING - No faces in frame 141 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:10:57,674 - WARNING - No faces in frame 161 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:10:59,209 - WARNING - No faces in frame 305 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:01,206 - WARNING - No faces in frame 160 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:02,451 - WARNING - No faces in frame 333 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:03,016 - WARNING - No faces in frame 186 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:11:03,292 - WARNING - No faces in frame 170 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:04,392 - WARNING - No faces in frame 208 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_28__exit_phone_room__U9LRLJ6N.mp4
-2025-01-13 12:11:05,236 - WARNING - No faces in frame 286 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_12__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:11:05,502 - WARNING - No faces in frame 179 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:07,680 - WARNING - No faces in frame 189 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:10,235 - WARNING - No faces in frame 198 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:12,112 - WARNING - No faces in frame 206 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_13__walk_down_hall_angry__HQHYKNGK.mp4
-2025-01-13 12:11:12,728 - WARNING - No faces in frame 207 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:12,883 - WARNING - No faces in frame 416 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:15,015 - WARNING - No faces in frame 217 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:15,797 - WARNING - No faces in frame 444 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:17,668 - WARNING - No faces in frame 226 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:17,671 - WARNING - No faces in frame 249 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walk_down_hall_angry__DW2L6D2V.mp4
-2025-01-13 12:11:20,025 - WARNING - No faces in frame 236 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:20,788 - WARNING - No faces in frame 449 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_06__walking_down_indoor_hall_disgust__U6MDWIHG.mp4
-2025-01-13 12:11:21,267 - WARNING - No faces in frame 364 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/19_23__outside_talking_pan_laughing__H4SUVFTL.mp4
-2025-01-13 12:11:21,456 - WARNING - No faces in frame 400 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:11:22,431 - WARNING - No faces in frame 245 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:23,127 - WARNING - No faces in frame 258 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_13__walk_down_hall_angry__HQHYKNGK.mp4
-2025-01-13 12:11:23,270 - WARNING - No faces in frame 499 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:24,962 - WARNING - No faces in frame 255 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:27,719 - WARNING - No faces in frame 264 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:30,210 - WARNING - No faces in frame 274 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:32,360 - WARNING - No faces in frame 283 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_12__secret_conversation__DJ7MF331.mp4
-2025-01-13 12:11:33,682 - INFO - Current time: 2025-01-13 12:11:33
-  1%|          | 1/100 [01:14<2:02:38, 74.33s/it]2025-01-13 12:11:34,018 - WARNING - No faces in frame 517 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_04__outside_talking_still_laughing__ZK95PQDE.mp4
-2025-01-13 12:11:35,111 - INFO - Current time: 2025-01-13 12:11:35
-  2%|▏         | 2/100 [01:15<51:03, 31.26s/it]  2025-01-13 12:11:35,869 - WARNING - No faces in frame 741 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_06__talking_angry_couch__GH8TGTBS.mp4
-2025-01-13 12:11:38,444 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
-2025-01-13 12:11:38,730 - WARNING - No faces in frame 611 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:38,955 - WARNING - No faces in frame 256 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_09__hugging_happy__LPT427RY.mp4
-2025-01-13 12:11:41,269 - WARNING - No faces in frame 527 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:11:41,716 - WARNING - No faces in frame 265 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_09__hugging_happy__LPT427RY.mp4
-2025-01-13 12:11:43,484 - WARNING - No faces in frame 390 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_28__exit_phone_room__U9LRLJ6N.mp4
-2025-01-13 12:11:44,021 - WARNING - No faces in frame 239 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_11__walking_outside_cafe_disgusted__FAFWDR4W.mp4
-2025-01-13 12:11:44,535 - WARNING - No faces in frame 274 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/13_09__hugging_happy__LPT427RY.mp4
-2025-01-13 12:11:44,545 - INFO - Current time: 2025-01-13 12:11:44
-  3%|▎         | 3/100 [01:25<35:08, 21.74s/it]2025-01-13 12:11:45,501 - WARNING - No faces in frame 404 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_28__exit_phone_room__U9LRLJ6N.mp4
-2025-01-13 12:11:45,505 - WARNING - No faces in frame 608 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_02__outside_talking_still_laughing__YVGY8LOK.mp4
-2025-01-13 12:11:45,552 - INFO - Current time: 2025-01-13 12:11:45
-  4%|▍         | 4/100 [01:26<21:26, 13.40s/it]2025-01-13 12:11:46,157 - INFO - Current time: 2025-01-13 12:11:46
-2025-01-13 12:11:46,172 - WARNING - No faces in frame 548 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:11:48,717 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:11:49,367 - WARNING - No faces in frame 572 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_12__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:11:49,907 - INFO - Current time: 2025-01-13 12:11:49
-  6%|▌         | 6/100 [01:31<11:48,  7.53s/it]2025-01-13 12:11:50,529 - WARNING - No faces in frame 20 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:11:50,806 - INFO - Current time: 2025-01-13 12:11:50
-2025-01-13 12:11:50,896 - WARNING - No faces in frame 617 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/01_27__outside_talking_still_laughing__ZYCZ30C0.mp4
-2025-01-13 12:11:50,908 - WARNING - No faces in frame 569 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:11:50,932 - WARNING - No faces in frame 694 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:51,375 - INFO - Current time: 2025-01-13 12:11:51
-  8%|▊         | 8/100 [01:31<06:49,  4.45s/it]2025-01-13 12:11:53,696 - INFO - Current time: 2025-01-13 12:11:53
-  9%|▉         | 9/100 [01:34<05:55,  3.90s/it]2025-01-13 12:11:54,223 - WARNING - No faces in frame 41 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:11:54,636 - WARNING - No faces in frame 327 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_07__exit_phone_room__ITC0C48B.mp4
-2025-01-13 12:11:55,130 - WARNING - No faces in frame 562 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_06__walking_down_street_outside_angry__NMGYPBXE.mp4
-2025-01-13 12:11:55,137 - INFO - Current time: 2025-01-13 12:11:55
- 10%|█         | 10/100 [01:35<05:01,  3.35s/it]2025-01-13 12:11:55,954 - INFO - Current time: 2025-01-13 12:11:55
- 11%|█         | 11/100 [01:36<03:52,  2.61s/it]2025-01-13 12:11:55,980 - WARNING - No faces in frame 722 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:11:58,045 - WARNING - No faces in frame 540 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_26__walking_down_street_outside_angry__FGNGC2GT.mp4
-2025-01-13 12:11:59,354 - WARNING - No faces in frame 655 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_07__kitchen_pan__N9CWME71.mp4
-2025-01-13 12:11:59,461 - INFO - Current time: 2025-01-13 12:11:59
- 12%|█▏        | 12/100 [01:40<04:23,  3.00s/it]2025-01-13 12:11:59,697 - WARNING - No faces in frame 445 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/03_07__walk_down_hall_angry__IFSURI9X.mp4
-2025-01-13 12:12:00,477 - INFO - Current time: 2025-01-13 12:12:00
- 13%|█▎        | 13/100 [01:41<03:32,  2.45s/it]2025-01-13 12:12:01,019 - INFO - Current time: 2025-01-13 12:12:01
-2025-01-13 12:12:01,025 - WARNING - No faces in frame 590 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/08_28__outside_talking_pan_laughing__8BC35RFU.mp4
-2025-01-13 12:12:01,032 - INFO - Current time: 2025-01-13 12:12:01
- 15%|█▌        | 15/100 [01:42<02:11,  1.55s/it]2025-01-13 12:12:01,869 - INFO - Current time: 2025-01-13 12:12:01
-2025-01-13 12:12:01,869 - INFO - Current time: 2025-01-13 12:12:01
- 17%|█▋        | 17/100 [01:42<01:22,  1.01it/s]2025-01-13 12:12:04,708 - WARNING - No faces in frame 0 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:04,937 - WARNING - No faces in frame 624 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_18__outside_talking_pan_laughing__DEA1TCLN.mp4
-2025-01-13 12:12:05,476 - WARNING - No faces in frame 404 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_16__exit_phone_room__B62WCGUN.mp4
-2025-01-13 12:12:05,488 - INFO - Current time: 2025-01-13 12:12:05
- 18%|█▊        | 18/100 [01:46<02:15,  1.65s/it]2025-01-13 12:12:05,496 - WARNING - No faces in frame 83 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:06,093 - WARNING - No faces in frame 638 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_12__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:12:06,127 - WARNING - No faces in frame 401 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_13__walk_down_hall_angry__HQHYKNGK.mp4
-2025-01-13 12:12:06,357 - INFO - Current time: 2025-01-13 12:12:06
- 19%|█▉        | 19/100 [01:47<01:54,  1.41s/it]2025-01-13 12:12:06,749 - WARNING - No faces in frame 632 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:12:06,764 - WARNING - No faces in frame 777 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:12:06,788 - INFO - Current time: 2025-01-13 12:12:06
- 20%|██        | 20/100 [01:47<01:30,  1.14s/it]2025-01-13 12:12:07,119 - INFO - Current time: 2025-01-13 12:12:07
-2025-01-13 12:12:07,135 - INFO - Current time: 2025-01-13 12:12:07
-2025-01-13 12:12:07,151 - INFO - Current time: 2025-01-13 12:12:07
-2025-01-13 12:12:07,173 - INFO - Current time: 2025-01-13 12:12:07
- 24%|██▍       | 24/100 [01:47<00:41,  1.83it/s]2025-01-13 12:12:07,653 - INFO - Current time: 2025-01-13 12:12:07
-2025-01-13 12:12:07,659 - INFO - Current time: 2025-01-13 12:12:07
-2025-01-13 12:12:09,844 - WARNING - No faces in frame 551 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/14_13__walk_down_hall_angry__KMQ3AW6A.mp4
-2025-01-13 12:12:09,875 - INFO - Current time: 2025-01-13 12:12:09
- 27%|██▋       | 27/100 [01:50<00:45,  1.61it/s]2025-01-13 12:12:10,244 - INFO - Current time: 2025-01-13 12:12:10
- 28%|██▊       | 28/100 [01:50<00:41,  1.72it/s]2025-01-13 12:12:10,369 - WARNING - No faces in frame 36 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:10,388 - INFO - Current time: 2025-01-13 12:12:10
- 29%|██▉       | 29/100 [01:50<00:35,  1.99it/s]2025-01-13 12:12:10,421 - WARNING - No faces in frame 651 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_20__kitchen_pan__98NUQ3E6.mp4
-2025-01-13 12:12:10,457 - WARNING - No faces in frame 685 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_20__kitchen_pan__6SUW7063.mp4
-2025-01-13 12:12:10,486 - WARNING - No faces in frame 774 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/18_15__kitchen_pan__V5VHLCOW.mp4
-2025-01-13 12:12:10,495 - INFO - Current time: 2025-01-13 12:12:10
- 30%|███       | 30/100 [01:50<00:29,  2.34it/s]2025-01-13 12:12:10,537 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:10,547 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:10,594 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:10,670 - WARNING - No faces in frame 738 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/11_18__walking_outside_cafe_disgusted__R1NMCHKG.mp4
-2025-01-13 12:12:10,697 - WARNING - No faces in frame 589 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/15_04__kitchen_pan__46TJ9IOJ.mp4
-2025-01-13 12:12:10,699 - INFO - Current time: 2025-01-13 12:12:10
- 34%|███▍      | 34/100 [01:51<00:14,  4.55it/s]2025-01-13 12:12:10,743 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:10,763 - WARNING - No faces in frame 805 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:12:10,773 - WARNING - No faces in frame 662 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/09_03__kitchen_pan__8DTEGQ54.mp4
-2025-01-13 12:12:10,832 - WARNING - No faces in frame 654 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/05_17__walking_down_street_outside_angry__M3H96PDQ.mp4
-2025-01-13 12:12:10,849 - INFO - Current time: 2025-01-13 12:12:10
- 36%|███▌      | 36/100 [01:51<00:11,  5.45it/s]2025-01-13 12:12:10,850 - WARNING - No faces in frame 709 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/03_18__walking_outside_cafe_disgusted__22UBC0BS.mp4
-2025-01-13 12:12:10,906 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:10,943 - INFO - Current time: 2025-01-13 12:12:10
- 38%|███▊      | 38/100 [01:51<00:09,  6.83it/s]2025-01-13 12:12:10,988 - INFO - Current time: 2025-01-13 12:12:10
-2025-01-13 12:12:11,077 - INFO - Current time: 2025-01-13 12:12:11
-2025-01-13 12:12:12,249 - WARNING - No faces in frame 632 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/14_15__kitchen_pan__RF38N10R.mp4
-2025-01-13 12:12:12,266 - INFO - Current time: 2025-01-13 12:12:12
- 41%|████      | 41/100 [01:52<00:14,  3.96it/s]2025-01-13 12:12:12,276 - WARNING - No faces in frame 737 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/17_08__exit_phone_room__CFIY1YEQ.mp4
-2025-01-13 12:12:12,285 - INFO - Current time: 2025-01-13 12:12:12
-2025-01-13 12:12:12,508 - WARNING - No faces in frame 628 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/19_23__outside_talking_pan_laughing__H4SUVFTL.mp4
-2025-01-13 12:12:12,520 - INFO - Current time: 2025-01-13 12:12:12
- 43%|████▎     | 43/100 [01:52<00:12,  4.56it/s]2025-01-13 12:12:12,732 - WARNING - No faces in frame 626 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/02_15__outside_talking_pan_laughing__SB6PMCO0.mp4
-2025-01-13 12:12:12,747 - INFO - Current time: 2025-01-13 12:12:12
- 44%|████▍     | 44/100 [01:53<00:12,  4.54it/s]2025-01-13 12:12:12,927 - WARNING - No faces in frame 72 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:13,045 - INFO - Current time: 2025-01-13 12:12:13
- 45%|████▌     | 45/100 [01:53<00:12,  4.25it/s]2025-01-13 12:12:13,504 - WARNING - No faces in frame 669 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/10_22__kitchen_pan__EHARPYBT.mp4
-2025-01-13 12:12:13,534 - INFO - Current time: 2025-01-13 12:12:13
- 46%|████▌     | 46/100 [01:53<00:15,  3.47it/s]2025-01-13 12:12:13,534 - WARNING - No faces in frame 827 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/12_18__outside_talking_pan_laughing__IKH1LBBY.mp4
-2025-01-13 12:12:13,548 - INFO - Current time: 2025-01-13 12:12:13
-2025-01-13 12:12:13,634 - INFO - Current time: 2025-01-13 12:12:13
- 48%|████▊     | 48/100 [01:53<00:10,  5.03it/s]2025-01-13 12:12:13,655 - INFO - Current time: 2025-01-13 12:12:13
-2025-01-13 12:12:13,796 - WARNING - No faces in frame 724 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_07__outside_talking_pan_laughing__5VT4USF9.mp4
-2025-01-13 12:12:13,814 - INFO - Current time: 2025-01-13 12:12:13
- 50%|█████     | 50/100 [01:54<00:08,  6.19it/s]2025-01-13 12:12:13,970 - WARNING - No faces in frame 833 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/04_01__secret_conversation__6I623VU9.mp4
-2025-01-13 12:12:14,432 - INFO - Current time: 2025-01-13 12:12:14
- 51%|█████     | 51/100 [01:54<00:12,  3.97it/s]2025-01-13 12:12:15,159 - INFO - Current time: 2025-01-13 12:12:15
- 52%|█████▏    | 52/100 [01:55<00:17,  2.80it/s]2025-01-13 12:12:15,203 - WARNING - No faces in frame 146 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:15,479 - WARNING - No faces in frame 690 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/19_24__kitchen_pan__NPZW2Z9L.mp4
-2025-01-13 12:12:15,497 - INFO - Current time: 2025-01-13 12:12:15
- 53%|█████▎    | 53/100 [01:55<00:16,  2.84it/s]2025-01-13 12:12:15,518 - INFO - Current time: 2025-01-13 12:12:15
-2025-01-13 12:12:15,905 - INFO - Current time: 2025-01-13 12:12:15
- 55%|█████▌    | 55/100 [01:56<00:13,  3.41it/s]2025-01-13 12:12:15,936 - INFO - Current time: 2025-01-13 12:12:15
-2025-01-13 12:12:15,947 - WARNING - No faces in frame 702 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_03__outside_talking_pan_laughing__IFSURI9X.mp4
-2025-01-13 12:12:15,962 - INFO - Current time: 2025-01-13 12:12:15
-2025-01-13 12:12:15,979 - WARNING - No faces in frame 703 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/07_20__outside_talking_pan_laughing__KV6Q7D6C.mp4
-2025-01-13 12:12:15,990 - INFO - Current time: 2025-01-13 12:12:15
-2025-01-13 12:12:16,027 - INFO - Current time: 2025-01-13 12:12:16
- 59%|█████▉    | 59/100 [01:56<00:06,  6.62it/s]2025-01-13 12:12:16,130 - INFO - Current time: 2025-01-13 12:12:16
-2025-01-13 12:12:16,209 - INFO - Current time: 2025-01-13 12:12:16
- 61%|██████    | 61/100 [01:56<00:05,  7.44it/s]2025-01-13 12:12:16,330 - WARNING - No faces in frame 645 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_09__kitchen_pan__HG1S0KHA.mp4
-2025-01-13 12:12:16,346 - INFO - Current time: 2025-01-13 12:12:16
-2025-01-13 12:12:16,606 - INFO - Current time: 2025-01-13 12:12:16
- 63%|██████▎   | 63/100 [01:56<00:05,  6.56it/s]2025-01-13 12:12:16,831 - WARNING - No faces in frame 167 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:17,165 - INFO - Current time: 2025-01-13 12:12:17
-2025-01-13 12:12:17,744 - INFO - Current time: 2025-01-13 12:12:17
- 65%|██████▌   | 65/100 [01:58<00:09,  3.67it/s]2025-01-13 12:12:17,745 - INFO - Current time: 2025-01-13 12:12:17
-2025-01-13 12:12:18,123 - WARNING - No faces in frame 67 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_03__walk_down_hall_angry__WBSXBL82.mp4
-2025-01-13 12:12:18,166 - INFO - Current time: 2025-01-13 12:12:18
- 67%|██████▋   | 67/100 [01:58<00:08,  3.93it/s]2025-01-13 12:12:18,186 - INFO - Current time: 2025-01-13 12:12:18
-2025-01-13 12:12:18,344 - INFO - Current time: 2025-01-13 12:12:18
- 69%|██████▉   | 69/100 [01:58<00:06,  4.86it/s]2025-01-13 12:12:19,284 - INFO - Current time: 2025-01-13 12:12:19
- 70%|███████   | 70/100 [01:59<00:10,  3.00it/s]2025-01-13 12:12:19,388 - INFO - Current time: 2025-01-13 12:12:19
- 71%|███████   | 71/100 [01:59<00:08,  3.47it/s]2025-01-13 12:12:19,438 - INFO - Current time: 2025-01-13 12:12:19
-2025-01-13 12:12:19,883 - WARNING - No faces in frame 209 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:20,048 - WARNING - No faces in frame 217 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:20,648 - INFO - Current time: 2025-01-13 12:12:20
- 73%|███████▎  | 73/100 [02:00<00:11,  2.43it/s]2025-01-13 12:12:21,138 - WARNING - No faces in frame 1254 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/06_18__podium_speech_happy__DEA1TCLN.mp4
-2025-01-13 12:12:21,151 - INFO - Current time: 2025-01-13 12:12:21
- 74%|███████▍  | 74/100 [02:01<00:11,  2.32it/s]2025-01-13 12:12:21,267 - WARNING - No faces in frame 230 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:21,279 - INFO - Current time: 2025-01-13 12:12:21
- 75%|███████▌  | 75/100 [02:01<00:09,  2.76it/s]2025-01-13 12:12:21,521 - WARNING - No faces in frame 253 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:22,575 - WARNING - No faces in frame 251 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:22,593 - INFO - Current time: 2025-01-13 12:12:22
- 76%|███████▌  | 76/100 [02:02<00:14,  1.68it/s]2025-01-13 12:12:22,658 - INFO - Current time: 2025-01-13 12:12:22
-2025-01-13 12:12:22,855 - INFO - Current time: 2025-01-13 12:12:22
- 78%|███████▊  | 78/100 [02:03<00:08,  2.48it/s]2025-01-13 12:12:22,886 - WARNING - No faces in frame 290 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:23,924 - WARNING - No faces in frame 272 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:24,327 - INFO - Current time: 2025-01-13 12:12:24
- 79%|███████▉  | 79/100 [02:04<00:13,  1.55it/s]2025-01-13 12:12:24,715 - INFO - Current time: 2025-01-13 12:12:24
- 80%|████████  | 80/100 [02:05<00:11,  1.71it/s]2025-01-13 12:12:27,032 - WARNING - No faces in frame 398 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:37,196 - WARNING - No faces in frame 482 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:40,367 - WARNING - No faces in frame 761 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:41,644 - WARNING - No faces in frame 797 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:42,935 - WARNING - No faces in frame 833 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:44,599 - WARNING - No faces in frame 649 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_27__kitchen_pan__LM907ECA.mp4
-2025-01-13 12:12:44,606 - INFO - Current time: 2025-01-13 12:12:44
- 81%|████████  | 81/100 [02:24<01:46,  5.59s/it]2025-01-13 12:12:46,702 - WARNING - No faces in frame 841 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/20_25__walking_down_street_outside_angry__ZG0SRZOA.mp4
-2025-01-13 12:12:46,709 - INFO - Current time: 2025-01-13 12:12:46
- 82%|████████▏ | 82/100 [02:27<01:23,  4.65s/it]2025-01-13 12:12:46,721 - WARNING - No faces in frame 629 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:47,004 - WARNING - No faces in frame 348 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_09__walking_outside_cafe_disgusted__J7SQKGUR.mp4
-2025-01-13 12:12:47,011 - INFO - Current time: 2025-01-13 12:12:47
- 83%|████████▎ | 83/100 [02:27<00:58,  3.44s/it]2025-01-13 12:12:47,118 - INFO - Current time: 2025-01-13 12:12:47
- 84%|████████▍ | 84/100 [02:27<00:39,  2.49s/it]2025-01-13 12:12:47,565 - WARNING - No faces in frame 374 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_15__walking_outside_cafe_disgusted__87WSBJP3.mp4
-2025-01-13 12:12:47,582 - INFO - Current time: 2025-01-13 12:12:47
- 85%|████████▌ | 85/100 [02:27<00:28,  1.90s/it]2025-01-13 12:12:48,024 - WARNING - No faces in frame 650 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/21_07__kitchen_pan__K7KXUHMU.mp4
-2025-01-13 12:12:48,032 - INFO - Current time: 2025-01-13 12:12:48
- 86%|████████▌ | 86/100 [02:28<00:20,  1.48s/it]2025-01-13 12:12:50,131 - WARNING - No faces in frame 351 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_03__walk_down_hall_angry__WBSXBL82.mp4
-2025-01-13 12:12:50,138 - INFO - Current time: 2025-01-13 12:12:50
- 87%|████████▋ | 87/100 [02:30<00:21,  1.66s/it]2025-01-13 12:12:50,479 - WARNING - No faces in frame 1051 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_01__secret_conversation__BTVMWLG6.mp4
-2025-01-13 12:12:50,586 - WARNING - No faces in frame 691 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/22_24__walking_and_outside_surprised__XL557XC6.mp4
-2025-01-13 12:12:50,602 - INFO - Current time: 2025-01-13 12:12:50
- 88%|████████▊ | 88/100 [02:30<00:15,  1.31s/it]2025-01-13 12:12:51,006 - WARNING - No faces in frame 429 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/26_25__walking_down_street_outside_angry__PQ41U3IJ.mp4
-2025-01-13 12:12:51,014 - INFO - Current time: 2025-01-13 12:12:51
- 89%|████████▉ | 89/100 [02:31<00:11,  1.04s/it]2025-01-13 12:12:51,429 - INFO - Current time: 2025-01-13 12:12:51
- 90%|█████████ | 90/100 [02:31<00:08,  1.17it/s]2025-01-13 12:12:51,644 - INFO - Current time: 2025-01-13 12:12:51
- 91%|█████████ | 91/100 [02:31<00:05,  1.51it/s]2025-01-13 12:12:52,207 - WARNING - No faces in frame 940 of /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb/FaceForensics++/manipulated_sequences/DeepFakeDetection/c40/videos/24_10__walking_down_street_outside_angry__356HPS7R.mp4
-2025-01-13 12:12:52,216 - INFO - Current time: 2025-01-13 12:12:52
- 92%|█████████▏| 92/100 [02:32<00:05,  1.57it/s]2025-01-13 12:12:52,762 - INFO - Current time: 2025-01-13 12:12:52
- 93%|█████████▎| 93/100 [02:33<00:04,  1.64it/s]2025-01-13 12:12:52,797 - INFO - Current time: 2025-01-13 12:12:52
-2025-01-13 12:12:52,808 - INFO - Current time: 2025-01-13 12:12:52
-2025-01-13 12:12:52,915 - INFO - Current time: 2025-01-13 12:12:52
- 96%|█████████▌| 96/100 [02:33<00:01,  3.38it/s]2025-01-13 12:12:53,122 - INFO - Current time: 2025-01-13 12:12:53
- 97%|█████████▋| 97/100 [02:33<00:00,  3.61it/s]2025-01-13 12:12:53,387 - INFO - Current time: 2025-01-13 12:12:53
- 98%|█████████▊| 98/100 [02:33<00:00,  3.65it/s]2025-01-13 12:12:53,637 - INFO - Current time: 2025-01-13 12:12:53
- 99%|█████████▉| 99/100 [02:33<00:00,  3.73it/s]2025-01-13 12:12:54,297 - INFO - Current time: 2025-01-13 12:12:54
-100%|██████████| 100/100 [02:34<00:00,  2.70it/s]100%|██████████| 100/100 [02:34<00:00,  1.55s/it]
-2025-01-13 12:12:54,297 - INFO - Total time taken: 3.25 minutes
-2025-01-13 12:12:54,340 - INFO - Face cropping complete!
-
-============================= JOB FEEDBACK =============================
-
-NodeName=uc2n[119-120,153-159,200]
-Job ID: 25136105
-Cluster: uc2
-User/Group: ma_tischuet/ma_ma
-State: COMPLETED (exit code 0)
-Nodes: 10
-Cores per node: 80
-CPU Utilized: 08:43:42
-CPU Efficiency: 3.24% of 11-05:33:20 core-walltime
-Job Wall-clock time: 00:20:13
-Memory Utilized: 43.03 GB
-Memory Efficiency: 8.81% of 488.28 GB
