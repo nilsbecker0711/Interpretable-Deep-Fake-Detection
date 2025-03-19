@@ -13,8 +13,6 @@ import yaml
 import pickle
 import random
 from PIL import Image
-from train import prepare_testing_data
-
 # Evaluators.
 #from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  # Adjust the import path if needed.
@@ -93,48 +91,76 @@ class Analyser:
     def save_results(self, results):
         """
         Expects 'results' to be a tuple: (raw_results, overall).
-        Saves raw_results in 'results.pkl' and overall in 'overall.pkl'.
+        Saves raw_results and overall in a folder named by model and weights.
         """
         raw_results, overall = results
-
+    
+        # Construct folder path using model name and weights.
+        save_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        os.makedirs(save_folder, exist_ok=True)
+    
         # Save the raw (per-image) results.
-        raw_results_file = os.path.join("results", "results.pkl")
-        os.makedirs(os.path.dirname(raw_results_file), exist_ok=True)
+        raw_results_file = os.path.join(save_folder, "results.pkl")
         with open(raw_results_file, "wb") as f:
             pickle.dump(raw_results, f)
         print(f"Raw results saved to {raw_results_file}")
-
+    
         # Save the overall (aggregated) results.
-        overall_file = os.path.join("results", "overall.pkl")
-        os.makedirs(os.path.dirname(overall_file), exist_ok=True)
+        overall_file = os.path.join(save_folder, "overall.pkl")
         with open(overall_file, "wb") as f:
             pickle.dump(overall, f)
         print(f"Overall results saved to {overall_file}")
-
+    
     def load_results(self, load_overall=False):
         """
-        Loads results from disk.
-        
+        Loads results from disk from a folder named by model and weights, and presents a summary.
+    
         Parameters:
             load_overall (bool): If True, loads the overall results; otherwise, loads the raw per-image results.
-        
+    
         Returns:
             The loaded results.
         """
+        # Construct folder path using model name and weights.
+        load_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        
         if load_overall:
-            file_path = os.path.join("results", "overall.pkl")
+            file_path = os.path.join(load_folder, "overall.pkl")
         else:
-            file_path = os.path.join("results", "results.pkl")
-            
+            file_path = os.path.join(load_folder, "results.pkl")
+                
         with open(file_path, "rb") as f:
             loaded = pickle.load(f)
         print(f"Results loaded from {file_path}")
+        
+        # Present the results:
+        if load_overall:
+            localisation_metric = loaded.get("localisation_metric", None)
+            percentiles = loaded.get("percentiles", None)
+            if localisation_metric is not None and percentiles is not None:
+                print("=== Overall Results Summary ===")
+                print(f"Total number of grid evaluations: {len(localisation_metric)}")
+                print("Percentiles of localisation accuracy (25th, 50th, 75th, 100th):")
+                print(percentiles)
+            else:
+                print("Overall results structure does not contain expected keys.")
+        else:
+            # Sort the raw results by accuracy in descending order (highest first)
+            sorted_results = sorted(loaded, key=lambda res: res.get("accuracy", 0), reverse=True)
+            top_n = 10  # You can adjust this number as needed
+            
+            print("=== Top Raw Results (Sorted by Accuracy) ===")
+            for idx, res in enumerate(sorted_results[:top_n]):
+                file_info = res.get("path", "N/A")
+                accuracy = res.get("accuracy", "N/A")
+                print(f"[{idx+1}] File: {file_info} - Accuracy: {accuracy}")
+        
         return loaded
 
 class RankedGPGCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3),xai_method=None,  max_grids=3, plotting_only=False,
                  model=None, model_name="default", weights_name="default",
-                 loader=None, dataset=None, device=None):
+                 loader=None, dataset=None, device=None, config=None, grid_split=3):
         """
         Args:
             base_output_dir (str): Base directory in which to save grids.
@@ -154,7 +180,9 @@ class RankedGPGCreator(Analyser):
         self.model_name = model_name
         self.weights_name = weights_name
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
+        self.grid_split = grid_split
+
 
         if plotting_only:
             self.load_results()
@@ -271,37 +299,45 @@ class RankedGPGCreator(Analyser):
         Returns:
             A dictionary with the overall localisation metric, percentiles, and raw evaluator results.
         """
-        xai_method = self.xai_method
-        device = self.device
+        # Construct the folder path where results are saved
+        results_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        raw_results_file = os.path.join(results_folder, "results.pkl")
+        
+        # Check if results already exist
+        if os.path.exists(raw_results_file):
+            raise RuntimeError(
+                f"Results already exist at {raw_results_file}. "
+                "Please use load_results() to load the existing results instead of re-running analysis."
+            )
 
         # Inspect the grid directory and load grid tensor paths.
-        grid_dir = os.path.join(grid_creator.output_folder, "3ch")
+        grid_dir = os.path.join(self.output_folder, "3ch")
         grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
         print(f"[DEBUG] Found {len(grid_paths)} grid tensors for evaluation in {grid_dir}.")
 
         # Load the grid tensors.
         preprocessed_tensors = []
         for grid_path in grid_paths:
-            grid_tensor = torch.load(grid_path, map_location=device)
+            grid_tensor = torch.load(grid_path, map_location=self.device)
             print(f"[DEBUG] Loaded grid tensor from {grid_path} with shape: {grid_tensor.shape}")
             preprocessed_tensors.append(grid_tensor)
 
         # Instantiate the evaluator based on the selected XAI method.
-        if xai_method == "bcos":
-            evaluator = BCOSEvaluator(config, model=model, device=device)
-        elif xai_method == "lime":
-            evaluator = LIMEEvaluator(config, model=model, device=device)
-        elif xai_method == "gradcam":
+        if self.xai_method == "bcos":
+            evaluator = BCOSEvaluator(self.model, self.device)
+        elif self.xai_method == "lime":
+            evaluator = LIMEEvaluator(self.model, self.device)
+        elif self.xai_method == "gradcam":
             print("[DEBUG] GradCAM evaluator not implemented.")
             return
         else:
-            raise ValueError(f"Unknown xai_method: {xai_method}")
+            raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
         # Evaluate all the grids using the evaluator.
-        results = evaluator.evaluate(preprocessed_tensors, grid_paths, grid_split=args.grid_split)
+        results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split)
         
         # Extract the grid_accuracy value from each result.
-        grid_accuracies = [res["grid_accuracy"] for res in results]
+        grid_accuracies = [res["accuracy"] for res in results]
 
         # Convert the list to a NumPy array.
         grid_accuracies_array = np.array(grid_accuracies)
@@ -433,7 +469,8 @@ def main():
     weights_name = os.path.basename(pretrained_path).split('.')[0]
 
 
-    # Set Dataloader    
+    # Set Dataloader
+    from train import prepare_testing_data
     test_data_loaders = prepare_testing_data(config)
     test_loader = test_data_loaders[list(test_data_loaders.keys())[0]]
     
@@ -449,7 +486,8 @@ def main():
         weights_name=weights_name,
         loader=test_loader, 
         dataset=test_loader.dataset,
-        device=device
+        device=device,
+        grid_split = args.grid_split
     )
     
 
