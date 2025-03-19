@@ -53,13 +53,13 @@ class BcosVGG(BcosUtilMixin, nn.Module):
             logit_bias=self.logit_bias #or -math.log(num_classes - 1),
         )
         self.classifier = nn.Sequential(
-            conv_layer(512, 4096, kernel_size=7, padding=3, scale_fact=50),
+            conv_layer(512, 4096, kernel_size=7, padding=3, scale_fact=1000),
             # nn.ReLU(True),
             # nn.Dropout(),
-            conv_layer(4096, 4096, scale_fact=50),
+            conv_layer(4096, 4096, scale_fact=1000),
             # nn.ReLU(True),
             # nn.Dropout(),
-            conv_layer(4096, num_classes, scale_fact=50),
+            conv_layer(4096, num_classes, scale_fact=1000),
             
             #MyAdaptiveAvgPool2d((1, 1)),
         )
@@ -127,7 +127,7 @@ def make_layers(
         else:
             v = cast(int, v)
             conv2d = conv_layer(
-                in_channels, v, kernel_size=3, padding=1, stride=stride, scale_fact=50
+                in_channels, v, kernel_size=3, padding=1, stride=stride, scale_fact=1000
             )
             if not isinstance(norm_layer, nn.Identity):
                 layers += [conv2d, norm_layer(v)]  # , nn.ReLU(inplace=True)]
