@@ -13,9 +13,10 @@ import yaml
 import pickle
 import random
 from PIL import Image
+
 # Evaluators.
-#from B_COS_eval import BCOSEvaluator
-from LIME_eval import LIMEEvaluator  # Adjust the import path if needed.
+from B_COS_eval import BCOSEvaluator
+from LIME_eval import LIMEEvaluator  
 # from GRADCAM_eval import GradCamEvaluator  # Uncomment if available.
 
 from training.detectors.xception_detector import XceptionDetector
@@ -23,12 +24,15 @@ from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
 
+
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
 ADDITIONAL_ARGS = {
     "model_name": "xception",
     "test_batchSize": 12,
 }
+
+
 
 def load_model(config):
     """
@@ -85,15 +89,16 @@ class Analyser:
         raise NotImplementedError("Need to implement analysis function.")
 
     def run(self):
-        results = self.analysis()
-        self.save_results(results)
+        overall, raw = self.analysis()
+        self.save_results(raw, overall)
 
-    def save_results(self, results):
+    def save_results(self, raw, overall):
         """
         Expects 'results' to be a tuple: (raw_results, overall).
         Saves raw_results and overall in a folder named by model and weights.
         """
-        raw_results, overall = results
+        raw_results = raw
+        overall = overall
     
         # Construct folder path using model name and weights.
         save_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
@@ -110,8 +115,8 @@ class Analyser:
         with open(overall_file, "wb") as f:
             pickle.dump(overall, f)
         print(f"Overall results saved to {overall_file}")
-    
-    def load_results(self, load_overall=False):
+        
+    def load_results(self, load_overall=True):
         """
         Loads results from disk from a folder named by model and weights, and presents a summary.
     
@@ -334,10 +339,10 @@ class RankedGPGCreator(Analyser):
             raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
         # Evaluate all the grids using the evaluator.
-        results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split)
+        raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split)
         
         # Extract the grid_accuracy value from each result.
-        grid_accuracies = [res["accuracy"] for res in results]
+        grid_accuracies = [res["accuracy"] for res in raw_results]
 
         # Convert the list to a NumPy array.
         grid_accuracies_array = np.array(grid_accuracies)
@@ -350,10 +355,9 @@ class RankedGPGCreator(Analyser):
         overall = {
             "localisation_metric": grid_accuracies_array,
             "percentiles": percentiles,
-            "raw_results": results  # Optional: include raw evaluator results
         }
 
-        return overall, results
+        return overall, raw_results
 
     def create_GPG_grids(self):
         """
@@ -493,7 +497,7 @@ def main():
 
     grid_creator.create_GPG_grids()
     grid_creator.run()
-    grid_creator.load_results(load_overall=False)
+    grid_creator.load_results(load_overall=False) #change model_name and weights_name to get different results
 
 if __name__ == "__main__":
     main()
