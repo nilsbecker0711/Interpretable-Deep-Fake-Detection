@@ -138,25 +138,22 @@ class BCOSEvaluator:
                 "true_fake_position": true_fake_pos,
             }
             results.append(result)
-            print(f"[DEBUG] Processed {os.path.basename(path)} with accuracy {accuracy:.4f}")
+            print(f"[DEBUG] For grid {os.path.basename(path)}: true position {true_fake_pos}, predicted {guessed_fake_position}, grid accuracy: {accuracy:.3f}")
 
         return results
 
     def generate_heatmap(self, tensor):
-        """
-        Runs inference on a tensor, computes gradients, and generates a heatmap.
-        """
         img = tensor.to(self.device).requires_grad_(True)
         print(f"[DEBUG] Input tensor shape: {img.shape}")
-
         self.model.zero_grad()
-        out = self.model(img)
+        out = self.model({'image': img})
         print(f"[DEBUG] Model output: {out}")
-
-        out.backward()
+        # Choose a scalar value for backpropagation.
+        # For instance, use the probability of the positive class:
+        scalar_out = out['prob'][0]
+        scalar_out.backward()
         grad = img.grad[0]
         print(f"[DEBUG] Gradients: min={grad.min().item()}, max={grad.max().item()}, mean={grad.mean().item()}")
-
         heatmap = HeatmapEvaluator.grad_to_img(img[0], grad, alpha_percentile=100)
         print(f"[DEBUG] Heatmap stats: shape={heatmap.shape}, min={heatmap.min()}, max={heatmap.max()}")
         return to_numpy(heatmap), out

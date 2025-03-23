@@ -1,9 +1,10 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet_v2_minimal
+log_dir: /home/ma/ma_ma/ma_lineuman/Interpretable-Deep-Fake-Detection/logs/resnet_v2_minimal
 
 # model setting -> old
 freeze: false
-pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_v2_minimal_2025-03-10-09-20-41/test/avg/ckpt_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
+pretrained: /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/resnet34_v2_minimal/03_17_14_42_12_ckpt_best.pth 
+#/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/BWCluster/logs/training/resnet34_bcos_v2_minimal_2025-03-10-09-20-41/test/avg/ckpt_best.pth # /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/resnet34-333f7ec4.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: resnet34_bcos_v2_minimal   # model name
 backbone_name: resnet34_bcos_v2_minimal  # backbone name
