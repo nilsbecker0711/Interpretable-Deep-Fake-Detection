@@ -23,8 +23,7 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 # Define default model configuration.
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
-    "model_name": "resnet34_bcos_v2_minimal",
-    "test_batchSize": 12,
+    "test_batchSize": 12
 }
 
 # Setup logging.
@@ -166,23 +165,16 @@ class RankedGPGCreator(Analyser):
                 logits = output['cls']
                 for i in range(len(images)):
                     true_label = int(labels[i].item())
-
-                    if predicted_label == true_label:
-                        confidence = logits[i, predicted_label].item()
-                        ranking[true_label].append((img_idx, confidence))
-                    img_idx += 1
-
-                    """
-                    #If no wrong correct labels:
                     predicted_label = logits[i].argmax().item()
+                    
                     if true_label == 0 and predicted_label == true_label:
                         confidence = logits[i, predicted_label].item()
                         ranking[true_label].append((img_idx, confidence))
-                    elif true_label == 1:
-                        confidence = logits[i, 1].item()
+                    elif true_label == 1 and predicted_label == true_label:
+                        confidence = logits[i, predicted_label].item()
                         ranking[true_label].append((img_idx, confidence))
                     img_idx += 1
-                    """
+
         for cls in ranking:
             ranking[cls] = sorted(ranking[cls], key=lambda x: x[1], reverse=True)
         return ranking
@@ -260,8 +252,11 @@ class RankedGPGCreator(Analyser):
         side = int(np.sqrt(n_imgs))
 
         while grid_count < self.max_grids:
-            if len(ranked_fake) < 1 or len(ranked_real) < (n_imgs - 1):
-                logger.warning("Not enough images to create more grids.")
+            required_real = n_imgs - 1
+            fake_count = len(ranked_fake)
+            real_count = len(ranked_real)
+            if fake_count < 1 or real_count < required_real:
+                logger.warning("Not enough images to create more grids. Fake count: %d, Real count: %d (required %d real images)", fake_count, real_count, required_real)
                 break
         
             fake_idx = ranked_fake.pop(0)
@@ -306,6 +301,9 @@ def main():
 
     config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
     model = load_model(config)
+    
+    print(f"with config: {config}")
+    
     model.eval()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
