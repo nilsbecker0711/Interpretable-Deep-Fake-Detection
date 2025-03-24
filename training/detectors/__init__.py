@@ -15,7 +15,7 @@ from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2
 from .resnet34_bcos_v2_minimal_detector import ResnetBcosDetector_v2_minimal
 from .inception_bcos_detector import InceptionBcosDetector
 from .xception_detector import XceptionDetector
-#from .vgg2_bcos_detector import VGGBcosDetector
+#from .vgg19_v2_bcos_detector import VGGBcosDetector
 from .vit_bcos_detector import ViTBcosDetector
 from .convnext_bcos_dector import Convnext_Bcos_Detector
 from .vgg19_v2_bcos_detector import VGGBcosDetector

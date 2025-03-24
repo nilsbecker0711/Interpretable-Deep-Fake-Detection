@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu_8  # Use the dev_gpu_4_a100 partition with A100 GPUs dev_gpu_4
+#SBATCH -p dev_gpu_4  # Use the dev_gpu_4_a100 partition with A100 GPUs dev_gpu_4
 #SBATCH -n 1                   # Number of tasks (1 for single node)
 #SBATCH -t 00:10:00            # Time limit (10 minutes for debugging purposes)
 #SBATCH --mem=10000             # Memory request (adjust as needed)
@@ -18,4 +18,4 @@ echo "Environment: $(conda info --envs)"
 
 module load devel/cuda/12.4
 
-python ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/vit_bcos.yaml
+python ~/Interpretable-Deep-Fake-Detection/training/train.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34.yaml
