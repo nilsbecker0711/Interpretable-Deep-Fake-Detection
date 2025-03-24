@@ -1,5 +1,10 @@
 import os
 import sys
+
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if PROJECT_PATH not in sys.path:
+    sys.path.insert(0, PROJECT_PATH)
+
 import logging
 import torch
 import argparse
@@ -16,7 +21,6 @@ from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 # Define default model configuration.
-PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "model_name": "resnet34_bcos_v2_minimal",
@@ -144,12 +148,12 @@ class RankedGPGCreator(Analyser):
         self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
         if os.path.exists(self.ranking_file):
             self.sorted_confs = self.load_ranking(self.ranking_file)
-            print(f"[DEBUG] Loaded existing sorted confidences from {self.ranking_file}")
+            logger.debug("Loaded existing sorted confidences from %s", self.ranking_file)
         else:
             self.sorted_confs = self.compute_sorted_confs()
             self.save_ranking(self.sorted_confs, self.ranking_file)
-            print(f"[DEBUG] Saved sorted confidences to {self.ranking_file}")
-
+            logger.debug("Saved sorted confidences to %s", self.ranking_file)
+            
     def compute_sorted_confs(self):
         """Compute and return image ranking based on model confidence."""
         ranking = {0: [], 1: []}
@@ -196,7 +200,7 @@ class RankedGPGCreator(Analyser):
     def get_image_by_index(self, idx):
         """Return an image tensor from the dataset based on its index."""
         if self.dataset is None:
-            raise ValueError("Dataset not provided for image retrieval."
+            raise ValueError("Dataset not provided for image retrieval.")
         image, _, _, _ = self.dataset[idx]
         return image
 
