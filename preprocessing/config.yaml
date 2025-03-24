@@ -27,7 +27,7 @@ rearrange:
     default: '/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb'
   output_file_path: # the json path to the dataset
     type: str
-    default: '/home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/preprocessing/dataset_json'
+    default: '/home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/preprocessing/dataset_json_v3'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
     default: 'c40'
