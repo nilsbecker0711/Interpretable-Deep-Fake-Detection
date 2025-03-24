@@ -1,8 +1,8 @@
 # log dir 
-log_dir: /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
+log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
 
 # model setting
-pretrained: /home/zhiyuanyan/disfin/deepfake_benchmark/training/pretrained/resnet34-b627a593.pth   # path to a pre-trained model, if using one
+pretrained: # /home/zhiyuanyan/disfin/deepfake_benchmark/training/pretrained/resnet34-b627a593.pth   # path to a pre-trained model, if using one
 model_name: resnet34   # model name
 backbone_name: resnet34  # backbone name
 
@@ -19,8 +19,8 @@ train_dataset: [FF-NT]
 test_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c23  # compression-level for videos
-train_batchSize: 32   # training batch size
-test_batchSize: 32   # test batch size
+train_batchSize: 64   # training batch size
+test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
@@ -53,7 +53,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0002  # learning rate
+    lr: 0.000025  # learning rate
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer
@@ -66,7 +66,7 @@ optimizer:
 
 # training config
 lr_scheduler: null   # learning rate scheduler
-nEpochs: 10   # number of epochs to train for
+nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
