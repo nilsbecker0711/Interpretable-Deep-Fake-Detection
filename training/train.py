@@ -130,11 +130,11 @@ def prepare_training_data(config):
     return train_data_loader
 
 
-def prepare_testing_data(config):
-    def get_test_data_loader(config, test_name):
+def prepare_testing_data(config, mode='test'):
+    def get_test_data_loader(config, test_name, mode='test'):
         # update the config dictionary with the specific testing dataset
         config = config.copy()  # create a copy of config to avoid altering the original one
-        config['test_dataset'] = test_name  # specify the current test dataset
+        config[f'{mode}_dataset'] = test_name  # specify the current test dataset
         if config.get('dataset_type', None) == 'lrl':
             test_set = LRLDataset(
                 config=config,
@@ -143,17 +143,17 @@ def prepare_testing_data(config):
         elif config.get('dataset_type', None) == 'bcos':
             test_set = DeepfakeBcosDataset(
                     config=config,
-                    mode='test',
+                    mode=mode,
             )
         else:
             test_set = DeepfakeAbstractBaseDataset(
                     config=config,
-                    mode='test',
+                    mode=mode,
             )
         test_data_loader = \
             torch.utils.data.DataLoader(
                 dataset=test_set,
-                batch_size=config['test_batchSize'],
+                batch_size=config[f'{mode}_batchSize'],
                 shuffle=False,
                 num_workers=int(config['workers']),
                 collate_fn=test_set.collate_fn,
@@ -163,8 +163,8 @@ def prepare_testing_data(config):
         return test_data_loader
 
     test_data_loaders = {}
-    for one_test_name in config['test_dataset']:
-        test_data_loaders[one_test_name] = get_test_data_loader(config, one_test_name)
+    for one_test_name in config[f'{mode}_dataset']:
+        test_data_loaders[one_test_name] = get_test_data_loader(config, one_test_name, mode=mode)
     return test_data_loaders
 
 

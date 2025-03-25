@@ -101,9 +101,10 @@ def set_wandb_config(config):
         config['lr_eta_min'] = wandb_config.lr_eta_min
 
     # model parameters
-    config['backbone_config']['log_temperature'] = wandb_config.log_temperature
-    config['backbone_config']['bias'] = wandb_config.bias
+    #config['backbone_config']['log_temperature'] = wandb_config.log_temperature
+    #config['backbone_config']['bias'] = wandb_config.bias
     config['backbone_config']['b'] = wandb_config.b
+    config['backbone_config']['stochastic_depth_prob'] = wandb_config.stochastic_depth_prob
      
     config["use_data_augmentation"] = wandb_config.use_data_augmentation
     return config
@@ -122,11 +123,17 @@ def broadcast_config(config):
 def train():
     """Main training function, called per W&B Sweep run."""
     config = load_config()
+    
+    if config["ddp"]:
+        dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
+        logger.addFilter(RankFilter(0))
 
     timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
     is_main_process = (not config["ddp"]) or (dist.is_initialized() and dist.get_rank() == 0)
-
-    if is_main_process:  
+    IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
+    if IS_MAIN_PROCESS:  
+        print(dist.get_rank())
+        print(f"This is the main process.3")
         wandb.init(
             project="deepfake_training",  
             group="HP_tuning",  
@@ -154,10 +161,6 @@ def train():
     logger = create_logger(os.path.join(logger_path, "training.log"))
     logger.info(f"Save log to {logger_path}")
 
-    if config["ddp"]:
-        dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
-        logger.addFilter(RankFilter(0))
-
     # Print Configuration (Only rank 0)
     if is_main_process:
         logger.info("--------------- Configuration ---------------")
@@ -173,7 +176,8 @@ def train():
 
     # Prepare Data Loaders
     train_data_loader = prepare_training_data(config)
-    test_data_loaders = prepare_testing_data(config)
+    val_data_loaders = prepare_testing_data(config, mode='val')
+    test_data_loaders = prepare_testing_data(config, mode='test')
 
     # Model, Optimizer, Scheduler, Metric
     model_class = DETECTOR[config["model_name"]]
@@ -188,15 +192,19 @@ def train():
     # Start Training
     for epoch in range(config["start_epoch"], config["nEpochs"] + 1):
         trainer.model.epoch = epoch
-        best_metric = trainer.train_epoch(
+        val_best_metric, test_best_metric = trainer.train_epoch(
             epoch=epoch,
             train_data_loader=train_data_loader,
-            test_data_loaders=test_data_loaders
+            test_data_loaders=test_data_loaders,
+            val_data_loaders=val_data_loaders
         )
-        if best_metric is not None:
-            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {best_metric}!")
+        if val_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with val {metric_scoring}: {val_best_metric}!")
+        if test_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {test_best_metric}!")
 
-    logger.info(f"Stop Training on best Testing metric {best_metric}")
+    logger.info(f"Stop Training on best Validation metric {val_best_metric}")
+    logger.info(f"Stop Training on best Testing metric {test_best_metric}")
 
     # Update SVDD Model
     if "svdd" in config["model_name"]:
@@ -214,7 +222,7 @@ def train():
 
 sweep_config = {
     'method': 'random',  # You can also use 'bayes' here
-    'metric': {'name': 'test_metrics/auc', 'goal': 'maximize'},  # Set the metric for optimization
+    'metric': {'name': 'val_metrics/auc', 'goal': 'maximize'},  # Set the metric for optimization
     'parameters': {
         # general parameters
         #'freeze':{'values': [True, False]},
@@ -300,17 +308,22 @@ sweep_config = {
 
 
         # ------   Model parameters --------
-        'log_temperature': {
-            'min': 0,
-            'max': 0.000000001,
-            'distribution': 'uniform',
-        },
-        'bias': {
-            'values': [[0.5, 0.5], [0.25, 0.75], [0.75, 0.25], [0.1, 0.9]]
-            },
+        # 'log_temperature': {
+        #     'min': 0,
+        #     'max': 0.000000001,
+        #     'distribution': 'uniform',
+        # },
+        # 'bias': {
+        #     'values': [[0.5, 0.5], [0.25, 0.75], [0.75, 0.25], [0.1, 0.9]]
+        #     },
         'b':{
             'min': 1,
-            'max': 2,
+            'max': 2.5,
+            'distribution': 'uniform',
+        },
+        'stochastic_depth_prob':{
+            'min': 0.0,
+            'max': 0.2,
             'distribution': 'uniform',
         },
         #TODO other resnet sizes
@@ -326,7 +339,12 @@ sweep_config = {
 
 
 if __name__ == "__main__":
-    sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
-    # sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
-
-    wandb.agent(sweep_id, function=train, count=1)  # Run one sweep at a time
+    # dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
+    # logger.addFilter(RankFilter(0))
+    # sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
+    IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
+    if IS_MAIN_PROCESS:
+        sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
+        wandb.agent(sweep_id, function=train, ) # count=1) -> you can also specify count to only run N combinations
+    else:
+        train()

@@ -65,7 +65,11 @@ class Trainer(object):
         self.logger = logger
         self.metric_scoring = metric_scoring
         # maintain the best metric of all epochs
-        self.best_metrics_all_time = defaultdict(
+        self.best_metrics_all_time_val = defaultdict(
+            lambda: defaultdict(lambda: float('-inf')
+            if self.metric_scoring != 'eer' else float('inf'))
+        )
+        self.best_metrics_all_time_test = defaultdict(
             lambda: defaultdict(lambda: float('-inf')
             if self.metric_scoring != 'eer' else float('inf'))
         )
@@ -277,6 +281,7 @@ class Trainer(object):
         epoch,
         train_data_loader,
         test_data_loaders=None,
+        val_data_loaders=None
         ):
 
         self.logger.info("===> Epoch[{}] start!".format(epoch))
@@ -421,6 +426,27 @@ class Trainer(object):
                     recorder.clear()
                 for name, recorder in train_recorder_metric.items():  # clear metric recorder
                     recorder.clear()
+            
+            # run test
+            if (step_cnt+1) % test_step == 0:
+                if val_data_loaders is not None and (not self.config['ddp'] ):
+                    self.logger.info("===> Val start!")
+                    val_best_metric = self.val_epoch(
+                        epoch,
+                        iteration,
+                        val_data_loaders,
+                        step_cnt,
+                    )
+                elif val_data_loaders is not None and (self.config['ddp'] and dist.get_rank() == 0):
+                    self.logger.info("===> Val start!")
+                    val_best_metric = self.val_epoch(
+                        epoch,
+                        iteration,
+                        val_data_loaders,
+                        step_cnt,
+                    )
+                else:
+                    val_best_metric = None
 
             # run test
             if (step_cnt+1) % test_step == 0:
@@ -447,6 +473,8 @@ class Trainer(object):
             # total_elapsed_time = total_end_time - total_start_time
             # print("总花费的时间: {:.2f} 秒".format(total_elapsed_time))
             step_cnt += 1
+        if val_data_loaders is not None:
+            return val_best_metric, test_best_metric
         return test_best_metric
 
     def get_respect_acc(self,prob,label):
@@ -494,64 +522,120 @@ class Trainer(object):
 
         return test_recorder_loss, np.array(prediction_lists), np.array(label_lists),np.array(feature_lists)
 
-    def save_best(self,epoch,iteration,step,losses_one_dataset_recorder,key,metric_one_dataset):
-        best_metric = self.best_metrics_all_time[key].get(self.metric_scoring,
-                                                          float('-inf') if self.metric_scoring != 'eer' else float(
-                                                              'inf'))
-        # Check if the current score is an improvement
+    def save_best(self,epoch,iteration,step,losses_one_dataset_recorder,key,metric_one_dataset, mode='test'):
+        if mode == 'val':
+            best_metric = self.best_metrics_all_time_val[key].get(self.metric_scoring,
+                                                            float('-inf') if self.metric_scoring != 'eer' else float(
+                                                                'inf'))
+        else:
+            best_metric = self.best_metrics_all_time_test[key].get(self.metric_scoring,
+                                                            float('-inf') if self.metric_scoring != 'eer' else float(
+                                                                'inf'))
+            # Check if the current score is an improvement
         improved = (metric_one_dataset[self.metric_scoring] > best_metric) if self.metric_scoring != 'eer' else (
                     metric_one_dataset[self.metric_scoring] < best_metric)
         if improved:
-            # Update the best metric
-            self.best_metrics_all_time[key][self.metric_scoring] = metric_one_dataset[self.metric_scoring]
-            if key == 'avg':
-                self.best_metrics_all_time[key]['dataset_dict'] = metric_one_dataset['dataset_dict']
+            if mode == 'val':
+                # Update the best metric
+                self.best_metrics_all_time_val[key][self.metric_scoring] = metric_one_dataset[self.metric_scoring]
+                if key == 'avg':
+                    self.best_metrics_all_time_val[key]['dataset_dict'] = metric_one_dataset['dataset_dict']
+            else:
+                # Update the best metric
+                self.best_metrics_all_time_test[key][self.metric_scoring] = metric_one_dataset[self.metric_scoring]
+                if key == 'avg':
+                    self.best_metrics_all_time_test[key]['dataset_dict'] = metric_one_dataset['dataset_dict']
             # Save checkpoint, feature, and metrics if specified in config
             if self.config['save_ckpt'] and key not in FFpp_pool:
-                self.save_ckpt('test', key, f"{epoch}+{iteration}")
-            self.save_metrics('test', metric_one_dataset, key)
+                self.save_ckpt(f'{mode}', key, f"{epoch}+{iteration}")
+            self.save_metrics(f'{mode}', metric_one_dataset, key)
         if losses_one_dataset_recorder is not None:
             # info for each dataset
             loss_str = f"dataset: {key}    step: {step}    "
             for k, v in losses_one_dataset_recorder.items():
-                writer = self.get_writer('test', key, k)
+                writer = self.get_writer(f'{mode}', key, k)
                 v_avg = v.average()
                 if v_avg == None:
                     print(f'{k} is not calculated')
                     continue
                 # tensorboard-1. loss
-                writer.add_scalar(f'test_losses/{k}', v_avg, global_step=step)
+                writer.add_scalar(f'{mode}_losses/{k}', v_avg, global_step=step)
                 # also log to wandb
-                wandb.log({f'test_losses/{k}': v_avg, 'step': step})
-                loss_str += f"testing-loss, {k}: {v_avg}    "
+                wandb.log({f'{mode}_losses/{k}': v_avg, 'step': step})
+                loss_str += f"{mode}-loss, {k}: {v_avg}    "
             self.logger.info(loss_str)
         # tqdm.write(loss_str)
         metric_str = f"dataset: {key}    step: {step}    "
         for k, v in metric_one_dataset.items():
             if k == 'pred' or k == 'label' or k=='dataset_dict':
                 continue
-            metric_str += f"testing-metric, {k}: {v}    "
+            metric_str += f"{mode}-metric, {k}: {v}    "
             # tensorboard-2. metric
-            writer = self.get_writer('test', key, k)
-            writer.add_scalar(f'test_metrics/{k}', v, global_step=step)
+            writer = self.get_writer(f'{mode}', key, k)
+            writer.add_scalar(f'{mode}_metrics/{k}', v, global_step=step)
             # also log to wandb
-            wandb.log({f'test_metrics/{k}': v, 'step': step})
+            wandb.log({f'{mode}_metrics/{k}': v, 'step': step})
         if 'pred' in metric_one_dataset:
             acc_real, acc_fake, precision, recall, f1 = self.get_respect_acc(metric_one_dataset['pred'], metric_one_dataset['label'])
-            metric_str += f'testing-metric, acc_real:{acc_real}; acc_fake:{acc_fake}'
-            writer.add_scalar(f'test_metrics/acc_real', acc_real, global_step=step)
-            writer.add_scalar(f'test_metrics/acc_fake', acc_fake, global_step=step)
-            writer.add_scalar(f'test_metrics/precision', precision, global_step=step)
-            writer.add_scalar(f'test_metrics/recall', recall, global_step=step)
-            writer.add_scalar(f'test_metrics/f1', f1, global_step=step)
+            metric_str += f'{mode}ing-metric, acc_real:{acc_real}; acc_fake:{acc_fake}'
+            writer.add_scalar(f'{mode}_metrics/acc_real', acc_real, global_step=step)
+            writer.add_scalar(f'{mode}_metrics/acc_fake', acc_fake, global_step=step)
+            writer.add_scalar(f'{mode}_metrics/precision', precision, global_step=step)
+            writer.add_scalar(f'{mode}_metrics/recall', recall, global_step=step)
+            writer.add_scalar(f'{mode}_metrics/f1', f1, global_step=step)
             
             # also log to wandb
-            wandb.log({f'test_metrics/acc_real': acc_real, 'step': step})
-            wandb.log({f'test_metrics/acc_fake': acc_fake, 'step': step})
-            wandb.log({f'test_metrics/precision': precision, 'step': step})
-            wandb.log({f'test_metrics/recall': recall, 'step': step})
-            wandb.log({f'test_metrics/f1': f1, 'step': step})
+            wandb.log({f'{mode}_metrics/acc_real': acc_real, 'step': step})
+            wandb.log({f'{mode}_metrics/acc_fake': acc_fake, 'step': step})
+            wandb.log({f'{mode}_metrics/precision': precision, 'step': step})
+            wandb.log({f'{mode}_metrics/recall': recall, 'step': step})
+            wandb.log({f'{mode}_metrics/f1': f1, 'step': step})
         self.logger.info(metric_str)
+
+
+    def val_epoch(self, epoch, iteration, val_data_loaders, step):
+        # set model to eval mode
+        self.setEval()
+
+        # define test recorder
+        losses_all_datasets = {}
+        metrics_all_datasets = {}
+        best_metrics_per_dataset = defaultdict(dict)  # best metric for each dataset, for each metric
+        avg_metric = {'acc': 0, 'auc': 0, 'eer': 0, 'ap': 0,'video_auc': 0,'dataset_dict':{}}
+        # testing for all test data
+        keys = val_data_loaders.keys()
+        for key in keys:
+            # save the testing data_dict
+            data_dict = val_data_loaders[key].dataset.data_dict
+            self.save_data_dict('val', data_dict, key)
+
+            # compute loss for each dataset
+            losses_one_dataset_recorder, predictions_nps, label_nps, feature_nps = self.test_one_dataset(val_data_loaders[key])
+            # print(f'stack len:{predictions_nps.shape};{label_nps.shape};{len(data_dict["image"])}')
+            losses_all_datasets[key] = losses_one_dataset_recorder
+            metric_one_dataset=get_test_metrics(y_pred=predictions_nps,y_true=label_nps,img_names=data_dict['image'])
+            for metric_name, value in metric_one_dataset.items():
+                if metric_name in avg_metric:
+                    avg_metric[metric_name]+=value
+            avg_metric['dataset_dict'][key] = metric_one_dataset[self.metric_scoring]
+            if type(self.model) is AveragedModel:
+                metric_str = f"Iter Final for SWA:    "
+                for k, v in metric_one_dataset.items():
+                    metric_str += f"validation-metric, {k}: {v}    "
+                self.logger.info(metric_str)
+                continue
+            self.save_best(epoch,iteration,step,losses_one_dataset_recorder,key,metric_one_dataset, mode='val')
+
+        if len(keys)>0 and self.config.get('save_avg',False):
+            # calculate avg value
+            for key in avg_metric:
+                if key != 'dataset_dict':
+                    avg_metric[key] /= len(keys)
+            self.save_best(epoch, iteration, step, None, 'avg', avg_metric, mode='val')
+
+        self.logger.info('===> Test Done!')
+        return self.best_metrics_all_time_val  # return all types of mean metrics for determining the best ckpt
+
 
     def test_epoch(self, epoch, iteration, test_data_loaders, step):
         # set model to eval mode
@@ -584,17 +668,17 @@ class Trainer(object):
                     metric_str += f"testing-metric, {k}: {v}    "
                 self.logger.info(metric_str)
                 continue
-            self.save_best(epoch,iteration,step,losses_one_dataset_recorder,key,metric_one_dataset)
+            self.save_best(epoch,iteration,step,losses_one_dataset_recorder,key,metric_one_dataset, mode='test')
 
         if len(keys)>0 and self.config.get('save_avg',False):
             # calculate avg value
             for key in avg_metric:
                 if key != 'dataset_dict':
                     avg_metric[key] /= len(keys)
-            self.save_best(epoch, iteration, step, None, 'avg', avg_metric)
+            self.save_best(epoch, iteration, step, None, 'avg', avg_metric, mode='test')
 
         self.logger.info('===> Test Done!')
-        return self.best_metrics_all_time  # return all types of mean metrics for determining the best ckpt
+        return self.best_metrics_all_time_test  # return all types of mean metrics for determining the best ckpt
 
     @torch.no_grad()
     def inference(self, data_dict):
