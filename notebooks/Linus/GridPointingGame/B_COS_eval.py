@@ -58,26 +58,39 @@ class BCOSEvaluator:
         """Initializes the evaluator with a model."""
         self.model = model
         self.device = device
-        self.model.eval()
-        self.model.to(self.device)
         logging.info("Loaded model %s onto %s", self.model.__class__.__name__, self.device)
 
     def generate_heatmap(self, tensor):
-        """Generate heatmap using gradients."""
+        """Generate heatmap using model backbone explanation."""
+        # Move the input tensor to the proper device and require gradients.
         img = tensor.to(self.device).requires_grad_(True)
         logging.debug("Input tensor shape: %s", img.shape)
+        
+        # Zero out gradients and perform a forward pass.
         self.model.zero_grad()
         out = self.model({'image': img})
         logging.debug("Model output: %s", out)
+        
+        # Backpropagate from the probability of the first output.
         scalar_out = out['prob'][0]
         scalar_out.backward()
         grad = img.grad[0]
         logging.debug("Gradients: min=%s, max=%s, mean=%s", grad.min().item(), grad.max().item(), grad.mean().item())
-        model.backbone.eval()
-        heatmap = model.backbone.explain(img)
-
+        
+        # Use the model backbone's explain method.
+        explanation = self.model.backbone.explain(img)
+        
+        # Extract the heatmap from the explanation dictionary.
+        # Here, we assume the heatmap is stored under the key "explanation".
+        heatmap = explanation.get("explanation")
+        model_prediction = explanation.get("prediction")
+        
+        if heatmap is None:
+            logging.error("No heatmap found in explanation. Available keys: %s", explanation.keys())
+            raise ValueError("Heatmap extraction failed from explanation dictionary.")
+        
         logging.debug("Heatmap: shape=%s, min=%s, max=%s", heatmap.shape, heatmap.min(), heatmap.max())
-        return to_numpy(heatmap), out
+        return to_numpy(heatmap), out, model_prediction
 
     def convert_to_numpy(self, tensor):
         """Convert a tensor to an RGB numpy image."""
@@ -101,7 +114,7 @@ class BCOSEvaluator:
             logging.info("Evaluating grid %d from file: %s", idx, path)
             if tensor.shape[1] == 3:
                 tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
-            heatmap, output = self.generate_heatmap(tensor)
+            heatmap, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
             guessed_fake_position, intensity_sums, accuracy = evaluate_heatmap(
                 heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos
@@ -114,8 +127,9 @@ class BCOSEvaluator:
                 "guessed_fake_position": guessed_fake_position,
                 "accuracy": accuracy,
                 "true_fake_position": true_fake_pos,
+                "model_prediction": model_prediction
             }
             results.append(result)
             logging.info("For grid %s: true position %d, predicted %d, grid accuracy: %.3f",
-                        os.path.basename(path), true_fake_pos, guessed_fake_position, accuracy)
+                         os.path.basename(path), true_fake_pos, guessed_fake_position, accuracy)
         return results

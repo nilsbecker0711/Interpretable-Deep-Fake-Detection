@@ -1,6 +1,7 @@
 import os
 import sys
 
+#set project path
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if PROJECT_PATH not in sys.path:
     sys.path.insert(0, PROJECT_PATH)
@@ -20,14 +21,15 @@ from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
-# Define default model configuration.
+# set model path and additional arguments
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
 
-# Setup logging.
-logging.basicConfig(level=logging.INFO)
+
+#setpup logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def load_model(config):
@@ -66,6 +68,12 @@ def get_images_from_dataloader(data_loader):
             all_images.append(img)
     return all_images
 
+def preprocess_image(img):
+    # img is expected to be a tensor of shape [B, C, H, W] in a batch.
+    if img.shape[1] == 3:
+        img = torch.cat([img, 1.0 - img], dim=1)
+    return img
+
 class Analyser:
 
     def analysis(self):
@@ -77,7 +85,7 @@ class Analyser:
 
     def save_results(self, raw, overall):
         """Save raw and overall results to disk."""
-        save_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        save_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
         os.makedirs(save_folder, exist_ok=True)
         with open(os.path.join(save_folder, "results.pkl"), "wb") as f:
             pickle.dump(raw, f)
@@ -87,7 +95,7 @@ class Analyser:
         
     def load_results(self, load_overall=True):
         """Load and print a summary of previously saved results."""
-        load_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        load_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
         file_path = os.path.join(load_folder, "overall.pkl" if load_overall else "results.pkl")
         with open(file_path, "rb") as f:
             loaded = pickle.load(f)
@@ -140,18 +148,18 @@ class RankedGPGCreator(Analyser):
             self.load_results()
             return
         
-        self.output_dir_3ch = os.path.join(self.output_folder, "3ch")
-        os.makedirs(self.output_dir_3ch, exist_ok=True)
+        self.output_dir = os.path.join(self.output_folder, str(self.grid_split))
+        os.makedirs(self.output_dir, exist_ok=True)
 
         # Process an load images ranking.
         self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
         if os.path.exists(self.ranking_file):
             self.sorted_confs = self.load_ranking(self.ranking_file)
-            logger.debug("Loaded existing sorted confidences from %s", self.ranking_file)
+            logger.info("Loaded existing sorted confidences from %s", self.ranking_file)
         else:
             self.sorted_confs = self.compute_sorted_confs()
             self.save_ranking(self.sorted_confs, self.ranking_file)
-            logger.debug("Saved sorted confidences to %s", self.ranking_file)
+            logger.info("Saved sorted confidences to %s", self.ranking_file)
             
     def compute_sorted_confs(self):
         """Compute and return image ranking based on model confidence."""
@@ -160,25 +168,28 @@ class RankedGPGCreator(Analyser):
         with torch.no_grad():
             for batch in self.loader:
                 images = batch['image'].to(self.device)
+                if self.xai_method == "bcos":
+                    images = preprocess_image(images)
                 labels = batch['label'].to(self.device)
                 output = self.model({'image': images, 'label': labels})
                 logits = output['cls']
                 for i in range(len(images)):
                     true_label = int(labels[i].item())
                     predicted_label = logits[i].argmax().item()
-                    
                     if true_label == 0 and predicted_label == true_label:
                         confidence = logits[i, predicted_label].item()
-                        ranking[true_label].append((img_idx, confidence))
+                        ranking[0].append((img_idx, confidence))
                     elif true_label == 1 and predicted_label == true_label:
                         confidence = logits[i, predicted_label].item()
-                        ranking[true_label].append((img_idx, confidence))
+                        ranking[1].append((img_idx, confidence))
                     img_idx += 1
-
+        
         for cls in ranking:
             ranking[cls] = sorted(ranking[cls], key=lambda x: x[1], reverse=True)
+            logger.debug("Class %d: %d images after sorting.", cls, len(ranking[cls]))
         return ranking
-
+        
+    '''
     def get_sorted_indices(self):
         """Select top image indices based on rankings for grid creation."""
         k = self.max_grids
@@ -188,6 +199,7 @@ class RankedGPGCreator(Analyser):
             required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
             indices[cls] = [idx for idx, _ in cls_list[:required]]
         return indices
+    '''
 
     def get_image_by_index(self, idx):
         """Return an image tensor from the dataset based on its index."""
@@ -195,7 +207,7 @@ class RankedGPGCreator(Analyser):
             raise ValueError("Dataset not provided for image retrieval.")
         image, _, _, _ = self.dataset[idx]
         return image
-
+    
     def save_ranking(self, ranking, file_path):
         with open(file_path, "wb") as f:
             pickle.dump(ranking, f)
@@ -207,12 +219,12 @@ class RankedGPGCreator(Analyser):
 
     def analysis(self):
         """Evaluate pre-created grids and compute overall metrics."""
-        results_folder = os.path.join("results", "GPG", f"{self.model_name}_{self.weights_name}")
+        results_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
         raw_results_file = os.path.join(results_folder, "results.pkl")
         if os.path.exists(raw_results_file):
             raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() instead.")
 
-        grid_dir = os.path.join(self.output_folder, "3ch")
+        grid_dir = os.path.join(self.output_folder, str(self.grid_split))
         grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
         logger.info("Found %d grid tensors in %s.", len(grid_paths), grid_dir)
 
@@ -238,46 +250,94 @@ class RankedGPGCreator(Analyser):
 
     def create_GPG_grids(self):
         """Create grids by combining ranked real and fake images."""
-        logger.info("Creating grids in %s.", self.output_folder)
-        existing_files = [f for f in os.listdir(self.output_dir_3ch) if f.endswith('.pt')]
+        logger.info("=== Starting GPG grid creation in %s ===", self.output_folder)
+        
+        # Check for existing files
+        existing_files = [f for f in os.listdir(self.output_dir) if f.endswith('.pt')]
+        logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.output_dir)
+        
         if len(existing_files) >= self.max_grids:
             logger.info("Existing grid files found. Skipping grid creation.")
             return
-
-        sorted_indices = self.get_sorted_indices()
-        ranked_real = sorted_indices.get(0, [])
-        ranked_fake = sorted_indices.get(1, [])
+        
+        # Copy the ranked real/fake lists
+        ranked_real = self.sorted_confs.get(0, []).copy()
+        ranked_fake = self.sorted_confs.get(1, []).copy()
+        logger.debug("Ranked real size: %d, Ranked fake size: %d", len(ranked_real), len(ranked_fake))
+        
         n_imgs = self.grid_size[0] * self.grid_size[1]
-        grid_count = 0
+        logger.debug("Grid size: %s, total images per grid: %d", self.grid_size, n_imgs)
         side = int(np.sqrt(n_imgs))
-
+        logger.debug("Calculated side length: %d", side)
+        
+        grid_count = 0
+        
         while grid_count < self.max_grids:
+            logger.info("--- Creating grid %d of %d ---", grid_count + 1, self.max_grids)
             required_real = n_imgs - 1
             fake_count = len(ranked_fake)
             real_count = len(ranked_real)
+            logger.debug("Need %d real images, have %d. Need 1 fake image, have %d.",
+                         required_real, real_count, fake_count)
+            
             if fake_count < 1 or real_count < required_real:
-                logger.warning("Not enough images to create more grids. Fake count: %d, Real count: %d (required %d real images)", fake_count, real_count, required_real)
+                logger.warning(
+                    "Not enough images to create more grids. Fake count: %d, Real count: %d (required %d real images)",
+                    fake_count, real_count, required_real
+                )
                 break
-        
-            fake_idx = ranked_fake.pop(0)
-            fake_img = self.get_image_by_index(fake_idx)
-            selected_real_indices = ranked_real[:n_imgs - 1]
-            ranked_real = ranked_real[n_imgs - 1:]
-            selected_real = [self.get_image_by_index(idx) for idx in selected_real_indices]
+            
+            # Pop the first fake image tuple
+            fake_tuple = ranked_fake.pop(0)  # tuple: (img_idx, confidence)
+            logger.info("Selected fake image: idx %d with confidence %.4f", fake_tuple[0], fake_tuple[1])
+            
+            # Retrieve the fake image tensor
+            fake_img = self.get_image_by_index(fake_tuple[0])
+            logger.debug("Fake image retrieved, shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
+            
+            # For real images, take the first (n_imgs - 1) tuples
+            selected_real_tuples = ranked_real[:required_real]
+            logger.info("Selected real images: %s", selected_real_tuples)
+            
+            # Remove them from the list
+            ranked_real = ranked_real[required_real:]
+            
+            # Retrieve the real images
+            selected_real = [self.get_image_by_index(idx) for idx, conf in selected_real_tuples]
+            logger.debug("Retrieved %d real images.", len(selected_real))
+            
+            # Combine the selected real images and the fake image
             images = selected_real + [fake_img]
+            logger.debug("Combined real + fake images. Total: %d", len(images))
+            
             random.shuffle(images)
-        
+            logger.debug("Shuffled images.")
+            
+            # Find the fake image's index in the shuffled list
             fake_index = next(i for i, img in enumerate(images) if torch.equal(img, fake_img))
             final_fake_index = (fake_index % side) * side + (fake_index // side)
+            logger.debug("Fake image is at shuffled index %d, final index %d in the grid.", fake_index, final_fake_index)
+            
+            # Stack images and reshape into a grid tensor
             stacked = torch.stack(images, dim=0)
-            grid_tensor = stacked.view(-1, side, side, *stacked.shape[-3:]) \
-                        .permute(0, 3, 2, 4, 1, 5) \
-                        .reshape(-1, stacked.shape[1], stacked.shape[2] * side, stacked.shape[3] * side)
+            logger.debug("Stacked images, shape: %s", stacked.shape)
+            
+            grid_tensor = (
+                stacked.view(-1, side, side, *stacked.shape[-3:])
+                      .permute(0, 3, 2, 4, 1, 5)
+                      .reshape(-1, stacked.shape[1], stacked.shape[2] * side, stacked.shape[3] * side)
+            )
+            logger.debug("Reshaped grid tensor, final shape: %s", grid_tensor.shape)
+            
+            # Save the grid
             base_name = f"grid_{grid_count}_fake_{final_fake_index}.pt"
-            path_3ch = os.path.join(self.output_dir_3ch, base_name)
-            torch.save(grid_tensor, path_3ch)
-            logger.info("Saved grid tensor: %s", path_3ch)
+            path_to_grid = os.path.join(self.output_dir, base_name)
+            torch.save(grid_tensor, path_to_grid)
+            logger.info("Saved grid tensor: %s", path_to_grid)
+            
             grid_count += 1
+        
+        logger.info("=== Finished GPG grid creation. Created %d grids. ===", grid_count)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Evaluate grids using a specified model and XAI method.")
@@ -302,15 +362,26 @@ def main():
     config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
     model = load_model(config)
     
-    print(f"with config: {config}")
+    pretrained_path = config['pretrained']
+
+    state_dict = torch.load(pretrained_path)
+    # Remove "module." prefix if necessary.
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        new_key = k.replace("module.", "")
+        new_state_dict[new_key] = v
     
-    model.eval()
+    model.load_state_dict(new_state_dict)            
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
+    print(next(model.parameters()).device)
 
+    model.eval()
+
+    logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
+        
     model_name = config.get("model_name", "defaultModel")
-    pretrained_path = config['pretrained']
     if not os.path.exists(pretrained_path):
         raise FileNotFoundError(f"Weight file not found: {pretrained_path}")
     weights_name = os.path.basename(pretrained_path).split('.')[0]
