@@ -634,7 +634,7 @@ class DeepfakeBcosDataset(data.Dataset):
                 landmark_tensors = landmark_tensors[0]
             if not any(m is None or (isinstance(m, list) and None in m) for m in mask_tensors):
                 mask_tensors = mask_tensors[0]
-        return image_tensors, label, landmark_tensors, mask_tensors
+        return image_tensors, label, landmark_tensors, mask_tensors, index
     
     @staticmethod
     def collate_fn(batch):
@@ -650,7 +650,7 @@ class DeepfakeBcosDataset(data.Dataset):
             and the mask tensor.
         """
         # Separate the image, label, landmark, and mask tensors
-        images, labels, landmarks, masks = zip(*batch)
+        images, labels, landmarks, masks, indices = zip(*batch)
         
         # Stack the image, label, landmark, and mask tensors
         images = torch.stack(images, dim=0)
@@ -673,6 +673,7 @@ class DeepfakeBcosDataset(data.Dataset):
         data_dict['label'] = labels
         data_dict['landmark'] = landmarks
         data_dict['mask'] = masks
+        data_dict['index']= indices
         return data_dict
 
     def __len__(self):

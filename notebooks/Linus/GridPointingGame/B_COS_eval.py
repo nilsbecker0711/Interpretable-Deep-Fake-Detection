@@ -1,6 +1,7 @@
 import os
 import sys
 
+# Set up project root and ensure it's in sys.path.
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -16,107 +17,103 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def to_numpy(t):
-    """Converts a tensor to a NumPy array."""
+    """Convert tensor to numpy array."""
     return t.detach().cpu().numpy() if not isinstance(t, np.ndarray) else t
 
-
 def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
-    """
-    Evaluate the heatmap to compute the intensity-weighted accuracy.
-    """
+    """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
+    # Convert heatmap to grayscale (average first 3 channels).
     heatmap_gray = np.mean(heatmap[..., :3], axis=-1)
-    if heatmap_gray.max() > 1.0:
-        heatmap_gray = heatmap_gray / 255.0
+    if heatmap_gray.max() > 1.0:  # Scale to [0,1] if in 0-255 range.
+        heatmap_gray /= 255.0
 
+    # Clip extreme values using the top percentile.
     intensity_cap = np.percentile(heatmap_gray, top_percentile)
     heatmap_gray = np.clip(heatmap_gray, 0, intensity_cap) / intensity_cap
 
+    # Resize if dimensions are not evenly divisible by grid_split.
     original_size = heatmap_gray.shape
-    if original_size[1] % grid_split != 0 or original_size[0] % grid_split != 0:
+    if original_size[1] % grid_split or original_size[0] % grid_split:
         new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
         pil_img = Image.fromarray((heatmap_gray * 255).astype(np.uint8))
         pil_img = pil_img.resize(new_size, Image.LANCZOS)
         heatmap_gray = np.array(pil_img).astype(np.float32) / 255.0
-    else:
-        new_size = original_size
 
+    # Calculate cell dimensions.
     rows, cols = heatmap_gray.shape
-    section_size_row = rows // grid_split
-    section_size_col = cols // grid_split
-    sections = [heatmap_gray[i * section_size_row:(i + 1) * section_size_row,
-                                j * section_size_col:(j + 1) * section_size_col]
+    sec_rows = rows // grid_split
+    sec_cols = cols // grid_split
+    # Split into grid cells.
+    sections = [heatmap_gray[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
+    # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
     guessed_fake_position = np.argmax(intensity_sums)
-    total_positive_intensity = np.sum(heatmap_gray)
-    intensity_weighted_accuracy = (intensity_sums[true_fake_pos] / total_positive_intensity
-                                    if total_positive_intensity > 0 else 0.0)
-    return guessed_fake_position, intensity_sums, intensity_weighted_accuracy
+    total_intensity = np.sum(heatmap_gray)
+    # Compute accuracy as fraction of total intensity in the true fake cell.
+    accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
+    return guessed_fake_position, intensity_sums, accuracy
 
 class BCOSEvaluator:
     def __init__(self, model=None, device=None):
-        """Initializes the evaluator with a model."""
+        """Initialize with model and device."""
         self.model = model
         self.device = device
-        logging.info("Loaded model %s onto %s", self.model.__class__.__name__, self.device)
+        logger.info("Loaded model %s and device %s", self.model.__class__.__name__, self.device)
 
     def generate_heatmap(self, tensor):
-        """Generate heatmap using model backbone explanation."""
-        # Move the input tensor to the proper device and require gradients.
+        """Generate heatmap via forward and backward passes."""
+        # Move tensor to device and enable gradients.
         img = tensor.to(self.device).requires_grad_(True)
-        logging.debug("Input tensor shape: %s", img.shape)
+        logger.debug("Input tensor shape: %s", img.shape)
         
-        # Zero out gradients and perform a forward pass.
-        self.model.zero_grad()
-        out = self.model({'image': img})
-        logging.debug("Model output: %s", out)
+        self.model.zero_grad()  # Reset gradients.
+        out = self.model({'image': img})  # Forward pass.
+        logger.debug("Model output: %s", out)
         
-        # Backpropagate from the probability of the first output.
-        scalar_out = out['prob'][0]
-        scalar_out.backward()
+        scalar_out = out['prob'][0]  # Use first output probability.
+        scalar_out.backward()  # Backpropagate.
         grad = img.grad[0]
-        logging.debug("Gradients: min=%s, max=%s, mean=%s", grad.min().item(), grad.max().item(), grad.mean().item())
+        logger.debug("Gradients: min=%s, max=%s, mean=%s",
+                     grad.min().item(), grad.max().item(), grad.mean().item())
         
-        # Use the model backbone's explain method.
+        # Get explanation from model's backbone.
         explanation = self.model.backbone.explain(img)
-        
-        # Extract the heatmap from the explanation dictionary.
-        # Here, we assume the heatmap is stored under the key "explanation".
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
-        
         if heatmap is None:
-            logging.error("No heatmap found in explanation. Available keys: %s", explanation.keys())
-            raise ValueError("Heatmap extraction failed from explanation dictionary.")
-        
-        logging.debug("Heatmap: shape=%s, min=%s, max=%s", heatmap.shape, heatmap.min(), heatmap.max())
+            logger.error("No heatmap found. Keys: %s", explanation.keys())
+            raise ValueError("Heatmap extraction failed.")
+        logger.debug("Heatmap: shape=%s, min=%s, max=%s", heatmap.shape, heatmap.min(), heatmap.max())
         return to_numpy(heatmap), out, model_prediction
 
     def convert_to_numpy(self, tensor):
-        """Convert a tensor to an RGB numpy image."""
+        """Convert tensor to RGB numpy image."""
         if tensor.dim() == 4 and tensor.shape[0] == 1:
-            tensor = tensor.squeeze(0)
+            tensor = tensor.squeeze(0)  # Remove batch dimension.
+        # Permute channels to HWC and scale.
         return (to_numpy(tensor[:3].permute(1, 2, 0)) * 255).astype(np.uint8)
 
     def extract_fake_position(self, path):
-        """Extract fake image position from filename."""
+        """Extract fake position from filename."""
         try:
             return int(os.path.basename(path).split('_fake_')[1].split('.')[0])
         except Exception as e:
-            logging.warning("Could not extract fake position from '%s': %s", path, e)
+            logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
 
     def evaluate(self, tensor_list, path_list, grid_split):
-        """Evaluate grid tensors and compute metrics."""
+        """Evaluate grid tensors and return metrics."""
         results = []
-        logging.info("Processing %d grids with grid_split=%d.", len(tensor_list), grid_split)
+        logger.info("Processing %d grids with grid_split=%d.", len(tensor_list), grid_split)
         for idx, (tensor, path) in enumerate(zip(tensor_list, path_list)):
-            logging.info("Evaluating grid %d from file: %s", idx, path)
+            logger.info("Evaluating grid %d from file: %s", idx, path)
+            # If tensor has 3 channels, add inverse channels.
             if tensor.shape[1] == 3:
                 tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
             heatmap, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
-            guessed_fake_position, intensity_sums, accuracy = evaluate_heatmap(
+            guessed_fake_position, intensity_sums, acc = evaluate_heatmap(
                 heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos
             )
             original_image = self.convert_to_numpy(tensor)
@@ -125,11 +122,11 @@ class BCOSEvaluator:
                 "original_image": original_image,
                 "heatmap": heatmap,
                 "guessed_fake_position": guessed_fake_position,
-                "accuracy": accuracy,
+                "accuracy": acc,
                 "true_fake_position": true_fake_pos,
                 "model_prediction": model_prediction
             }
             results.append(result)
-            logging.info("For grid %s: true position %d, predicted %d, grid accuracy: %.3f",
-                         os.path.basename(path), true_fake_pos, guessed_fake_position, accuracy)
+            logger.info("For grid %s: true pos %d, predicted %d, accuracy: %.3f",
+                        os.path.basename(path), true_fake_pos, guessed_fake_position, acc)
         return results
