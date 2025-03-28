@@ -15,8 +15,6 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 class LIMEEvaluator:
-    """Evaluator that generates LIME explanations for grid tensors."""
-    
     def __init__(self, model=None, device=None):
         """Initialize the evaluator: set up model, device, transform, and LIME explainer."""
         self.model = model
@@ -79,6 +77,14 @@ class LIMEEvaluator:
         non_0_pixel_count = [np.sum(section > background_pixel) for section in sections]
         fake_pred_index = np.argmax(non_0_pixel_count)
         return fake_pred_index, non_0_pixel_count
+    
+    def extract_fake_position(self, path):
+        """Extract fake position from filename."""
+        try:
+            return int(os.path.basename(path).split('_fake_')[1].split('.')[0])
+        except Exception as e:
+            logger.warning("Could not extract fake position from '%s': %s", path, e)
+            return -1
 
     def evaluate(self, tensor_list, path_list, grid_split):
         """
@@ -97,35 +103,18 @@ class LIMEEvaluator:
             img.requires_grad_(True)
 
             # Dummy data for label and forward pass to zero gradients
-            data_dict = {'image': img, 'label': 0}
+            data_dict = {'image': img, 'label': 0}  #true value unimportant cause model prediction can still be 1 and thats important
             self.model.zero_grad()
             out = self.model(data_dict)
 
             # Generate LIME explanation for the image
-            explanation = self.explainer.explain_instance(
-                img_np,
-                self.batch_predict,
-                top_labels=1,
-                hide_color=0,
-                num_samples=10
-            )
+            explanation = self.explainer.explain_instance(img_np, self.batch_predict, top_labels=1, hide_color=0, num_samples=10)
             top_label = explanation.top_labels[0]
-            temp, mask = explanation.get_image_and_mask(
-                top_label,
-                positive_only=True,
-                num_features=10,
-                hide_rest=True
-            )
+            temp, mask = explanation.get_image_and_mask(top_label, positive_only=True, num_features=10, hide_rest=True)
             
             # Evaluate the LIME heatmap using grid splitting
             fake_pred, pixel_counts = self.lime_grid_eval(temp, grid_split=grid_split)
-
-            # Parse true fake position from the file name
-            try:
-                true_fake_pos = int(os.path.basename(path).split('_fake_')[1].split('.')[0])
-            except Exception as e:
-                logger.warning("Could not parse true fake position from filename %s: %s", path, e)
-                true_fake_pos = -1
+            true_fake_pos = self.extract_fake_position(path)
 
             total_nonzero = float(sum(pixel_counts))
             if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
@@ -142,7 +131,8 @@ class LIMEEvaluator:
                 "heatmap": temp,           # LIME explanation (heatmap)
                 "guessed_fake_position": fake_pred,
                 "accuracy": grid_accuracy,
-                "true_fake_position": true_fake_pos
+                "true_fake_position": true_fake_pos,
+                "model_prediction": model_prediction
             }
             results.append(result)
             logger.info("Processed %s.", os.path.basename(path))

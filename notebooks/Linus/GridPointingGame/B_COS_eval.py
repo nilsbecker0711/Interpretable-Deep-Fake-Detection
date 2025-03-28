@@ -59,7 +59,6 @@ class BCOSEvaluator:
         """Initialize with model and device."""
         self.model = model
         self.device = device
-        logger.info("Loaded model %s and device %s", self.model.__class__.__name__, self.device)
 
     def generate_heatmap(self, tensor):
         """Generate heatmap via forward and backward passes."""
@@ -81,6 +80,7 @@ class BCOSEvaluator:
         explanation = self.model.backbone.explain(img)
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
+        
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
             raise ValueError("Heatmap extraction failed.")
