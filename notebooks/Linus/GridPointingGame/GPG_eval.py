@@ -16,7 +16,7 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-# from GRADCAM_eval import GradCamEvaluator  # Uncomment if implemented.
+from GradCam_eval import GradCamEvaluator 
 
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
@@ -102,7 +102,7 @@ class GridPointingGameCreator(Analyser):
                 
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
-                if self.xai_method == "lime":
+                if self.xai_method == "lime" or self.xai_method == "gradcam":
                     image = image[:,:3]
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
@@ -257,7 +257,7 @@ class GridPointingGameCreator(Analyser):
             logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
-            if self.xai_method == "lime":
+            if self.xai_method == "lime" or self.xai_method == "gradcam":
                 fake_img = fake_img[:3]
             logger.debug("Fake image shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
             
@@ -269,7 +269,7 @@ class GridPointingGameCreator(Analyser):
             # Retrieve real images using load_sample_by_path for consistency.
             expected_label = 0
             selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
-            if self.xai_method == "lime":
+            if self.xai_method == "lime" or self.xai_method == "gradcam":
                 selected_real = [img[:3] for img in selected_real]
             logger.debug("Retrieved %d real images.", len(selected_real))
             
