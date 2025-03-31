@@ -21,7 +21,7 @@ from LIME_eval import LIMEEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 # set model path and additional arguments
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -102,6 +102,8 @@ class GridPointingGameCreator(Analyser):
                 
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
+                if self.xai_method == "lime":
+                    image = image[:,:3]
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
                 # Get predicted label from the first (and only) sample.
@@ -255,6 +257,8 @@ class GridPointingGameCreator(Analyser):
             logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
+            if self.xai_method == "lime":
+                fake_img = fake_img[:3]
             logger.debug("Fake image shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
             
             # Select first required_real real image tuples.
@@ -265,6 +269,8 @@ class GridPointingGameCreator(Analyser):
             # Retrieve real images using load_sample_by_path for consistency.
             expected_label = 0
             selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
+            if self.xai_method == "lime":
+                selected_real = [img[:3] for img in selected_real]
             logger.debug("Retrieved %d real images.", len(selected_real))
             
             # Combine real and fake images.
@@ -302,8 +308,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Evaluate grids using a model and XAI method.")
     parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids",
                         help="Base output directory for grids.")
-    parser.add_argument("--max_grids", type=int, default=10, help="Max number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default="lime",
+    parser.add_argument("--max_grids", type=int, default=2, help="Max number of grids to create.")
+    parser.add_argument("--xai_method", type=str, default="bcos",
                         choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
     parser.add_argument("--model_path", type=str, default=MODEL_PATH,
                         help="Path to model configuration file.")

@@ -23,9 +23,10 @@ def to_numpy(t):
 def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # Convert heatmap to grayscale (average first 3 channels).
-    heatmap_gray = np.mean(heatmap[..., :3], axis=-1)
+    heatmap_gray = np.mean(heatmap, axis=-1)
     if heatmap_gray.max() > 1.0:  # Scale to [0,1] if in 0-255 range.
         heatmap_gray /= 255.0
+        
 
     # Clip extreme values using the top percentile.
     intensity_cap = np.percentile(heatmap_gray, top_percentile)
@@ -48,8 +49,10 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
                 for i in range(grid_split) for j in range(grid_split)]
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
+    for i, intensity in enumerate(intensity_sums):
+        print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
     guessed_fake_position = np.argmax(intensity_sums)
-    total_intensity = np.sum(heatmap_gray)
+    total_intensity = np.sum(intensity_sums)
     # Compute accuracy as fraction of total intensity in the true fake cell.
     accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
     return guessed_fake_position, intensity_sums, accuracy
@@ -77,9 +80,12 @@ class BCOSEvaluator:
                      grad.min().item(), grad.max().item(), grad.mean().item())
         
         # Get explanation from model's backbone.
-        explanation = self.model.backbone.explain(img)
+        explanation = self.model.backbone.explain(img, idx=1)
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
+
+        heatmap = explanation["explanation"][:,:,:].copy()
+        heatmap[:,:,-1] = (heatmap[:,:,-1] > 0.5).astype(np.uint8)
         
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
