@@ -1,4 +1,4 @@
-name: base
+name: GPG
 channels:
   - defaults
 dependencies:

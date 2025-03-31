@@ -107,11 +107,23 @@ class LIMEEvaluator:
     
             # Generate LIME explanation for the image.
             explanation = self.explainer.explain_instance(
-                img_np, self.batch_predict, top_labels=1, hide_color=0, num_samples=10
+                #top_labels = generate explanation for top K classes (predicted by model I assume)
+                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=1000
+                #num_samples = 1000, may take a long time can think about reduction
             )
-            top_label = explanation.top_labels[0]
+            #get the explanation for the fake class only
+            fake_label = 1
+            
+            #use lime vis to display the lime vis with hide_rest = False for background
+            lime_vis, _ = explanation.get_image_and_mask(
+                       fake_label, positive_only=True, num_features=100, hide_rest=False
+                       #num_features: how many superpixels to include in explanation (can try to increase or decrease to improve image explanation quality ex: 10,100,1000 used in git from lime)
+                       #min_weight: can set a minimum superpixel weight to be included in explanation 
+            )
+            #temp used for pixel counting - we utilize hide rest=true
             temp, mask = explanation.get_image_and_mask(
-                top_label, positive_only=True, num_features=10, hide_rest=True
+                #positive only - only show the instances supporting the fake label not the negative showing where its real
+                fake_label, positive_only=True, num_features=100, hide_rest=True
             )
             
             # Evaluate the LIME heatmap using grid splitting.
@@ -130,7 +142,7 @@ class LIMEEvaluator:
             result = {
                 "path": path,
                 "original_image": img_np,  # Original image in HWC format
-                "heatmap": temp,           # LIME explanation (heatmap)
+                "heatmap": lime_vis,           # LIME explanation (heatmap) - only for visualization
                 "guessed_fake_position": fake_pred,
                 "accuracy": grid_accuracy,
                 "true_fake_position": true_fake_pos,
