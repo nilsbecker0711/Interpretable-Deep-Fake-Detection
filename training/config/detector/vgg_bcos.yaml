@@ -4,21 +4,21 @@ log_dir: /home/ma/ma_ma/ma_nilbecke/Interpretable-Deep-Fake-Detection/logs/vgg_b
 # Model settings
 pretrained: /home/ma/ma_ma/nilbecke/Interpretable-Deep-Fake-Detection/training/pretrained/bcos/vgg16-bcos.pth  # Path to a pre-trained model, if using one
 from_url: true
-model_name: vgg19_bcos  # Model name
-backbone_name: vgg19_bcos  # Backbone name
+model_name: vgg11_v2_bcos  # Model name
+backbone_name: vgg11_v2_bcos  # Backbone name
 
 # Backbone configuration
 backbone_config:
-  name: "vgg19_bcos"
+  name: "vgg11_bcos"
   mode: "default"  # Adjust this based on your specific use case
   num_classes: 2  # Change according to your dataset (e.g., 10 for CIFAR-10, 1000 for ImageNet)
   batch_norm: True  # VGG typically includes batch normalization
   pretrained: False  # Set to True if using pretrained weights
   input_channels: 6  # Standard RGB images
   max_out: 2  # Used in BcosConv2d classification layer
-  bias : -1.9956351946
+  bias : 0.0000000000001
   temperature : 0.1 
-  b : 1.25
+  b : 1
   pretrained_weights: False
 
 
@@ -41,7 +41,7 @@ save_feat: true
 add_inverse_channels: true
 
 # Data augmentation
-use_data_augmentation: true
+use_data_augmentation: false
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -62,7 +62,7 @@ std: [0.5, 0.5, 0.5]
 optimizer:
   type: adam
   adam:
-    lr: 0.00001
+    lr: 0.0002
     beta1: 0.9
     beta2: 0.999
     eps: 0.00000001

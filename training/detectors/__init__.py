@@ -8,17 +8,22 @@ sys.path.append(project_root_dir)
 
 from metrics.registry import DETECTOR
 from .utils import slowfast
-from .vgg19_bcos_detector import VGGBcosDetector
+#from .vgg19_bcos_detector import VGGBcosDetector
 from .resnet34_detector import ResnetDetector
-from .resnet34_bcos_detector import ResnetBcosDetector
+from .v1.resnet34_bcos_detector import ResnetBcosDetector
 from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2
+from .resnet34_bcos_v2_minimal_detector import ResnetBcosDetector_v2_minimal
 from .inception_bcos_detector import InceptionBcosDetector
+from .xception_detector import XceptionDetector
+#from .vgg19_v2_bcos_detector import VGGBcosDetector
+from .vit_bcos_detector import ViTBcosDetector
+from .convnext_bcos_dector import Convnext_Bcos_Detector
+from .vgg19_v2_bcos_detector import VGGBcosDetector
 
 """ from .facexray_detector import FaceXrayDetector
 from .facexray_detector import FaceXrayDetector
 from .facexray_detector import FaceXrayDetector
 from .efficientnetb4_detector import EfficientDetector
-from .xception_detector import XceptionDetector
 from .resnet34_detector import ResnetDetector
 from .resnet34_bcos_detector import ResnetBcosDetector
 from .resnet34_bcos_v2_detector import ResnetBcosDetector_v2

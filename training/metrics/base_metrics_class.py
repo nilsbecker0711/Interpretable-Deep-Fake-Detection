@@ -38,11 +38,9 @@ def calculate_metrics_for_train(label, output):
     # Average Precision
     y_true = label.cpu().detach().numpy()
     y_pred = prob.cpu().detach().numpy()
-    y_pred = (y_pred >=0.5).astype(int)
-    
-    # if np.isnan(y_pred):  #Nils: Dont let training crash if NaN
-    #     return None, None, None, None, None, None
-
+    y_pred = (y_pred >= 0.5).astype(int) # replace all value >= 0.5 with 1, else with 0
+    """ if np.isnan(y_pred):  #Nils: Dont let training crash if NaN
+        return None, None, None, None, None, None """
 
     ap = metrics.average_precision_score(y_true, y_pred)
     rc = metrics.recall_score(y_true, y_pred)
@@ -55,7 +53,8 @@ def calculate_metrics_for_train(label, output):
                                                  pos_label=1)
     except:
         # for the case when we only have one sample
-        return None, None, accuracy, ap
+
+        return None, None, accuracy, ap, rc, f1
 
     if np.isnan(fpr[0]) or np.isnan(tpr[0]):
         # for the case when all the samples within a batch is fake/real

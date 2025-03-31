@@ -1,8 +1,9 @@
 mode: test
 lmdb: False
-rgb_dir: '' # './datasets/rgb'
+rgb_dir: '' # '/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb'
 lmdb_dir:  './datasets/lmdb'
-dataset_json_folder: 'preprocessing/dataset_json_v3' # './preprocessing/dataset_json'
+dataset_json_folder: '/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/dataset_json_v3'
+#dataset_json_folder: 'preprocessing/dataset_json_v3' # './preprocessing/dataset_json'
 label_dict:
   # DFD
   DFD_fake: 1
@@ -36,3 +37,6 @@ label_dict:
   # Roop
   roop_Real: 0
   roop_Fake: 1
+  #df-tp-ffhq
+  ffhq_imgs: 0
+  stylegan2_psi1.0: 1

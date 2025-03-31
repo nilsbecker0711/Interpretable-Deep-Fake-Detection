@@ -116,7 +116,7 @@ class VGGLoss(AbstractLossClass):
 
     models = {'vgg16': models.vgg16, 'vgg19': models.vgg19}
 
-    def __init__(self, model='vgg16', layer=8, shift=0, reduction='mean'):
+    def __init__(self, model='vgg19', layer=8, shift=0, reduction='mean'):
         super().__init__()
         self.instancenorm = nn.InstanceNorm2d(512, affine=False)
         self.shift = shift

@@ -61,8 +61,19 @@ class MyToTensor(T.ToTensor):
         if not isinstance(input_img, torch.Tensor):
             return super().__call__(input_img)
         return input_img
+        
+# data augmentation as in second bcos paper for imagenet and smaller models
+def get_aug_trans_simple(crop_size, hflip_prob=0.5, interpolation=T.InterpolationMode.BILINEAR):
+    return T.Compose([
+        T.RandomResizedCrop(crop_size, interpolation=interpolation),
+        T.RandomHorizontalFlip(p=hflip_prob),
+        T.ToTensor(),
+        AddInverse(dim=0)
+    ])
 
-def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
+
+# tilo: old version of data augmentation
+""" def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
     return T.Compose([
                 *([RandAugment(n=n, m=m)] if n > 1 else []),
                 T.RandomResizedCrop(s, scale=(min_scale, 1.0)),
@@ -77,7 +88,7 @@ def get_aug_trans(n=2, m=9, s=160, min_scale=0.08):
                 #   )
                 # Kai: added this
                 AddInverse(dim=0)
-            ])
+            ]) """
 
 
 # class AddInverseAlbumentations:
@@ -161,7 +172,7 @@ class DeepfakeBcosDataset(data.Dataset):
         self.transform = self.init_data_aug_method()
 
         
-    def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
+        """def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
         # trans = A.Compose([           
         #     A.HorizontalFlip(p=self.config['data_aug']['flip_prob']),
         #     A.Rotate(limit=self.config['data_aug']['rotate_limit'], p=self.config['data_aug']['rotate_prob']),
@@ -184,7 +195,14 @@ class DeepfakeBcosDataset(data.Dataset):
         #         # MyToTensor(),            # Converts image to tensor if not already
         #         AddInverse(dim=0),            # Adds the inverse channels
         #     ])
+        s = self.config['resolution']
         trans = get_aug_trans(m=9, s=224)
+        return trans """
+
+    # data augmentation as in second bcos paper for imagenet and smaller models
+    def init_data_aug_method(self):
+        # Use the simple version with just crop and flip:
+        trans = get_aug_trans_simple(crop_size=self.config['resolution'], hflip_prob=self.config['data_aug']['flip_prob'])
         return trans
 
     def rescale_landmarks(self, landmarks, original_size=256, new_size=224):
@@ -500,7 +518,7 @@ class DeepfakeBcosDataset(data.Dataset):
         transformed = self.transform(img) #**kwargs)
         
         # Get the augmented image, landmark, and mask
-        augmented_img = transformed#['image']
+        augmented_img = transformed #['image']
         if landmark is not None:
             augmented_landmark = transformed.get('keypoints')
         if mask is not None:
@@ -529,6 +547,7 @@ class DeepfakeBcosDataset(data.Dataset):
             A tuple containing the image tensor, the label tensor, the landmark tensor,
             and the mask tensor.
         """
+            
         # Get the image paths and label
         image_paths = self.data_dict['image'][index]
         label = self.data_dict['label'][index]
@@ -577,7 +596,6 @@ class DeepfakeBcosDataset(data.Dataset):
                 image = self.to_tensor(image)
                 trans = T.Compose([AddInverse(dim=0)])# also add the inverse channels in test
                 image_trans, landmarks_trans, mask_trans = trans(deepcopy(image)), deepcopy(landmarks), deepcopy(mask)
-            
             if self.config['with_landmark']:
                 landmarks_trans = torch.from_numpy(landmarks)
             if self.config['with_mask']:
@@ -617,7 +635,7 @@ class DeepfakeBcosDataset(data.Dataset):
                 landmark_tensors = landmark_tensors[0]
             if not any(m is None or (isinstance(m, list) and None in m) for m in mask_tensors):
                 mask_tensors = mask_tensors[0]
-        return image_tensors, label, landmark_tensors, mask_tensors
+        return image_tensors, label, landmark_tensors, mask_tensors, image_paths
     
     @staticmethod
     def collate_fn(batch):
@@ -633,7 +651,7 @@ class DeepfakeBcosDataset(data.Dataset):
             and the mask tensor.
         """
         # Separate the image, label, landmark, and mask tensors
-        images, labels, landmarks, masks = zip(*batch)
+        images, labels, landmarks, masks, image_paths = zip(*batch)
         
         # Stack the image, label, landmark, and mask tensors
         images = torch.stack(images, dim=0)
@@ -656,6 +674,7 @@ class DeepfakeBcosDataset(data.Dataset):
         data_dict['label'] = labels
         data_dict['landmark'] = landmarks
         data_dict['mask'] = masks
+        data_dict['image_path']= image_paths
         return data_dict
 
     def __len__(self):

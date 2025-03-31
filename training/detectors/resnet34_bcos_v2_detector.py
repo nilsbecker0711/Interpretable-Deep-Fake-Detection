@@ -65,32 +65,37 @@ class ResnetBcosDetector_v2(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
-        #TODO: maybe do the weight loading here
-        #FIXME: current load pretrained weights only from the backbone, not here
-        # # if donot load the pretrained weights, fail to get good results
-        state_dict = torch.load(config['pretrained'])
-        # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
-        # backbone.load_state_dict(state_dict, False)
-        if 'resnet_34-a63425a03e.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 
-            adapted_state_dict = {}
-            for key, value in state_dict.items():
-                # new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
-                if key in backbone.state_dict() and backbone.state_dict()[key].shape == value.shape:
-                    adapted_state_dict[key] = value
-                else:
-                    if key in backbone.state_dict().keys():
-                        print(f"Skipping {key}: shape mismatch {value.shape} vs {backbone.state_dict()[key].shape}")
-                    else:
-                        print(f"Skipping {key}")
-            backbone.load_state_dict(adapted_state_dict, strict=False)
-            # handle the prediction head, which is not inititalized otherwise
-            nn.init.kaiming_normal_(backbone.fc.linear.weight)
-            if backbone.fc.linear.bias is not None:
-                backbone.fc.linear.bias.data.zero_()
+        if config['pretrained'] == None:
+            backbone.apply(backbone.initialize_weights)
+            logger.info("Initialized backbone weights from scratch!")
+            return backbone
         else:
-            backbone.load_state_dict(state_dict, strict=False)
-        logger.info('Load pretrained model successfully!')
-        return backbone
+            #FIXME: current load pretrained weights only from the backbone, not here
+            # # if donot load the pretrained weights, fail to get good results
+            state_dict = torch.load(config['pretrained'])
+            # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
+            # backbone.load_state_dict(state_dict, False)
+            if 'resnet_34-a63425a03e.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 
+                adapted_state_dict = {}
+                for key, value in state_dict.items():
+                    # new_key = key.replace("conv", "conv.linear").replace("fc", "fc.linear")
+                    if key in backbone.state_dict() and backbone.state_dict()[key].shape == value.shape:
+                        adapted_state_dict[key] = value
+                        print(f"Set up {key}")
+                    else:
+                        if key in backbone.state_dict().keys():
+                            print(f"Skipping {key}: shape mismatch {value.shape} vs {backbone.state_dict()[key].shape}")
+                        else:
+                            print(f"Skipping {key}")
+                backbone.load_state_dict(adapted_state_dict, strict=False)
+                # handle the prediction head, which is not inititalized otherwise
+                nn.init.kaiming_normal_(backbone.fc.linear.weight)
+                if backbone.fc.linear.bias is not None:
+                    backbone.fc.linear.bias.data.zero_()
+            else:
+                backbone.load_state_dict(state_dict, strict=False)
+            logger.info('Load pretrained model successfully!')
+            return backbone
     
     def build_loss(self, config):
         # prepare the loss function
@@ -115,8 +120,8 @@ class ResnetBcosDetector_v2(AbstractDetector):
         label = data_dict['label']
         pred = pred_dict['cls']
         # compute metrics for batch data
-        auc, eer, acc, ap = calculate_metrics_for_train(label.detach(), pred.detach())
-        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap}
+        auc, eer, acc, ap, rc, f1 = calculate_metrics_for_train(label.detach(), pred.detach())
+        metric_batch_dict = {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc':rc, 'f1':f1}
         return metric_batch_dict
 
     def forward(self, data_dict: dict, inference=False) -> dict:
