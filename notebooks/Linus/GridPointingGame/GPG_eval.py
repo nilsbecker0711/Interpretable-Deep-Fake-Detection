@@ -16,7 +16,7 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_eval import GradCamEvaluator 
+#from GradCam_eval import GradCamEvaluator 
 
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
@@ -50,7 +50,7 @@ class GridPointingGameCreator(Analyser):
         self.dataset = dataset
         self.model_name = model_name
         self.weights_name = weights_name
-        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
+        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}_{xai_method}")
         self.device = device
         self.grid_split = grid_split
 

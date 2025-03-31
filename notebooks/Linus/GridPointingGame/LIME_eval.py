@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import transforms
 from lime import lime_image
 import logging
-from skimage.segementation import mark_boundaries
+from skimage.segmentation import mark_boundaries
 
 # Setup logging and project root
 logging.basicConfig(level=logging.INFO)
@@ -47,29 +47,25 @@ class LIMEEvaluator:
         Evaluates the heatmap by splitting it into a grid and counting non-background pixels in each cell.
         Returns the index of the grid cell with the highest count and the counts per section.
         """
-        # Convert heatmap to grayscale
-        heatmap_gray = np.mean(heatmap, axis=2)
-        if heatmap_gray.max() <= 1.0:
-            heatmap_gray = (heatmap_gray * 255).astype(np.uint8)
 
-        original_size = heatmap_gray.shape  # (H, W)
+        original_size = heatmap.shape  # (H, W)
         logger.debug("[LIME] Original heatmap size: %s", original_size)
         
         # Resize if dimensions aren't divisible by grid_split
         if original_size[1] % grid_split != 0 or original_size[0] % grid_split != 0:
             new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
             import cv2
-            heatmap_gray = cv2.resize(heatmap_gray, new_size, interpolation=cv2.INTER_LINEAR)
-            logger.debug("[LIME] Resized heatmap_gray to: %s", new_size)
+            heatmap = cv2.resize(heatmap, new_size, interpolation=cv2.INTER_LINEAR)
+            logger.debug("[LIME] Resized heatmap to: %s", new_size)
         else:
             logger.debug("[LIME] No resizing needed.")
         
         # Split image into grid sections
-        rows, cols = heatmap_gray.shape
+        rows, cols = heatmap.shape
         section_size_row = rows // grid_split
         section_size_col = cols // grid_split
         sections = [
-            heatmap_gray[i * section_size_row:(i + 1) * section_size_row,
+            heatmap[i * section_size_row:(i + 1) * section_size_row,
                          j * section_size_col:(j + 1) * section_size_col]
             for i in range(grid_split) for j in range(grid_split)
         ]
@@ -119,7 +115,7 @@ class LIMEEvaluator:
             #temp used for pixel counting - we utilize hide rest=true
             temp, mask = explanation.get_image_and_mask(
                 #positive only - only show the instances supporting the fake label not the negative showing where its real
-                fake_label, positive_only=True, num_features=100, hide_rest=False
+                fake_label, positive_only=False, num_features=100, hide_rest=False
             )
             
             # Evaluate the LIME heatmap using grid splitting.
@@ -138,7 +134,7 @@ class LIMEEvaluator:
             result = {
                 "path": path,
                 "original_image": img_np,  # Original image in HWC format
-                "heatmap": mark_boundaries(temp/2+0.5, mask),           # LIME explanation (heatmap) - only for visualization
+                "heatmap": mark_boundaries(temp, mask),           # LIME explanation (heatmap) - only for visualization
                 "guessed_fake_position": fake_pred,
                 "accuracy": grid_accuracy,
                 "true_fake_position": true_fake_pos,
