@@ -85,7 +85,9 @@ class XceptionDetector(AbstractDetector):
         return loss_func
     
     def features(self, data_dict: dict) -> torch.tensor:
-        return self.backbone.features(data_dict['image']) #32,3,256,256
+        if isinstance(data_dict, dict):
+            data_dict = data_dict['image']  # Extract tensor if given a dictionary
+        return self.backbone.features(data_dict) #32,3,256,256
 
     def classifier(self, features: torch.tensor) -> torch.tensor:
         return self.backbone.classifier(features)
