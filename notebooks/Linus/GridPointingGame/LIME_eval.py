@@ -87,10 +87,6 @@ class LIMEEvaluator:
             return -1
 
     def evaluate(self, tensor_list, path_list, grid_split):
-        """
-        Evaluates a list of grid tensors with LIME.
-        For each tensor, generates a LIME explanation and computes an accuracy metric based on grid sections.
-        """
         results = []
         for tensor, path in zip(tensor_list, path_list):
             logger.info("Processing file: %s", path)
@@ -101,21 +97,27 @@ class LIMEEvaluator:
             if img_np.max() <= 1.0:
                 img_np = (img_np * 255).astype(np.uint8)
             img.requires_grad_(True)
-
-            # Dummy data for label and forward pass to zero gradients
-            data_dict = {'image': img, 'label': 0}  #true value unimportant cause model prediction can still be 1 and thats important
+    
+            # Dummy data for label (it doesn’t affect prediction here)
+            data_dict = {'image': img, 'label': 0}
             self.model.zero_grad()
             out = self.model(data_dict)
-
-            # Generate LIME explanation for the image
-            explanation = self.explainer.explain_instance(img_np, self.batch_predict, top_labels=1, hide_color=0, num_samples=10)
+            # Get the model's prediction from the output.
+            model_prediction = out['cls'][0].argmax().item()
+    
+            # Generate LIME explanation for the image.
+            explanation = self.explainer.explain_instance(
+                img_np, self.batch_predict, top_labels=1, hide_color=0, num_samples=10
+            )
             top_label = explanation.top_labels[0]
-            temp, mask = explanation.get_image_and_mask(top_label, positive_only=True, num_features=10, hide_rest=True)
+            temp, mask = explanation.get_image_and_mask(
+                top_label, positive_only=True, num_features=10, hide_rest=True
+            )
             
-            # Evaluate the LIME heatmap using grid splitting
+            # Evaluate the LIME heatmap using grid splitting.
             fake_pred, pixel_counts = self.lime_grid_eval(temp, grid_split=grid_split)
             true_fake_pos = self.extract_fake_position(path)
-
+    
             total_nonzero = float(sum(pixel_counts))
             if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
                 grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
@@ -123,8 +125,8 @@ class LIMEEvaluator:
                 grid_accuracy = 0
             logger.info("For grid %s: true position %d, predicted %d, grid accuracy: %.3f",
                         os.path.basename(path), true_fake_pos, fake_pred, grid_accuracy)
-
-            # Store the results in a dictionary
+    
+            # Store the results in a dictionary.
             result = {
                 "path": path,
                 "original_image": img_np,  # Original image in HWC format
@@ -136,5 +138,5 @@ class LIMEEvaluator:
             }
             results.append(result)
             logger.info("Processed %s.", os.path.basename(path))
-
+    
         return results
