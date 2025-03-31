@@ -21,7 +21,7 @@ from LIME_eval import LIMEEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 # set model path and additional arguments
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -309,7 +309,7 @@ def parse_arguments():
     parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids",
                         help="Base output directory for grids.")
     parser.add_argument("--max_grids", type=int, default=2, help="Max number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default="bcos",
+    parser.add_argument("--xai_method", type=str, default="lime",
                         choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
     parser.add_argument("--model_path", type=str, default=MODEL_PATH,
                         help="Path to model configuration file.")

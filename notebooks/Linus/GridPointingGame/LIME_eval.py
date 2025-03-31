@@ -6,6 +6,7 @@ from PIL import Image
 from torchvision import transforms
 from lime import lime_image
 import logging
+from skimage.segementation import mark_boundaries
 
 # Setup logging and project root
 logging.basicConfig(level=logging.INFO)
@@ -114,20 +115,15 @@ class LIMEEvaluator:
             #get the explanation for the fake class only
             fake_label = 1
             
-            #use lime vis to display the lime vis with hide_rest = False for background
-            lime_vis, _ = explanation.get_image_and_mask(
-                       fake_label, positive_only=True, num_features=100, hide_rest=False
-                       #num_features: how many superpixels to include in explanation (can try to increase or decrease to improve image explanation quality ex: 10,100,1000 used in git from lime)
-                       #min_weight: can set a minimum superpixel weight to be included in explanation 
-            )
+            
             #temp used for pixel counting - we utilize hide rest=true
             temp, mask = explanation.get_image_and_mask(
                 #positive only - only show the instances supporting the fake label not the negative showing where its real
-                fake_label, positive_only=True, num_features=100, hide_rest=True
+                fake_label, positive_only=True, num_features=100, hide_rest=False
             )
             
             # Evaluate the LIME heatmap using grid splitting.
-            fake_pred, pixel_counts = self.lime_grid_eval(temp, grid_split=grid_split)
+            fake_pred, pixel_counts = self.lime_grid_eval(mask, grid_split=grid_split)
             true_fake_pos = self.extract_fake_position(path)
     
             total_nonzero = float(sum(pixel_counts))
@@ -142,7 +138,7 @@ class LIMEEvaluator:
             result = {
                 "path": path,
                 "original_image": img_np,  # Original image in HWC format
-                "heatmap": lime_vis,           # LIME explanation (heatmap) - only for visualization
+                "heatmap": mark_boundaries(temp/2+0.5, mask),           # LIME explanation (heatmap) - only for visualization
                 "guessed_fake_position": fake_pred,
                 "accuracy": grid_accuracy,
                 "true_fake_position": true_fake_pos,

@@ -23,29 +23,29 @@ def to_numpy(t):
 def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # Convert heatmap to grayscale (average first 3 channels).
-    heatmap_gray = np.mean(heatmap, axis=-1)
-    if heatmap_gray.max() > 1.0:  # Scale to [0,1] if in 0-255 range.
-        heatmap_gray /= 255.0
-        
-
+    heatmap_intensity = heatmap[:,:,-1]
+    #if heatmap_gray.max() > 1.0:  # Scale to [0,1] if in 0-255 range.
+        #heatmap_gray /= 255.0
+    
     # Clip extreme values using the top percentile.
-    intensity_cap = np.percentile(heatmap_gray, top_percentile)
-    heatmap_gray = np.clip(heatmap_gray, 0, intensity_cap) / intensity_cap
+    #intensity_cap = np.percentile(heatmap_gray, top_percentile)
+    #heatmap_gray = np.clip(heatmap_gray, 0, intensity_cap) / intensity_cap
 
     # Resize if dimensions are not evenly divisible by grid_split.
-    original_size = heatmap_gray.shape
-    if original_size[1] % grid_split or original_size[0] % grid_split:
-        new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
-        pil_img = Image.fromarray((heatmap_gray * 255).astype(np.uint8))
-        pil_img = pil_img.resize(new_size, Image.LANCZOS)
-        heatmap_gray = np.array(pil_img).astype(np.float32) / 255.0
+    #original_size = heatmap_gray.shape
+    #if original_size[1] % grid_split or original_size[0] % grid_split:
+        #new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
+        #pil_img = Image.fromarray((heatmap_gray * 255).astype(np.uint8))
+        #pil_img = pil_img.resize(new_size, Image.LANCZOS)
+        #heatmap_gray = np.array(pil_img).astype(np.float32) / 255.0
 
+    print(f"shape: {heatmap_intensity.shape}")
     # Calculate cell dimensions.
-    rows, cols = heatmap_gray.shape
+    rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
     sec_cols = cols // grid_split
     # Split into grid cells.
-    sections = [heatmap_gray[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
+    sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
