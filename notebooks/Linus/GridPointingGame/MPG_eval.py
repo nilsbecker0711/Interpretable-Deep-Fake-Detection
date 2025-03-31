@@ -17,11 +17,12 @@ from Utils_PointingGame import load_model, load_config, preprocess_image, Analys
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
 # from GRADCAM_eval import GradCamEvaluator  # Uncomment if implemented.
-
+from training.detectors.xception_detector import XceptionDetector
+from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 # set model path and additional arguments
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -30,10 +31,10 @@ ADDITIONAL_ARGS = {
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-class GridPointingGameCreator(Analyser):
-    def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3, plotting_only=False,
+class MaskPointingGameCreator(Analyser):
+    def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", weights_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3):
+                 test_data_loaders=None, dataset=None, device=None, config=None):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
@@ -42,9 +43,8 @@ class GridPointingGameCreator(Analyser):
         max_grids: Maximum number of grids to create.
         plotting_only: If True, load existing results.
         """
-        self.grid_size = grid_size
         self.xai_method = xai_method
-        self.max_grids = max_grids
+        self.max_images = max_images
         self.model = model
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
@@ -52,14 +52,13 @@ class GridPointingGameCreator(Analyser):
         self.weights_name = weights_name
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
         self.device = device
-        self.grid_split = grid_split
 
         if plotting_only:
             self.load_results()
             return
         
         # Create output directory for grids.
-        self.output_dir = os.path.join(self.output_folder, str(self.grid_split))
+        self.output_dir = os.path.join(self.output_folder, "MaskPointingGame")
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Load or compute sorted image rankings.
@@ -72,9 +71,9 @@ class GridPointingGameCreator(Analyser):
             self.save_ranking(self.sorted_confs, self.ranking_file)
             logger.info("Saved sorted confidences to %s", self.ranking_file)
 
-    def compute_sorted_confs(self):
+    def compute_sorted_confs_fakes(self):
         """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
-        ranking = {0: [], 1: []}
+        ranking = {1: []}
         key = list(self.test_data_loaders.keys())[0]
         for data_dict in self.test_data_loaders[key]:
             # Move all tensor values in data_dict to the device first.
@@ -99,6 +98,7 @@ class GridPointingGameCreator(Analyser):
                 label = label_batch[j]
                 true_label = int(label.item())  # Convert label tensor to int.
                 image_path = path_of_image[j]
+                image_mask = mask[j]
                 
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
@@ -112,11 +112,7 @@ class GridPointingGameCreator(Analyser):
                 # Check for class 1.
                 if true_label == 1:
                     if predicted_label == 1:
-                        ranking[1].append((image_path, confidence, true_label))
-                # Check for class 0.
-                if true_label == 0:
-                    if predicted_label == 0:
-                        ranking[0].append((image_path, confidence, true_label))
+                        ranking[1].append((image_path, confidence, true_label, image_mask))
         
         # Sort each class's ranking by descending confidence.
         for cls in ranking:
@@ -167,7 +163,10 @@ class GridPointingGameCreator(Analyser):
         sample_label = int(sample[1])
         if sample_label != expected_label:
             raise ValueError(f"Label mismatch at {image_path}: expected {expected_label} but got {sample_label}")
-        return sample[0]
+
+        image = sample[0]
+        mask = sample[3]
+        return image, mask
     
     def save_ranking(self, ranking, file_path):
         with open(file_path, "wb") as f:
@@ -180,18 +179,18 @@ class GridPointingGameCreator(Analyser):
     
     def analysis(self):
         """Evaluate grid tensors and compute overall metrics."""
-        results_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
-        raw_results_file = os.path.join(results_folder, "results.pkl")
+        results_folder = os.path.join("results", "MaskPointingGame", f"{self.model_name}_{self.weights_name}")
+        raw_results_file = os.path.join(results_folder, "Masksresults.pkl")
         if os.path.exists(raw_results_file):
             raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() instead.")
 
-        # List grid tensor files.
-        grid_dir = os.path.join(self.output_folder, str(self.grid_split))
-        grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
-        logger.info("Found %d grid tensors in %s.", len(grid_paths), grid_dir)
+        # List tensor files.
+        mask_dir = os.path.join(self.output_folder, "MaskPointingGame")
+        mask_paths = [os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith('.pt')]
+        logger.info("Found %d grid tensors in %s.", len(mask_paths), mask_dir)
 
         # Load each grid tensor.
-        preprocessed_tensors = [torch.load(path, map_location=self.device) for path in grid_paths]
+        preprocessed_tensors = [torch.load(path, map_location=self.device) for path in mask_paths]
         logger.info("Loaded all grid tensors.")
 
         # Choose evaluator based on xai_method.
@@ -204,7 +203,7 @@ class GridPointingGameCreator(Analyser):
         else:
             raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
-        raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split)
+        raw_results = evaluator.evaluate(preprocessed_tensors, mask_paths, self.grid_split)
         grid_accuracies = [res["accuracy"] for res in raw_results]
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
         logger.info("Localisation accuracy percentiles: %s", percentiles)
@@ -303,7 +302,7 @@ def parse_arguments():
     parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids",
                         help="Base output directory for grids.")
     parser.add_argument("--max_grids", type=int, default=10, help="Max number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default="lime",
+    parser.add_argument("--xai_method", type=str, default="bcos",
                         choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
     parser.add_argument("--model_path", type=str, default=MODEL_PATH,
                         help="Path to model configuration file.")
@@ -332,21 +331,23 @@ def main():
     # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
+    print(next(model.parameters()).device)
 
     model.eval()  # Set model to evaluation mode.
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
         
     model_name = config.get("model_name", "defaultModel")
+    if not os.path.exists(pretrained_path):
+        raise FileNotFoundError(f"Weight file not found: {pretrained_path}")
     weights_name = os.path.basename(pretrained_path).split('.')[0]
 
     # Prepare testing data.
     from train import prepare_testing_data
     test_data_loaders = prepare_testing_data(config)
     test_loader = list(test_data_loaders.values())[0]
-    dataset = test_loader.dataset
 
     # Initialize grid creator with all required objects.
-    grid_creator = GridPointingGameCreator(
+    grid_creator = MaskPointingGameCreator(
         base_output_dir=args.base_output_dir,
         grid_size=grid_size,
         xai_method=args.xai_method,
@@ -355,7 +356,7 @@ def main():
         model_name=model_name,
         weights_name=weights_name,
         test_data_loaders= test_data_loaders,
-        dataset=dataset,
+        dataset=test_loader.dataset,
         device=device,
         grid_split=args.grid_split
     )
