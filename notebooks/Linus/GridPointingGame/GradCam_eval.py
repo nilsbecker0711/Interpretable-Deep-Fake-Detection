@@ -9,6 +9,7 @@ if project_root not in sys.path:
 
 
 import torch
+import logging
 import torch.nn as nn
 import numpy as np
 from PIL import Image
@@ -22,15 +23,16 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 from training.detectors.resnet34_detector import ResnetDetector
-from training.detectors.xception_detector import XceptionDetector  # if needed later 
-from training.detectors.vgg_detector import VGGDetector  # if needed later
+#from training.detectors.xception_detector import XceptionDetector  # if needed later 
+#from training.detectors.vgg_detector import VGGDetector  # if needed later
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
 class GradCamEvaluator:
-    def __init__(self, model_name="resnet"):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self, model, device, model_name="resnet"):
+        self.model = model
+        self.device = device
         self.model_name = model_name
 
 
@@ -42,7 +44,7 @@ class GradCamEvaluator:
             self.target_layers = [self.model.backbone.features[-1]]
         else:
             raise ValueError("Unsupported model name for Grad-CAM")
-
+        #problem is likely here - may have to define a custom forward function
         self.cam = GradCAM(model=self.model, target_layers=self.target_layers)
 
     def extract_fake_position(self, path):
@@ -77,10 +79,11 @@ class GradCamEvaluator:
         for idx, (tensor, path) in enumerate(zip(tensor_list, path_list)):
             logger.info("Evaluating grid %d from file: %s", idx, path)
 
-            if tensor.shape[1] == 3:
-                tensor = torch.cat([tensor, torch.ones_like(tensor[:, :1])], dim=1)
+            #if tensor.shape[1] == 3:
+                #tensor = torch.cat([tensor, torch.ones_like(tensor[:, :1])], dim=1)
 
             true_fake_pos = self.extract_fake_position(path)
+            print(f"Tensor Dimensions: {tensor.shape}, Tensor values: {tensor}, tensor[0]: {tensor[0].shape}")
             heatmap, guessed_fake_pos, intensity_sums = self.evaluate_heatmap(
                 tensor[0], path, grid_split, true_fake_pos
             )
