@@ -23,11 +23,44 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 from training.detectors.resnet34_detector import ResnetDetector
+#from B_COS_eval import evaluate_heatmap
 #from training.detectors.xception_detector import XceptionDetector  # if needed later 
 #from training.detectors.vgg_detector import VGGDetector  # if needed later
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
+
+def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None, threshold = 0.2):
+    """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
+    # only diff to bcos method is the heatmap is recieved in grayscale
+    heatmap_intensity = heatmap
+
+    print(f"shape: {heatmap_intensity.shape}")
+    # Calculate cell dimensions.
+    rows, cols = heatmap_intensity.shape
+    sec_rows = rows // grid_split
+    sec_cols = cols // grid_split
+    # Split into grid cells.
+    sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
+                for i in range(grid_split) for j in range(grid_split)]
+    # Sum intensity in each cell.
+    intensity_sums = [np.sum([section>threshold]) for section in sections]
+    for i, intensity in enumerate(intensity_sums):
+        print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
+    guessed_fake_position = np.argmax(intensity_sums)
+    total_intensity = np.sum(intensity_sums)
+    # Compute accuracy as fraction of total intensity in the true fake cell.
+    accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
+    return guessed_fake_position, intensity_sums, accuracy
+
+
+class WrappedModel(nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+
+    def forward(self, x):
+        return self.model({"image": x})["cls"]
 
 class GradCamEvaluator:
     def __init__(self, model, device, model_name="resnet"):
@@ -45,7 +78,9 @@ class GradCamEvaluator:
         else:
             raise ValueError("Unsupported model name for Grad-CAM")
         #problem is likely here - may have to define a custom forward function
-        self.cam = GradCAM(model=self.model, target_layers=self.target_layers)
+        wrapped_model = WrappedModel(self.model)
+        
+        self.cam = GradCAM(model=wrapped_model, target_layers=self.target_layers)
 
     def extract_fake_position(self, path):
         try:
@@ -58,19 +93,22 @@ class GradCamEvaluator:
         tensor = tensor.squeeze(0)
         return (tensor.permute(1, 2, 0).detach().cpu().numpy() * 255).astype(np.uint8)
 
-    def evaluate_heatmap(self, tensor, path, grid_split, true_fake_pos):
+    #input tensor was tensor.unsqueeze(0)
+    def generate_heatmap(self, tensor, path, grid_split, true_fake_pos):
+        #grayscale cam is a 2d intensity map
         grayscale_cam = self.cam(input_tensor=tensor.unsqueeze(0),
                                  targets=[ClassifierOutputTarget(1)])[0]
-
+        #print(f"grayscale cam {grayscale_cam}: shape {grayscale_cam.shape} : max {grayscale_cam.max()} : sum {grayscale_cam.sum()}")
         rgb_img = tensor.detach().cpu().permute(1, 2, 0).numpy()
+        #print(f"rgb image: {rgb_img}")
         rgb_img = (rgb_img - rgb_img.min()) / (rgb_img.max() - rgb_img.min() + 1e-8)
 
         heatmap = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
 
-        intensity_sum = np.sum(grayscale_cam, axis=(0, 1))
-        guessed_fake_pos = int(np.argmax(intensity_sum)) % grid_split
+        #intensity_sum = np.sum(grayscale_cam, axis=(0, 1))
+        #guessed_fake_pos = int(np.argmax(intensity_sum)) % grid_split
 
-        return heatmap, guessed_fake_pos, intensity_sum
+        return grayscale_cam, heatmap #, guessed_fake_pos, intensity_sum
 
     def evaluate(self, tensor_list, path_list, grid_split):
         results = []
@@ -83,14 +121,18 @@ class GradCamEvaluator:
                 #tensor = torch.cat([tensor, torch.ones_like(tensor[:, :1])], dim=1)
 
             true_fake_pos = self.extract_fake_position(path)
-            print(f"Tensor Dimensions: {tensor.shape}, Tensor values: {tensor}, tensor[0]: {tensor[0].shape}")
-            heatmap, guessed_fake_pos, intensity_sums = self.evaluate_heatmap(
-                tensor[0], path, grid_split, true_fake_pos
-            )
+            #print(f"Tensor Dimensions: {tensor.shape}, Tensor values: {tensor}, tensor[0]: {tensor[0].shape}")
+            intensity_map, heatmap = self.generate_heatmap(tensor[0], path, grid_split, true_fake_pos)
+            guessed_fake_pos, intensity_sums, acc = evaluate_heatmap(heatmap = intensity_map, grid_split = grid_split, true_fake_pos = true_fake_pos)
+            
+            #heatmap, guessed_fake_pos, intensity_sums = self.evaluate_heatmap(
+               # tensor[0], path, grid_split, true_fake_pos
+            #)
 
             original_image = self.convert_to_numpy(tensor[0])
+            #why is model prediction hard coded to 1 - ig by grids always have one fake
             model_prediction = 1
-            acc = 1 if guessed_fake_pos == true_fake_pos else 0
+            #acc = 1 if guessed_fake_pos == true_fake_pos else 0
 
             result = {
                 "path": path,
