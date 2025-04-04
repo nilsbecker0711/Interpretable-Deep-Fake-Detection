@@ -132,7 +132,7 @@ def train():
     is_main_process = (not config["ddp"]) or (dist.is_initialized() and dist.get_rank() == 0)
     IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
     if IS_MAIN_PROCESS:  
-        print(dist.get_rank())
+        # print(dist.get_rank())
         print(f"This is the main process.3")
         wandb.init(
             project="deepfake_training",  
@@ -227,7 +227,7 @@ sweep_config = {
         # general parameters
         #'freeze':{'values': [True, False]},
         'batchSize': {'values': [16, 32, 64, 128]},
-        'nEpochs': {'values': [10, 15, 20, 35]},
+        'nEpochs': {'values': [10]},
         'manualSeed': {'values': [1, 10, 1024],},
         #TODO gradient clipping
 
@@ -334,17 +334,23 @@ sweep_config = {
             'values':[True, False],
         },
 
+    },
+    'early_terminate': {
+        'type': 'hyperband',
+        # 's':2,
+        # 'eta':3,
     }
+
 }
 
 
 if __name__ == "__main__":
     # dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
     # logger.addFilter(RankFilter(0))
-    # sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
+    sweep_id = 'interpretable_deefake_detection/deepfake_training/l06hk1tu' # mlmd0ips
     IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
-    if IS_MAIN_PROCESS:
-        sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
-        wandb.agent(sweep_id, function=train, ) # count=1) -> you can also specify count to only run N combinations
-    else:
-        train()
+    wandb.agent(sweep_id, function=train, ) # count=1) -> you can also specify count to only run N combinations
+    # if IS_MAIN_PROCESS:
+    #     #sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
+    # else:
+    #     train()

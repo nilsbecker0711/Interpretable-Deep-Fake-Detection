@@ -23,7 +23,7 @@ backbone_config:
   #mode: Original
   #log_temperature: 1
   logit_bias: #[0.5, 0.5]
-  b: 2
+  b: 2.5
   # inplanes
 
 # dataset

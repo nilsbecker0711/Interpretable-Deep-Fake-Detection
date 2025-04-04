@@ -421,13 +421,16 @@ class DeepfakeBcosDataset(data.Dataset):
         if file_path is None:
             return np.zeros((size, size, 1))
         if not self.lmdb:
-            if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+            # if not file_path[0] == '.':
+            #     file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+            # assert os.path.exists(file_path), f"{file_path} does not exist"
             if os.path.exists(file_path):
                 mask = cv2.imread(file_path, 0)
                 if mask is None:
+                    # print(f"{file_path} Mask is None! \n")
                     mask = np.zeros((size, size))
             else:
+                # print(f"{file_path} not found \n")
                 return np.zeros((size, size, 1))
         else:
             with self.env.begin(write=False) as txn:

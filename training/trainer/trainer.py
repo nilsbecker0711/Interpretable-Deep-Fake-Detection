@@ -329,7 +329,7 @@ class Trainer(object):
                 grad_norm_std = grad_norms.std().item()
 
                 logits = predictions['cls']
-                class_shares = (predictions['prob'] > 0.5).long().sum().float() / predictions['prob'].size(0)
+                class_shares = (predictions['prob'] >= 0.5).float().mean()
 
                 # Collect all parameters into a single list
                 all_params = []
@@ -633,7 +633,7 @@ class Trainer(object):
                     avg_metric[key] /= len(keys)
             self.save_best(epoch, iteration, step, None, 'avg', avg_metric, mode='val')
 
-        self.logger.info('===> Test Done!')
+        self.logger.info('===> Val Done!')
         return self.best_metrics_all_time_val  # return all types of mean metrics for determining the best ckpt
 
 

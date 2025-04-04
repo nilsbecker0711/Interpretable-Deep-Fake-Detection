@@ -343,7 +343,8 @@ def main():
     logger.info(f"Train set type for '{config['train_dataset']}': {str(type(train_data_loader.dataset))}")
 
     # prepare the testing data loader
-    test_data_loaders = prepare_testing_data(config)
+    val_data_loaders = prepare_testing_data(config, mode='val')
+    test_data_loaders = prepare_testing_data(config, mode='test')
     # log the type
     for test_name, data_loader in test_data_loaders.items():
         logger.info(f"Test set type for '{test_name}': {str(type(data_loader.dataset))}")
@@ -365,16 +366,22 @@ def main():
     trainer = Trainer(config, model, optimizer, scheduler, logger, metric_scoring, time_now=timenow)
 
     # start training
-    for epoch in range(config['start_epoch'], config['nEpochs'] + 1):
+    for epoch in range(config["start_epoch"], config["nEpochs"] + 1):
         trainer.model.epoch = epoch
-        best_metric = trainer.train_epoch(
-                    epoch=epoch,
-                    train_data_loader=train_data_loader,
-                    test_data_loaders=test_data_loaders,
-                )
-        if best_metric is not None:
-            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {parse_metric_for_print(best_metric)}!")
-    logger.info("Stop Training on best Testing metric {}".format(parse_metric_for_print(best_metric))) 
+        val_best_metric, test_best_metric = trainer.train_epoch(
+            epoch=epoch,
+            train_data_loader=train_data_loader,
+            test_data_loaders=test_data_loaders,
+            val_data_loaders=val_data_loaders
+        )
+        if val_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with val {metric_scoring}: {val_best_metric}!")
+        if test_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {test_best_metric}!")
+
+    logger.info(f"Stop Training on best Validation metric {val_best_metric}")
+    logger.info(f"Stop Training on best Testing metric {test_best_metric}")
+    
     # update
     if 'svdd' in config['model_name']:
         model.update_R(epoch)
