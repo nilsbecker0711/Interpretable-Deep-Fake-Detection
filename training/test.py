@@ -21,7 +21,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
 import torch.utils.data
 import torch.optim as optim
-
+from dataset import DeepfakeBcosDataset
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 from dataset.ff_blend import FFBlendDataset
 from dataset.fwa_blend import FWABlendDataset
@@ -61,10 +61,16 @@ def prepare_testing_data(config):
         # update the config dictionary with the specific testing dataset
         config = config.copy()  # create a copy of config to avoid altering the original one
         config['test_dataset'] = test_name  # specify the current test dataset
-        test_set = DeepfakeAbstractBaseDataset(
-                config=config,
-                mode='test', 
+        if config.get('dataset_type', None) == 'bcos':
+            test_set = DeepfakeBcosDataset(
+                    config=config,
+                    mode='test',
             )
+        else:
+            test_set = DeepfakeAbstractBaseDataset(
+                    config=config,
+                    mode='test', 
+                )
         test_data_loader = \
             torch.utils.data.DataLoader(
                 dataset=test_set, 
