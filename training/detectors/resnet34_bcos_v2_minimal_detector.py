@@ -35,6 +35,7 @@ import numpy as np
 from sklearn import metrics
 from typing import Union
 from collections import defaultdict
+from torchinfo import summary
 
 import torch
 import torch.nn as nn
@@ -65,6 +66,7 @@ class ResnetBcosDetector_v2_minimal(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
+        summary(backbone)
 
         if config['pretrained'] == None:
             backbone.apply(backbone.initialize_weights)
