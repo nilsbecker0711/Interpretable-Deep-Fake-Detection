@@ -21,6 +21,9 @@ backbone_config:
 #THESE LOGIT PARAMS DO NOT WORK RN - EXPLICITLY DEFINED AS NONE IN CODE
   logit_bias:  None 
   logit_temperature: None
+  save_ckpt: true   # whether to save checkpoint
+  save_feat: true   # whether to save features
+  add_inverse_channels: true
   # **kwargs: Any
 
 
@@ -29,9 +32,11 @@ backbone_config:
 #train_dataset: #[df-tp-ffhq] #[FaceForensics++]
 #test_dataset: #[df-tp-ffhq] #[FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
+# dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++, FF-F2F]
 
 compression: c40  # compression-level for videos
 train_batchSize: 64   # training batch size
@@ -41,7 +46,6 @@ frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in tr
 resolution: 176   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
-add_inverse_channels: true
 
 
 # data augmentation
@@ -81,8 +85,12 @@ optimizer:
   gradient_clipping: true
 
 # training config
-lr_scheduler: null   # learning rate scheduler
-nEpochs: 60   # number of epochs to train for
+lr_scheduler: warmup_cosine # step   # learning rate scheduler
+lr_eta_min: 0
+lr_T_max: 200
+# lr_step: 4
+# lr_gamma: 0.2
+nEpochs: 15   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
