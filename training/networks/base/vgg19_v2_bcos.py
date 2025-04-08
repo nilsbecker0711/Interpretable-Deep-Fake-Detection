@@ -48,10 +48,7 @@ class BcosVGG(BcosUtilMixin, nn.Module):
         self.temperature = config["temperature"]
         self.features = features
         # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        self.logit_layer = LogitLayer(
-            logit_temperature=self.temperature,
-            logit_bias=self.logit_bias #or -math.log(num_classes - 1),
-        )
+        
         self.classifier = nn.Sequential(
             conv_layer(512, 4096, kernel_size=7, padding=3, scale_fact=1000),
             # nn.ReLU(True),
@@ -62,6 +59,10 @@ class BcosVGG(BcosUtilMixin, nn.Module):
             conv_layer(4096, num_classes, scale_fact=1000),
             
             #MyAdaptiveAvgPool2d((1, 1)),
+        )
+        self.logit_layer = LogitLayer(
+            logit_temperature=self.temperature,
+            logit_bias=self.logit_bias #or -math.log(num_classes - 1),
         )
         self.num_classes = num_classes
         
