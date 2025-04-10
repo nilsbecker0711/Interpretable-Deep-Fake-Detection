@@ -161,8 +161,8 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.conv_layer = DEFAULT_CONV_LAYER
         norm_layer = DEFAULT_NORM_LAYER
         self.norm_layer = DEFAULT_NORM_LAYER
-        logit_bias = convnext_config["logit_bias"]
-        logit_temperature = convnext_config["logit_temperature"]
+        self.logit_bias = convnext_config["logit_bias"]
+        self.logit_temperature = convnext_config["logit_temperature"]
     #     **kwargs: Any,
     # ) -> None:
 
@@ -254,11 +254,12 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         #self.num_classes = num_classes
         
         #declare here as none to test
-        logit_bias = None
-        logit_temperature = None
+        #logit_bias = None
+        #logit_temperature = None
+
         self.logit_layer = LogitLayer(
-            logit_temperature=logit_temperature,
-            logit_bias=logit_bias or -math.log(self.num_classes - 1),
+            logit_temperature=self.logit_temperature,
+            logit_bias=self.logit_bias or -math.log(self.num_classes - 1),
         )
 
         for m in self.modules():

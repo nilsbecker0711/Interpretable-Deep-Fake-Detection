@@ -19,8 +19,8 @@ backbone_config:
   # conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER
   # norm_layer: Optional[Callable[..., nn.Module]] = None
 #THESE LOGIT PARAMS DO NOT WORK RN - EXPLICITLY DEFINED AS NONE IN CODE
-  logit_bias:  None 
-  logit_temperature: None
+  logit_bias:  1.0 
+  logit_temperature: 1.0
   save_ckpt: true   # whether to save checkpoint
   save_feat: true   # whether to save features
   add_inverse_channels: true
@@ -40,9 +40,10 @@ val_dataset: [FaceForensics++, FF-F2F]
 
 compression: c40  # compression-level for videos
 train_batchSize: 64   # training batch size
+val_batchSize: 64
 test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
-frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
+frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 176   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
