@@ -329,8 +329,13 @@ class GridPointingGameCreator(Analyser):
 
 def main():
     config = load_config(MODEL_PATH, CONFIG_PATH, additional_args=ADDITIONAL_ARGS)
-    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d",
-            config['xai_method'], config['base_output_dir'], MODEL_PATH, config['grid_split'], config['grid_split'])
+
+    required_keys = ["grid_split", "overwrite", "quantitativ", "xai_method", "max_grids"]
+    for key in required_keys:
+        if key not in config:
+            raise ValueError(f"Missing required config key: {key}")
+
+    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d", config['xai_method'], config['base_output_dir'], MODEL_PATH, config['grid_split'], config['grid_split'])
 
     model = load_model(config)
     
@@ -365,17 +370,17 @@ def main():
     grid_creator = GridPointingGameCreator(
         base_output_dir=config.get("base_output_dir", "results"),
         grid_size=grid_size,
-        xai_method=config.get("xai_method", "bcos"),
-        max_grids=config.get("max_grids", 3),
+        xai_method=config["xai_method"],
+        max_grids=config["max_grids"],
         model=model,
         model_name=model_name,
         config_name=config_name,
         test_data_loaders=test_data_loaders,
         dataset=dataset,
         device=device,
-        grid_split=config.get("grid_split", 3),
-        overwrite=config.get("overwrite", False),
-        quantitativ=config.get("quantitativ", False),
+        grid_split=config["grid_split"],
+        overwrite=config["overwrite"],
+        quantitativ=config["quantitativ"],
     )
 
     grid_creator.create_GPG_grids()  # Create new grids.
