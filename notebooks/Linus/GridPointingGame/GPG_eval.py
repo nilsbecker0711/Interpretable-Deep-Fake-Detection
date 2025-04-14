@@ -16,24 +16,30 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_eval import GradCamEvaluator  # Uncomment if implemented.
-
+from GradCam_eval import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
-# set model path and additional arguments
+
+
+#######################
+# set model path, config path and additional arguments
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run1_config.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
+#######################
+
+
 
 #setpup logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class GridPointingGameCreator(Analyser):
-    def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3, plotting_only=False,
-                 model=None, model_name="default", weights_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3):
+    def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
+                 model=None, model_name="default", config_name="default",
+                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
@@ -49,25 +55,29 @@ class GridPointingGameCreator(Analyser):
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
         self.model_name = model_name
-        self.weights_name = weights_name
-        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
+        self.config_name = config_name
+        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
         self.device = device
         self.grid_split = grid_split
-
-        if plotting_only:
-            self.load_results()
-            return
+        self.overwrite = overwrite
+        self.quantitativ = quantitativ
         
         # Create output directory for grids.
-        self.output_dir = os.path.join(self.output_folder, str(self.grid_split))
-        os.makedirs(self.output_dir, exist_ok=True)
+        self.output_folder = os.path.join("results", f"{model_name}_{config_name}")
+        self.grid_dir = os.path.join(self.output_folder, f"{self.grid_size[0]}x{self.grid_size[1]}", "grids")
+        self.results_dir = os.path.join(self.output_folder, f"{self.grid_size[0]}x{self.grid_size[1]}", "results")
+        os.makedirs(self.grid_dir, exist_ok=True)
+        os.makedirs(self.results_dir, exist_ok=True)
 
         # Load or compute sorted image rankings.
         self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
-        if os.path.exists(self.ranking_file):
+
+        if os.path.exists(self.ranking_file) and not overwrite:
             self.sorted_confs = self.load_ranking(self.ranking_file)
             logger.info("Loaded sorted confidences from %s", self.ranking_file)
         else:
+            if overwrite and os.path.exists(self.ranking_file):
+                logger.info("Overwrite is enabled. Recomputing and replacing %s", self.ranking_file)
             self.sorted_confs = self.compute_sorted_confs()
             self.save_ranking(self.sorted_confs, self.ranking_file)
             logger.info("Saved sorted confidences to %s", self.ranking_file)
@@ -180,16 +190,18 @@ class GridPointingGameCreator(Analyser):
             ranking = pickle.load(f)
         return ranking
     
-    def analysis(self):
+    def analysis(self, overwrite=False):
         """Evaluate grid tensors and compute overall metrics."""
-        results_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
-        raw_results_file = os.path.join(results_folder, "results.pkl")
-        if os.path.exists(raw_results_file):
-            raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() instead.")
+        raw_results_file = os.path.join(self.results_dir, "results.pkl")
+
+        if os.path.exists(raw_results_file) and not overwrite:
+            raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() or set overwrite=True.")
+
+        if overwrite and os.path.exists(raw_results_file):
+            logger.info("Overwrite is enabled. Existing results at %s will be overwritten.", raw_results_file)
 
         # List grid tensor files.
-        grid_dir = os.path.join(self.output_folder, str(self.grid_split))
-        grid_paths = [os.path.join(grid_dir, f) for f in os.listdir(grid_dir) if f.endswith('.pt')]
+        grid_paths = [os.path.join(self.grid_dir, f) for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
         logger.info("Found %d grid tensors in %s.", len(grid_paths), grid_dir)
 
         # Load each grid tensor.
@@ -210,29 +222,39 @@ class GridPointingGameCreator(Analyser):
         grid_accuracies = [res["accuracy"] for res in raw_results]
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
         logger.info("Localisation accuracy percentiles: %s", percentiles)
+
         overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
         return overall, raw_results
 
     def create_GPG_grids(self):
         """Create grids by combining ranked real and fake images."""
         logger.info("=== Starting GPG grid creation in %s ===", self.output_folder)
+        random.seed(42) 
         
         # Check if grids already exist.
-        existing_files = [f for f in os.listdir(self.output_dir) if f.endswith('.pt')]
-        logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.output_dir)
+        existing_files = [f for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
+        logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.grid_dir)
+
+        if existing_files and overwrite:
+            logger.info("Overwrite is enabled. Deleting existing grid files and continue with creatring new grids.")
+            for f in existing_files:
+                os.remove(os.path.join(self.grid_dir, f))
+            existing_files = []  # Reset list after deletion
+
         if len(existing_files) >= self.max_grids:
-            logger.info("Existing grid files found. Skipping grid creation.")
+            logger.info("Enough grid files in folder. Skipping grid creation.")
             return
-        
-        # Copy the ranked real/fake lists
-        #ranked_real = self.sorted_confs.get(0, []).copy()
-        #ranked_fake = self.sorted_confs.get(1, []).copy()
 
         # Get sorted image paths (tuples of (image_path, confidence, label))
         sorted_image_paths = self.get_sorted_image_paths()
         # Expect one fake (class 1) and remaining real (class 0) images.
         ranked_real = sorted_image_paths.get(0, []).copy()
         ranked_fake = sorted_image_paths.get(1, []).copy()
+
+        if self.quantitativ:
+            random.shuffle(ranked_real)
+            random.shuffle(ranked_fake)
+
         logger.debug("Ranked real: %d, Ranked fake: %d", len(ranked_real), len(ranked_fake))
         
         n_imgs = self.grid_size[0] * self.grid_size[1]
@@ -304,28 +326,16 @@ class GridPointingGameCreator(Analyser):
         
         logger.info("=== Finished grid creation. Created %d grids. ===", grid_count)
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Evaluate grids using a model and XAI method.")
-    parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids",
-                        help="Base output directory for grids.")
-    parser.add_argument("--max_grids", type=int, default=2, help="Max number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default="gradcam",
-                        choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
-    parser.add_argument("--model_path", type=str, default=MODEL_PATH,
-                        help="Path to model configuration file.")
-    parser.add_argument("--grid_split", type=int, default=3,
-                        help="Grid split (e.g., 3 for a 3x3 grid).")
-    return parser.parse_args()
 
 def main():
-    args = parse_arguments()
-    grid_size = (args.grid_split, args.grid_split)
+    config = load_config(MODEL_PATH, CONFIG_PATH, additional_args=ADDITIONAL_ARGS)
     logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d",
-                args.xai_method, args.base_output_dir, args.model_path, args.grid_split, args.grid_split)
+            config['xai_method'], config['base_output_dir'], MODEL_PATH, config['grid_split'], config['grid_split'])
 
-    config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
     model = load_model(config)
     
+    grid_size = (config['grid_split'], config['grid_split'])
+
     pretrained_path = config['pretrained']
     state_dict = torch.load(pretrained_path)
     # Remove "module." prefix from state_dict keys if necessary.
@@ -343,7 +353,7 @@ def main():
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
         
     model_name = config.get("model_name", "defaultModel")
-    weights_name = os.path.basename(pretrained_path).split('.')[0]
+    config_name = os.path.basename(CONFIG_PATH).split('.')[0]
 
     # Prepare testing data.
     from train import prepare_testing_data
@@ -353,22 +363,23 @@ def main():
 
     # Initialize grid creator with all required objects.
     grid_creator = GridPointingGameCreator(
-        base_output_dir=args.base_output_dir,
+        base_output_dir=config.get("base_output_dir", "results"),
         grid_size=grid_size,
-        xai_method=args.xai_method,
-        max_grids=args.max_grids,
+        xai_method=config.get("xai_method", "bcos"),
+        max_grids=config.get("max_grids", 3),
         model=model,
         model_name=model_name,
-        weights_name=weights_name,
-        test_data_loaders= test_data_loaders,
+        config_name=config_name,
+        test_data_loaders=test_data_loaders,
         dataset=dataset,
         device=device,
-        grid_split=args.grid_split
+        grid_split=config.get("grid_split", 3),
+        overwrite=config.get("overwrite", False),
+        quantitativ=config.get("quantitativ", False),
     )
 
     grid_creator.create_GPG_grids()  # Create new grids.
     grid_creator.run()               # Run analysis.
-    grid_creator.load_results(load_overall=False)  # Load and display results.
 
 if __name__ == "__main__":
     main()

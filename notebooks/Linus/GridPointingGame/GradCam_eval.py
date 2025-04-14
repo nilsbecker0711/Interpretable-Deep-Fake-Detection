@@ -12,12 +12,7 @@ import torch
 import logging
 import torch.nn as nn
 import numpy as np
-from PIL import Image
-from torchvision import transforms
-from torch.utils.data import Dataset, DataLoader
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget

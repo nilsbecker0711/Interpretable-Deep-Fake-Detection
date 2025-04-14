@@ -10,8 +10,6 @@ import logging
 import numpy as np
 import torch
 from PIL import Image
-from training.detectors.xception_detector import XceptionDetector
-from training.detectors import DETECTOR
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,35 +22,24 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # Convert heatmap to grayscale (average first 3 channels).
     heatmap_intensity = heatmap[:,:,-1]
-    #if heatmap_gray.max() > 1.0:  # Scale to [0,1] if in 0-255 range.
-        #heatmap_gray /= 255.0
-    
-    # Clip extreme values using the top percentile.
-    #intensity_cap = np.percentile(heatmap_gray, top_percentile)
-    #heatmap_gray = np.clip(heatmap_gray, 0, intensity_cap) / intensity_cap
-
-    # Resize if dimensions are not evenly divisible by grid_split.
-    #original_size = heatmap_gray.shape
-    #if original_size[1] % grid_split or original_size[0] % grid_split:
-        #new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
-        #pil_img = Image.fromarray((heatmap_gray * 255).astype(np.uint8))
-        #pil_img = pil_img.resize(new_size, Image.LANCZOS)
-        #heatmap_gray = np.array(pil_img).astype(np.float32) / 255.0
-
     print(f"shape: {heatmap_intensity.shape}")
+
     # Calculate cell dimensions.
     rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
     sec_cols = cols // grid_split
+
     # Split into grid cells.
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
+
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
     for i, intensity in enumerate(intensity_sums):
         print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
     guessed_fake_position = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
+    
     # Compute accuracy as fraction of total intensity in the true fake cell.
     accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
     return guessed_fake_position, intensity_sums, accuracy
@@ -85,7 +72,7 @@ class BCOSEvaluator:
         model_prediction = explanation.get("prediction")
 
         heatmap = explanation["explanation"][:,:,:].copy()
-        heatmap[:,:,-1] = (heatmap[:,:,-1] > 0.5).astype(np.uint8)
+        heatmap[:,:,-1] = (heatmap[:,:,-1]).astype(np.uint8)
         
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())

@@ -23,17 +23,13 @@ def load_model(config):
     model = model_class(config)
     return model
 
-def load_config(path, additional_args={}):
+def load_config(model_path, confiq_path, additional_args={}):
     """Load config from YAML file and merge with test config and additional overrides."""
-    with open(path, 'r') as f:
+    with open(model_path, 'r') as f:
         config = yaml.safe_load(f)
     # Try loading test config from local file; otherwise, use home directory.
-    try:
-        with open('./training/config/test_config.yaml', 'r') as f:
-            config2 = yaml.safe_load(f)
-    except FileNotFoundError:
-        with open(os.path.expanduser('~/Interpretable-Deep-Fake-Detection/training/config/test_config.yaml'), 'r') as f:
-            config2 = yaml.safe_load(f)
+    with open(confiq_path, 'r') as f:
+        config2 = yaml.safe_load(f)
     # Use label dictionary from primary config if available.
     if 'label_dict' in config:
         config2['label_dict'] = config['label_dict']
@@ -46,15 +42,6 @@ def load_config(path, additional_args={}):
     for key, value in additional_args.items():
         config[key] = value
     return config
-
-def get_images_from_dataloader(data_loader):
-    """Extract all images from the DataLoader."""
-    all_images = []
-    for batch in data_loader:
-        images = batch['image']  # Expected shape: [batch_size, C, H, W]
-        for img in images:
-            all_images.append(img)
-    return all_images
 
 def preprocess_image(img):
     # If image tensor has 3 channels, add inverse channels (for 6-channel encoding).
@@ -73,18 +60,15 @@ class Analyser:
 
     def save_results(self, raw, overall):
         """Save results to a designated folder."""
-        save_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
-        os.makedirs(save_folder, exist_ok=True)  # Create directory if needed.
-        with open(os.path.join(save_folder, "results.pkl"), "wb") as f:
+        with open(os.path.join(self.results_dir, "results.pkl"), "wb") as f:
             pickle.dump(raw, f)  # Save raw results.
-        with open(os.path.join(save_folder, "overall.pkl"), "wb") as f:
+        with open(os.path.join(self.results_dir, "overall.pkl"), "wb") as f:
             pickle.dump(overall, f)  # Save overall metrics.
         logger.info("Results saved to folder: %s", save_folder)
         
     def load_results(self, load_overall=True):
         """Load results from disk and print summary info."""
-        load_folder = os.path.join("results", str(self.grid_split), f"{self.model_name}_{self.weights_name}")
-        file_path = os.path.join(load_folder, "overall.pkl" if load_overall else "results.pkl")
+        file_path = os.path.join(self.results_dir, "overall.pkl" if load_overall else "results.pkl")
         with open(file_path, "rb") as f:
             loaded = pickle.load(f)
         logger.info("Results loaded from %s", file_path)
