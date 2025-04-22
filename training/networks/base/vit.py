@@ -295,6 +295,18 @@ class SimpleViT(nn.Module):
 
         norm_layer = norms.NoBias(norms.DetachableLayerNorm) #vit_config.get('norm_layer', None)
         norm2d_layer = norms.NoBias(DetachableGNLayerNorm2d) #vit_config.get('norm2d_layer', None)
+
+        # "AllNorm2d",
+        # "BatchNorm2d",
+        # "DetachableGroupNorm2d",
+        # "DetachableGNInstanceNorm2d",
+        # "DetachableGNLayerNorm2d",
+        # "DetachableLayerNorm",
+        # "DetachablePositionNorm2d",
+        # BatchNormUncentered2d
+        # norm_layer = norms.NoBias(norms.BatchNormUncentered2d) 
+        norm2d_layer = norms.NoBias(norms.BatchNorm2d)
+
         act_layer = nn.Identity #vit_config.get('act_layer', None)
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"

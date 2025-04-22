@@ -18,10 +18,8 @@ backbone_config:
   logit_temperature: #10 #None
   b: 1.25
   max_out: 2
-
   # either set the model type
-  model_type: simple_vit_ti_patch16_224
-
+  model_type: vitc_ti_patch1_14
   # or the parameters directly, these values are only taken when model_type is not provided
   image_size: 14 #14 # Union[int, Tuple[int, int]],
   patch_size: 1 # Union[int, Tuple[int, int]],
@@ -75,7 +73,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000025  # learning rate -> bcos paper 2.5e-4
+    lr: 0.00025  # learning rate -> bcos paper 2.5e-4
     beta1: 0.8  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.000001  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
@@ -88,7 +86,7 @@ optimizer:
   gradient_clipping: false
 
 # training config
-lr_scheduler: warmup_cosine # step, cosine, warmup_cosine, linear
+lr_scheduler: # step, cosine, warmup_cosine, linear
 lr_eta_min: 0
 lr_T_max: 200
 # lr_step: 4
