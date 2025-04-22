@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 class GridPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False):
+                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
@@ -61,6 +61,7 @@ class GridPointingGameCreator(Analyser):
         self.grid_split = grid_split
         self.overwrite = overwrite
         self.quantitativ = quantitativ
+        self.threshold_steps = threshold_steps
         
         # Create output directory for grids.
         self.output_folder = os.path.join("results", f"{model_name}_{config_name}")
@@ -195,14 +196,14 @@ class GridPointingGameCreator(Analyser):
         raw_results_file = os.path.join(self.results_dir, "results.pkl")
 
         if os.path.exists(raw_results_file) and not overwrite:
-            raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() or set overwrite=True.")
+            raise RuntimeError(f"Results already exist at {raw_results_file}. Use those results or set overwrite=True.")
 
         if overwrite and os.path.exists(raw_results_file):
             logger.info("Overwrite is enabled. Existing results at %s will be overwritten.", raw_results_file)
 
         # List grid tensor files.
         grid_paths = [os.path.join(self.grid_dir, f) for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
-        logger.info("Found %d grid tensors in %s.", len(grid_paths), grid_dir)
+        logger.info("Found %d grid tensors in %s.", len(grid_paths), self.grid_dir)
 
         # Load each grid tensor.
         preprocessed_tensors = [torch.load(path, map_location=self.device) for path in grid_paths]
@@ -218,7 +219,9 @@ class GridPointingGameCreator(Analyser):
         else:
             raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
-        raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split)
+        # Run evaluation with thresholding
+        raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split, threshold_steps=self.threshold_steps)
+
         grid_accuracies = [res["accuracy"] for res in raw_results]
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
         logger.info("Localisation accuracy percentiles: %s", percentiles)
@@ -251,8 +254,10 @@ class GridPointingGameCreator(Analyser):
         ranked_real = sorted_image_paths.get(0, []).copy()
         ranked_fake = sorted_image_paths.get(1, []).copy()
 
+        # wenn doch nicht das in if rein setzen
+        random.shuffle(ranked_real)
+
         if self.quantitativ:
-            random.shuffle(ranked_real)
             random.shuffle(ranked_fake)
 
         logger.debug("Ranked real: %d, Ranked fake: %d", len(ranked_real), len(ranked_fake))
@@ -381,6 +386,7 @@ def main():
         grid_split=config["grid_split"],
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
+        threshold_steps= config["threshold_steps"]
     )
 
     grid_creator.create_GPG_grids()  # Create new grids.

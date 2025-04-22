@@ -105,43 +105,46 @@ class GradCamEvaluator:
 
         return grayscale_cam, heatmap #, guessed_fake_pos, intensity_sum
 
-    def evaluate(self, tensor_list, path_list, grid_split):
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
         logger.info("Processing %d grids with grid_split=%d", len(tensor_list), grid_split)
 
         for idx, (tensor, path) in enumerate(zip(tensor_list, path_list)):
             logger.info("Evaluating grid %d from file: %s", idx, path)
 
-            #if tensor.shape[1] == 3:
-                #tensor = torch.cat([tensor, torch.ones_like(tensor[:, :1])], dim=1)
-
             true_fake_pos = self.extract_fake_position(path)
-            #print(f"Tensor Dimensions: {tensor.shape}, Tensor values: {tensor}, tensor[0]: {tensor[0].shape}")
+
+            # Grad-CAM heatmap
             intensity_map, heatmap = self.generate_heatmap(tensor[0], path, grid_split, true_fake_pos)
-            guessed_fake_pos, intensity_sums, acc = evaluate_heatmap(heatmap = intensity_map, grid_split = grid_split, true_fake_pos = true_fake_pos)
-            
-            #heatmap, guessed_fake_pos, intensity_sums = self.evaluate_heatmap(
-               # tensor[0], path, grid_split, true_fake_pos
-            #)
-
             original_image = self.convert_to_numpy(tensor[0])
-            #why is model prediction hard coded to 1 - ig by grids always have one fake
-            model_prediction = 1
-            #acc = 1 if guessed_fake_pos == true_fake_pos else 0
+            model_prediction = 1  # hardcoded as before
 
-            result = {
-                "path": path,
-                "original_image": original_image,
-                "heatmap": heatmap,
-                "guessed_fake_position": guessed_fake_pos,
-                "true_fake_position": true_fake_pos,
-                "accuracy": acc,
-                "model_prediction": model_prediction
-            }
+            thresholds = [None]
+            if threshold_steps > 0:
+                thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
 
-            logger.info("For grid %s: true pos %d, predicted %d, accuracy: %.3f",
-                        os.path.basename(path), true_fake_pos, guessed_fake_pos, acc)
+            for t in thresholds:
+                logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
 
-            results.append(result)
+                guessed_fake_pos, intensity_sums, acc = evaluate_heatmap(
+                    heatmap=intensity_map, grid_split=grid_split, true_fake_pos=true_fake_pos,
+                    threshold=t if t is not None else 0
+                )
+
+                result = {
+                    "threshold": t,
+                    "path": path,
+                    "original_image": original_image,
+                    "heatmap": heatmap,
+                    "guessed_fake_position": guessed_fake_pos,
+                    "true_fake_position": true_fake_pos,
+                    "accuracy": acc,
+                    "model_prediction": model_prediction
+                }
+
+                logger.info("Threshold %s | %s: true pos %d, predicted %d, accuracy: %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, guessed_fake_pos, acc)
+
+                results.append(result)
 
         return results

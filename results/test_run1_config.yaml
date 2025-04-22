@@ -13,6 +13,7 @@ max_grids: 5
 overwrite: false
 quantitativ: true
 base_output_dir: results
+threshold_steps: 10 
 ######################################################################################################################################################
 
 label_dict:

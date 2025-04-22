@@ -83,64 +83,62 @@ class LIMEEvaluator:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
 
-    def evaluate(self, tensor_list, path_list, grid_split):
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
         for tensor, path in zip(tensor_list, path_list):
             logger.info("Processing file: %s", path)
-            img = tensor.to(self.device)  # Send tensor to device
-            logger.debug("Image tensor shape: %s", img.shape)
-            # Convert tensor to numpy array in HWC format
+            img = tensor.to(self.device)
             img_np = np.transpose(img[0, ...].cpu().numpy(), (1, 2, 0))
             if img_np.max() <= 1.0:
                 img_np = (img_np * 255).astype(np.uint8)
             img.requires_grad_(True)
-    
-            # Dummy data for label (it doesn’t affect prediction here)
+
             data_dict = {'image': img, 'label': 0}
             self.model.zero_grad()
             out = self.model(data_dict)
-            # Get the model's prediction from the output.
             model_prediction = out['cls'][0].argmax().item()
-    
-            # Generate LIME explanation for the image.
+
             explanation = self.explainer.explain_instance(
-                #top_labels = generate explanation for top K classes (predicted by model I assume)
                 img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=1000
-                #num_samples = 1000, may take a long time can think about reduction
             )
-            #get the explanation for the fake class only
             fake_label = 1
-            
-            
-            #temp used for pixel counting - we utilize hide rest=true
             temp, mask = explanation.get_image_and_mask(
-                #positive only - only show the instances supporting the fake label not the negative showing where its real
                 fake_label, positive_only=False, num_features=100, hide_rest=False
             )
-            
-            # Evaluate the LIME heatmap using grid splitting.
-            fake_pred, pixel_counts = self.lime_grid_eval(mask, grid_split=grid_split)
+
+            thresholds = [None]
+            if threshold_steps > 0:
+                thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
+
             true_fake_pos = self.extract_fake_position(path)
-    
-            total_nonzero = float(sum(pixel_counts))
-            if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
-                grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
-            else:
-                grid_accuracy = 0
-            logger.info("For grid %s: true position %d, predicted %d, grid accuracy: %.3f",
-                        os.path.basename(path), true_fake_pos, fake_pred, grid_accuracy)
-    
-            # Store the results in a dictionary.
-            result = {
-                "path": path,
-                "original_image": img_np,  # Original image in HWC format
-                "heatmap": mark_boundaries(temp, mask),           # LIME explanation (heatmap) - only for visualization
-                "guessed_fake_position": fake_pred,
-                "accuracy": grid_accuracy,
-                "true_fake_position": true_fake_pos,
-                "model_prediction": model_prediction
-            }
-            results.append(result)
-            logger.info("Processed %s.", os.path.basename(path))
-    
+
+            for t in thresholds:
+                if t is None:
+                    thresholded_mask = mask.copy()
+                else:
+                    thresholded_mask = (mask > t).astype(np.uint8)
+
+                fake_pred, pixel_counts = self.lime_grid_eval(thresholded_mask, grid_split=grid_split)
+                total_nonzero = float(sum(pixel_counts))
+
+                if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
+                    grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
+                else:
+                    grid_accuracy = 0
+
+                result = {
+                    "threshold": t,
+                    "path": path,
+                    "original_image": img_np,
+                    "heatmap": mark_boundaries(temp, thresholded_mask),
+                    "guessed_fake_position": fake_pred,
+                    "accuracy": grid_accuracy,
+                    "true_fake_position": true_fake_pos,
+                    "model_prediction": model_prediction
+                }
+                results.append(result)
+
+                logger.info("Threshold %s | %s: true pos %d, predicted %d, accuracy: %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred, grid_accuracy)
+
         return results

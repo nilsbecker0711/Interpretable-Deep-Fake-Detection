@@ -49,6 +49,13 @@ class BCOSEvaluator:
         """Initialize with model and device."""
         self.model = model
         self.device = device
+    
+    def apply_threshold(self, heatmap, threshold):        
+        if threshold is None:
+            return heatmap.copy()
+        thresholded = heatmap.copy()
+        thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
+        return thresholded
 
     def generate_heatmap(self, tensor):
         """Generate heatmap via forward and backward passes."""
@@ -72,7 +79,8 @@ class BCOSEvaluator:
         model_prediction = explanation.get("prediction")
 
         heatmap = explanation["explanation"][:,:,:].copy()
-        heatmap[:,:,-1] = (heatmap[:,:,-1]).astype(np.uint8)
+        #heatmap[:,:,-1] = (heatmap[:,:,-1] > 0.5).astype(np.uint8)
+        #heatmap[:,:,-1] = (heatmap[:,:,-1]).astype(np.uint8)
         
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
@@ -95,10 +103,11 @@ class BCOSEvaluator:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
 
-    def evaluate(self, tensor_list, path_list, grid_split):
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         """Evaluate grid tensors and return metrics."""
         results = []
         logger.info("Processing %d grids with grid_split=%d.", len(tensor_list), grid_split)
+
         for idx, (tensor, path) in enumerate(zip(tensor_list, path_list)):
             logger.info("Evaluating grid %d from file: %s", idx, path)
             # If tensor has 3 channels, add inverse channels.
@@ -106,20 +115,31 @@ class BCOSEvaluator:
                 tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
             heatmap, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
-            guessed_fake_position, intensity_sums, acc = evaluate_heatmap(
-                heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos
-            )
             original_image = self.convert_to_numpy(tensor)
-            result = {
-                "path": path,
-                "original_image": original_image,
-                "heatmap": heatmap,
-                "guessed_fake_position": guessed_fake_position,
-                "accuracy": acc,
-                "true_fake_position": true_fake_pos,
-                "model_prediction": model_prediction
-            }
-            results.append(result)
+
+            thresholds = [None]  # No threshold
+            if threshold_steps > 0:
+                thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
+
+            for t in thresholds:
+                logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
+                thresholded_heatmap = apply_threshold(heatmap, t)
+
+                guessed_fake_position, intensity_sums, acc = evaluate_heatmap(
+                    thresholded_heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos
+                )
+
+                result = {
+                    "threshold": t,
+                    "path": path,
+                    "original_image": original_image,
+                    "heatmap": thresholded_heatmap,
+                    "guessed_fake_position": guessed_fake_position,
+                    "accuracy": acc,
+                    "true_fake_position": true_fake_pos,
+                    "model_prediction": model_prediction
+                }
+                results.append(result)
             logger.info("For grid %s: true pos %d, predicted %d, accuracy: %.3f",
                         os.path.basename(path), true_fake_pos, guessed_fake_position, acc)
         return results

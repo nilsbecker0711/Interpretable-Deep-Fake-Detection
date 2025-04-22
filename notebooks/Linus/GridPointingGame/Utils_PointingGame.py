@@ -59,13 +59,37 @@ class Analyser:
         self.save_results(raw, overall)
 
     def save_results(self, raw, overall):
-        """Save results to a designated folder."""
-        with open(os.path.join(self.results_dir, "results.pkl"), "wb") as f:
-            pickle.dump(raw, f)  # Save raw results.
-        with open(os.path.join(self.results_dir, "overall.pkl"), "wb") as f:
-            pickle.dump(overall, f)  # Save overall metrics.
-        logger.info("Results saved to folder: %s", save_folder)
-        
+        """Save grouped results and overall metrics per threshold."""
+        import collections
+
+        # Group raw results by threshold
+        threshold_groups = collections.defaultdict(list)
+        for entry in raw:
+            threshold = entry.get("threshold", None)
+            threshold_groups[threshold].append(entry)
+
+        # Save all threshold groups in a single file
+        all_raw_path = os.path.join(self.results_dir, "results_by_threshold.pkl")
+        with open(all_raw_path, "wb") as f:
+            pickle.dump(dict(threshold_groups), f)
+        logger.info("Saved all raw results grouped by threshold to %s", all_raw_path)
+
+        # Compute per-threshold overall metrics
+        overall_by_threshold = {}
+        for threshold, results in threshold_groups.items():
+            accuracies = [res["accuracy"] for res in results]
+            percentiles = np.percentile(np.array(accuracies), [25, 50, 75, 100])
+            overall_by_threshold[threshold] = {
+                "localisation_metric": accuracies,
+                "percentiles": percentiles
+            }
+
+        # Save overall metrics in a single file
+        overall_path = os.path.join(self.results_dir, "overall_by_threshold.pkl")
+        with open(overall_path, "wb") as f:
+            pickle.dump(overall_by_threshold, f)
+        logger.info("Saved overall metrics grouped by threshold to %s", overall_path)
+
     def load_results(self, load_overall=True):
         """Load results from disk and print summary info."""
         file_path = os.path.join(self.results_dir, "overall.pkl" if load_overall else "results.pkl")
