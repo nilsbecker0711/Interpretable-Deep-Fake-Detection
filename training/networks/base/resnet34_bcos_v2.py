@@ -33,8 +33,8 @@ from torch.hub import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
 
 
-DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
-#DEFAULT_NORM_LAYER = norms.BatchNorm2dUncenteredNoBias
+# DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
+DEFAULT_NORM_LAYER = norms.BatchNormUncentered2d
 DEFAULT_CONV_LAYER = BcosConv2d
 
 logger = logging.getLogger(__name__)
@@ -234,8 +234,37 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         #self.short_cat = resnet_config["short_cat"]
         self.dilation = 1
 
-        self._norm_layer = DEFAULT_NORM_LAYER
-        norm_layer = DEFAULT_NORM_LAYER
+        # Define a mapping of norm names to norm classes
+        norm_mapping = {
+            'AllNormUncentered2d': norms.AllNormUncentered2d,
+            'BatchNormUncentered2d': norms.BatchNormUncentered2d,
+            'GroupNormUncentered2d': norms.GroupNormUncentered2d,
+            'GNInstanceNormUncentered2d': norms.GNInstanceNormUncentered2d,
+            'GNLayerNormUncentered2d': norms.GNLayerNormUncentered2d,
+            'PositionNormUncentered2d': norms.PositionNormUncentered2d,
+            'AllNorm2d': norms.AllNorm2d,
+            'BatchNorm2d': norms.BatchNorm2d,
+            'DetachableGroupNorm2d': norms.DetachableGroupNorm2d,
+            'DetachableGNInstanceNorm2d': norms.DetachableGNInstanceNorm2d,
+            'DetachableGNLayerNorm2d': norms.DetachableGNLayerNorm2d,
+            'DetachableLayerNorm': norms.DetachableLayerNorm,
+            'DetachablePositionNorm2d': norms.DetachablePositionNorm2d
+        }
+
+        # Retrieve the norm class from the mapping based on config
+        norm_class = norm_mapping.get(resnet_config['norm'], None)
+
+        if norm_class is None:
+            raise ValueError(f"Unknown norm type: {norm_name}")
+
+        # Apply norm bias if specified in config
+        if resnet_config.get('norm_bias', False):
+            norm_layer = norms.NoBias(norm_class)
+        else:
+            norm_layer = norm_class
+        self._norm_layer = norm_layer
+
+
         self._conv_layer = DEFAULT_CONV_LAYER
         conv_layer = DEFAULT_CONV_LAYER
         # ------------- NEW ------------------
@@ -308,7 +337,6 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
             stochastic_depth_prob=stochastic_depth_prob,
             b = self.b
         )
-        print(self.inplanes)
         self.layer3 = self._make_layer(
             block,
             inplanes * 4,
