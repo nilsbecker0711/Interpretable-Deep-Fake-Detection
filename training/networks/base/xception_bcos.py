@@ -125,6 +125,10 @@ class XceptionBcos(nn.Module, BcosUtilMixin):
             xception_config: configuration file with the dict format
         """
         super(XceptionBcos, self).__init__()
+        
+        # Initialize components from the mixin if necessary
+        BcosUtilMixin.__init__(self,)# **kwargs)
+
         self.num_classes = xception_config["num_classes"]
         self.mode = xception_config["mode"]
         self.logit_bias = xception_config["logit_bias"]
