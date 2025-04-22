@@ -125,7 +125,6 @@ class XceptionBcos(nn.Module, BcosUtilMixin):
             xception_config: configuration file with the dict format
         """
         super(XceptionBcos, self).__init__()
-        
         # Initialize components from the mixin if necessary
         BcosUtilMixin.__init__(self,)# **kwargs)
 
@@ -358,7 +357,7 @@ class XceptionBcos(nn.Module, BcosUtilMixin):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
         # Recursively apply to custom modules
-        elif isinstance(module, SeparableConv2d) or isinstance(module, Block):
+        elif isinstance(module, SeparableConv2d) or isinstance(module, Block) or isinstance(module, BcosConv2d):
             for submodule in module.children():
                 self.initialize_weights(submodule)
         # Ignore activation, pooling, and sequential layers
