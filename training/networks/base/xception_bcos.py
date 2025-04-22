@@ -365,3 +365,13 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
             pass  # Do nothing
         else:
             print(f'unknown module type {type(module)}')
+    
+    @contextlib.contextmanager
+    def explanation_mode(self):
+        for m in self.modules():
+            if hasattr(m, "set_explanation_mode"):
+                m.set_explanation_mode(True)
+        yield
+        for m in self.modules():
+            if hasattr(m, "set_explanation_mode"):
+                m.set_explanation_mode(False)
