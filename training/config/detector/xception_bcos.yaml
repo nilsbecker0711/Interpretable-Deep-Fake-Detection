@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
+log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/training/
 
 # model setting
 model_name: xception_bcos_detector   # model name
@@ -35,7 +35,7 @@ add_inverse_channels: true
 
 # data augmentation
 dataset_type: 'bcos'
-use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
