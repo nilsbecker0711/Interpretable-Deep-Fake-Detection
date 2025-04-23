@@ -22,6 +22,7 @@ import torch.nn.functional as F
 from bcos.modules import BcosConv2d, LogitLayer
 from bcos.common import BcosUtilMixin
 from bcos.modules import norms
+import contextlib
 
 
 import torch.utils.model_zoo as model_zoo
@@ -31,20 +32,21 @@ from metrics.registry import BACKBONE
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
+#DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
+DEFAULT_NORM_LAYER = norms.NoBias(norms.AllNorm2d)
 
 
-class SeparableConv2d(nn.Module, BcosUtilMixin):
-    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False):
+class SeparableConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False, b=2):
         super(SeparableConv2d, self).__init__()
 
         # depthwise as B‑cos
         self.conv1 = BcosConv2d(in_channels, in_channels, kernel_size, 
                                 stride, padding, dilation,
-                                groups=in_channels, bias=False)
+                                groups=in_channels, bias=False, b=b)
 
         # pointwise as B‑cos
-        self.pointwise = BcosConv2d(in_channels, out_channels, 1, bias=False)
+        self.pointwise = BcosConv2d(in_channels, out_channels, 1, bias=False, b=b)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -52,13 +54,13 @@ class SeparableConv2d(nn.Module, BcosUtilMixin):
         return x
 
 
-class Block(nn.Module, BcosUtilMixin):
-    def __init__(self, in_filters, out_filters, reps, strides=1, start_with_relu=True, grow_first=True):
+class Block(nn.Module):
+    def __init__(self, in_filters, out_filters, reps, strides=1, start_with_relu=True, grow_first=True, b=2):
         super(Block, self).__init__()
 
         if out_filters != in_filters or strides != 1:
             self.skip = BcosConv2d(in_filters, out_filters,
-                                  1, stride=strides, bias=False)
+                                  1, stride=strides, bias=False, b=b)
             self.skipbn = DEFAULT_NORM_LAYER(out_filters)
         else:
             self.skip = None
@@ -70,20 +72,20 @@ class Block(nn.Module, BcosUtilMixin):
         if grow_first:   # whether the number of filters grows first
             #rep.append(self.relu)
             rep.append(SeparableConv2d(in_filters, out_filters,
-                                       3, stride=1, padding=1, bias=False))
+                                       3, stride=1, padding=1, bias=False, b=b))
             rep.append(DEFAULT_NORM_LAYER(out_filters))
             filters = out_filters
 
         for i in range(reps-1):
             #rep.append(self.relu)
             rep.append(SeparableConv2d(filters, filters,
-                                       3, stride=1, padding=1, bias=False))
+                                       3, stride=1, padding=1, bias=False, b=b))
             rep.append(DEFAULT_NORM_LAYER(filters))
 
         if not grow_first:
             #rep.append(self.relu)
             rep.append(SeparableConv2d(in_filters, out_filters,
-                                       3, stride=1, padding=1, bias=False))
+                                       3, stride=1, padding=1, bias=False, b=b))
             rep.append(DEFAULT_NORM_LAYER(out_filters))
 
         """ if not start_with_relu:
@@ -91,8 +93,11 @@ class Block(nn.Module, BcosUtilMixin):
         else:
             rep[0] = nn.ReLU(inplace=False) """
 
+        """ if strides != 1:
+            rep.append(nn.MaxPool2d(3, strides, 1)) """
         if strides != 1:
-            rep.append(nn.MaxPool2d(3, strides, 1))
+            rep.append(nn.AvgPool2d(kernel_size=3, stride=strides, padding=1))
+
         self.rep = nn.Sequential(*rep)
 
     def forward(self, inp):
@@ -132,54 +137,55 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         self.mode = xception_config["mode"]
         self.logit_bias = xception_config["logit_bias"]
         self.logit_temperature = xception_config["logit_temperature"]
+        self.b = xception_config['b']
         inc = xception_config["in_chans"]
         #dropout = xception_config["dropout"]
 
         # Entry flow
-        self.conv1 = BcosConv2d(inc, 32, 3, 2, 0, bias=False)
+        self.conv1 = BcosConv2d(inc, 32, 3, 2, 0, bias=False, b=self.b)
         
         self.bn1 = DEFAULT_NORM_LAYER(32)
         #self.relu = nn.ReLU(inplace=True)
 
-        self.conv2 = BcosConv2d(32, 64, 3, bias=False)
+        self.conv2 = BcosConv2d(32, 64, 3, bias=False, b=self.b)
         self.bn2 = DEFAULT_NORM_LAYER(64)
         # do relu here
 
         self.block1 = Block(
-            64, 128, 2, 2, start_with_relu=False, grow_first=True)
+            64, 128, 2, 2, start_with_relu=False, grow_first=True, b=self.b)
         self.block2 = Block(
-            128, 256, 2, 2, start_with_relu=True, grow_first=True)
+            128, 256, 2, 2, start_with_relu=True, grow_first=True, b=self.b)
         self.block3 = Block(
-            256, 728, 2, 2, start_with_relu=True, grow_first=True)
+            256, 728, 2, 2, start_with_relu=True, grow_first=True, b=self.b)
 
         # middle flow
         self.block4 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block5 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block6 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block7 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
 
         self.block8 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block9 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block10 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
         self.block11 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
 
         # Exit flow
         self.block12 = Block(
-            728, 1024, 2, 2, start_with_relu=True, grow_first=False)
+            728, 1024, 2, 2, start_with_relu=True, grow_first=False, b=self.b)
 
-        self.conv3 = SeparableConv2d(1024, 1536, 3, 1, 1)
+        self.conv3 = SeparableConv2d(1024, 1536, 3, 1, 1, b=self.b)
         self.bn3 = DEFAULT_NORM_LAYER(1536)
 
         # do relu here
-        self.conv4 = SeparableConv2d(1536, 2048, 3, 1, 1)
+        self.conv4 = SeparableConv2d(1536, 2048, 3, 1, 1, b=self.b)
         self.bn4 = DEFAULT_NORM_LAYER(2048)
         # used for iid
         final_channel = 2048
@@ -195,7 +201,7 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         
         self.classifier_head = nn.Sequential(
             DEFAULT_NORM_LAYER(final_channel), # B‑cos normalize
-            BcosConv2d(final_channel, self.num_classes, 1, bias=False),  # 1×1 B‑cos conv
+            BcosConv2d(final_channel, self.num_classes, 1, bias=False, b=self.b),  # 1×1 B‑cos conv
         )
         self.logit_layer = LogitLayer(
             logit_temperature=self.logit_temperature,
@@ -204,7 +210,7 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
 
 
         self.adjust_channel = nn.Sequential(
-            BcosConv2d(2048, 512, 1, 1),
+            BcosConv2d(2048, 512, 1, 1, b=self.b),
             DEFAULT_NORM_LAYER(512)
             #nn.ReLU(inplace=False),
         )
