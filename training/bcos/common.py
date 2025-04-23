@@ -182,6 +182,8 @@ class BcosUtilMixin:
                 "Input tensor did not require grad! Has been set automatically to True!"
             )
             in_tensor.requires_grad = True  # nonsense otherwise
+
+            print("[DEBUG] requires_grad:", in_tensor.requires_grad)
         if self.training:  # noqa
             warnings.warn(
                 "Model is in training mode! "
@@ -192,6 +194,9 @@ class BcosUtilMixin:
         with torch.enable_grad(), self.explanation_mode():
             # fwd + prediction
             out = self(in_tensor)  # noqa
+
+            #xeception bcos has a 2 outputs but resnet not (Linus)
+            out = out[0] if isinstance(out, tuple) else out
             pred_out = out.max(1)
             result["prediction"] = pred_out.indices.item()
 
@@ -204,6 +209,8 @@ class BcosUtilMixin:
                 result["explained_class_idx"] = idx
 
             to_be_explained_logit.backward(inputs=[in_tensor])
+
+            print("[DEBUG] in_tensor.grad is None:", in_tensor.grad is None)
 
         # get weights and contribution map
         result["dynamic_linear_weights"] = in_tensor.grad

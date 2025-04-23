@@ -7,11 +7,11 @@ dataset_json_folder: '/pfs/work7/workspace/scratch/ma_tischuet-team_project_expl
 
 ######################################################################################################################################################
 test_batchSize: 12
-xai_method: bcos
+xai_method: gradcam
 grid_split: 3
 max_grids: 5
-overwrite: false
-quantitativ: true
+overwrite: true
+quantitativ: false
 base_output_dir: results
 threshold_steps: 10 
 ######################################################################################################################################################

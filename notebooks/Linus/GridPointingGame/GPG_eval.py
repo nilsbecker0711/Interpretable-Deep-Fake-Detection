@@ -23,8 +23,9 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run1_config.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run3_config.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -42,7 +43,7 @@ class GridPointingGameCreator(Analyser):
                  test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0):
         """
         Initialize grid creator with specified parameters.
-        base_output_dir: Base directory for grids.
+        output_folder: Base directory for grids.
         grid_size: Dimensions of the grid (e.g., (3,3)).
         xai_method: "bcos", "lime", or "gradcam".
         max_grids: Maximum number of grids to create.
@@ -73,11 +74,11 @@ class GridPointingGameCreator(Analyser):
         # Load or compute sorted image rankings.
         self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
 
-        if os.path.exists(self.ranking_file) and not overwrite:
+        if os.path.exists(self.ranking_file) and not self.overwrite:
             self.sorted_confs = self.load_ranking(self.ranking_file)
             logger.info("Loaded sorted confidences from %s", self.ranking_file)
         else:
-            if overwrite and os.path.exists(self.ranking_file):
+            if self.overwrite and os.path.exists(self.ranking_file):
                 logger.info("Overwrite is enabled. Recomputing and replacing %s", self.ranking_file)
             self.sorted_confs = self.compute_sorted_confs()
             self.save_ranking(self.sorted_confs, self.ranking_file)
@@ -113,8 +114,9 @@ class GridPointingGameCreator(Analyser):
                 
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
-                if self.xai_method == "lime":
+                if self.xai_method == "lime" or self.xai_method == "gradcam":
                     image = image[:,:3]
+                    
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
                 # Get predicted label from the first (and only) sample.
@@ -191,14 +193,14 @@ class GridPointingGameCreator(Analyser):
             ranking = pickle.load(f)
         return ranking
     
-    def analysis(self, overwrite=False):
+    def analysis(self):
         """Evaluate grid tensors and compute overall metrics."""
         raw_results_file = os.path.join(self.results_dir, "results.pkl")
 
-        if os.path.exists(raw_results_file) and not overwrite:
+        if os.path.exists(raw_results_file) and not self.overwrite:
             raise RuntimeError(f"Results already exist at {raw_results_file}. Use those results or set overwrite=True.")
 
-        if overwrite and os.path.exists(raw_results_file):
+        if self.overwrite and os.path.exists(raw_results_file):
             logger.info("Overwrite is enabled. Existing results at %s will be overwritten.", raw_results_file)
 
         # List grid tensor files.
@@ -238,7 +240,7 @@ class GridPointingGameCreator(Analyser):
         existing_files = [f for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
         logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.grid_dir)
 
-        if existing_files and overwrite:
+        if existing_files and self.overwrite:
             logger.info("Overwrite is enabled. Deleting existing grid files and continue with creatring new grids.")
             for f in existing_files:
                 os.remove(os.path.join(self.grid_dir, f))
@@ -247,6 +249,11 @@ class GridPointingGameCreator(Analyser):
         if len(existing_files) >= self.max_grids:
             logger.info("Enough grid files in folder. Skipping grid creation.")
             return
+        else:
+            for f in existing_files:
+                os.remove(os.path.join(self.grid_dir, f))
+            existing_files = []  # Reset list after deletion
+            
 
         # Get sorted image paths (tuples of (image_path, confidence, label))
         sorted_image_paths = self.get_sorted_image_paths()
@@ -284,7 +291,7 @@ class GridPointingGameCreator(Analyser):
             logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
-            if self.xai_method == "lime":
+            if self.xai_method == "lime" or self.xai_method == "gradcam":
                 fake_img = fake_img[:3]
             logger.debug("Fake image shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
             
@@ -296,7 +303,7 @@ class GridPointingGameCreator(Analyser):
             # Retrieve real images using load_sample_by_path for consistency.
             expected_label = 0
             selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
-            if self.xai_method == "lime":
+            if self.xai_method == "lime" or self.xai_method == "gradcam":
                 selected_real = [img[:3] for img in selected_real]
             logger.debug("Retrieved %d real images.", len(selected_real))
             
@@ -323,7 +330,7 @@ class GridPointingGameCreator(Analyser):
             
             # Save grid tensor with fake position encoded in filename.
             base_name = f"grid_{grid_count}_fake_{final_fake_index}.pt"
-            path_to_grid = os.path.join(self.output_dir, base_name)
+            path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)
             
@@ -353,7 +360,28 @@ def main():
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         new_state_dict[k.replace("module.", "")] = v
-    model.load_state_dict(new_state_dict)
+
+    ##########
+    
+    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
+    res = model.load_state_dict(new_state_dict, strict=False)
+    
+    # 3) Logge, was fehlt und was extra war
+    logger.info("Missing keys: %s", res.missing_keys)
+    logger.info("Unexpected keys: %s", res.unexpected_keys)
+    
+    # 4) quick‐check eines Backbone‐Weights
+    first_weight = next(model.backbone.parameters())
+    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
+
+    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
+    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
+
+
+
+
+
+    ########
     
     # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -361,6 +389,35 @@ def main():
 
     model.eval()  # Set model to evaluation mode.
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
+
+    ##########
+
+
+
+
+    
+    # 1. Zähle alle detach-fähigen Module
+    all_detachable = [m for m in model.backbone.modules() if hasattr(m, "detach")]
+    print("Anzahl aller detach-fähigen Module:", len(all_detachable))
+
+    # 2. Vor Explanation-Modus: sollten alle detach=False sein
+    pre = sum(1 for m in all_detachable if m.detach)
+    print("Vorher detach=True:", pre)
+
+    # 3. Im Explanation-Modus
+    with model.backbone.explanation_mode():
+        mid = sum(1 for m in all_detachable if m.detach)
+        print("Im Kontext detach=True:", mid)
+
+    # 4. Nach Exit: wieder alle auf False?
+    post = sum(1 for m in all_detachable if m.detach)
+    print("Danach detach=True:", post)
+    # —––––––––– ENDE ––––––––––
+
+
+
+
+    ############
         
     model_name = config.get("model_name", "defaultModel")
     config_name = os.path.basename(CONFIG_PATH).split('.')[0]

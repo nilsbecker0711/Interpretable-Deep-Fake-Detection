@@ -49,13 +49,6 @@ class BCOSEvaluator:
         """Initialize with model and device."""
         self.model = model
         self.device = device
-    
-    def apply_threshold(self, heatmap, threshold):        
-        if threshold is None:
-            return heatmap.copy()
-        thresholded = heatmap.copy()
-        thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
-        return thresholded
 
     def generate_heatmap(self, tensor):
         """Generate heatmap via forward and backward passes."""
@@ -65,6 +58,16 @@ class BCOSEvaluator:
         
         self.model.zero_grad()  # Reset gradients.
         out = self.model({'image': img})  # Forward pass.
+        
+        # ─── Logit-Check ───────────────────────────────────────────────
+        # raw logits before softmax/sigmoid
+        logits = out['cls'][0]  
+        logger.info(
+            "Logits → min: %.4f   mean: %.4f   max: %.4f",
+            logits.min().item(), logits.mean().item(), logits.max().item()
+        )
+        # ────────────────────────────────────────────────────────────────
+        
         logger.debug("Model output: %s", out)
         
         scalar_out = out['prob'][0]  # Use first output probability.
@@ -75,12 +78,28 @@ class BCOSEvaluator:
         
         # Get explanation from model's backbone.
         explanation = self.model.backbone.explain(img, idx=1)
+
+        # ────────────────────────────────────────────────────────────────
+        # Log dynamic linear weights
+        dyn = explanation["dynamic_linear_weights"]
+        logger.info(
+            "DynWeights → min: %.4f  mean: %.4f  max: %.4f",
+            dyn.min().item(), dyn.mean().item(), dyn.max().item()
+        )
+
+        # Log contribution map
+        cmap = explanation["contribution_map"]
+        logger.info(
+            "ContribMap → min: %.4f  mean: %.4f  max: %.4f",
+            cmap.min().item(), cmap.mean().item(), cmap.max().item()
+        )
+        # ────────────────────────────────────────────────────────────────
+
+
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
 
-        heatmap = explanation["explanation"][:,:,:].copy()
-        #heatmap[:,:,-1] = (heatmap[:,:,-1] > 0.5).astype(np.uint8)
-        #heatmap[:,:,-1] = (heatmap[:,:,-1]).astype(np.uint8)
+        #heatmap = explanation["explanation"][:,:,:].copy()
         
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
@@ -120,6 +139,13 @@ class BCOSEvaluator:
             thresholds = [None]  # No threshold
             if threshold_steps > 0:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
+                
+            def apply_threshold(heatmap, threshold):        
+                if threshold is None:
+                    return heatmap.copy()
+                thresholded = heatmap.copy()
+                thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
+                return thresholded
 
             for t in thresholds:
                 logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
@@ -130,7 +156,7 @@ class BCOSEvaluator:
                 )
 
                 result = {
-                    "threshold": t,
+                    "threshold": t if t is not None else 0,                    
                     "path": path,
                     "original_image": original_image,
                     "heatmap": thresholded_heatmap,

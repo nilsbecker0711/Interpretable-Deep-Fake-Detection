@@ -2,7 +2,7 @@
 log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
 
 # model setting
-pretrained: /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/resnet34_03_18_16_59_57_ckpt_best.pth   # path to a pre-trained model, if using one
+pretrained: /pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/resnet34/resnet34_03_18_16_59_57_ckpt_best.pth   # path to a pre-trained model, if using one
 model_name: resnet34   # model name
 backbone_name: resnet34  # backbone name
 
