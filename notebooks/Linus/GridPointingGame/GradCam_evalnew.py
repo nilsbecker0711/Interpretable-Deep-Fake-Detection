@@ -20,7 +20,7 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from training.detectors.resnet34_detector import ResnetDetector
 #from B_COS_eval import evaluate_heatmap
 from training.detectors.xception_detector import XceptionDetector
-from training.detectors.vgg_detector import VGGDetector  
+#from training.detectors.vgg_detector import VGGDetector  
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
