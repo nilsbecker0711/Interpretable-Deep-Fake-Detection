@@ -71,9 +71,14 @@ std: [0.5, 0.5, 0.5]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: adam
+  type: sam
+  sam:
+    lr: 0.002
+    base_optimizer: adam
+    rho: 0.3
+    momentum: 0.9
   adam:
-    lr: 0.001  # learning rate #orig: 0.0002
+    lr: 0.002  # learning rate #orig: 0.0002
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer

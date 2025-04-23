@@ -41,6 +41,10 @@ class Convnext_Bcos_Detector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
+        if config['pretrained'] == None:
+            backbone.apply(backbone.initialize_weights)
+            logger.info("Initialized backbone weights from scratch!")
+            return backbone
         
         # only use to print the model to compare
         """ print("-------- Summary backbone")
@@ -62,14 +66,14 @@ class Convnext_Bcos_Detector(AbstractDetector):
         # logit_temperature: Optional[float] = None,
         # **kwargs: Any,
         ## CHANGE THIS HERE FOR THE CLUSTER TO NOT MAP LOCATION CPU
-        if config['pretrained'] != 'None':
+        """ if config['pretrained'] != 'None':
             state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
             for name, weights in state_dict.items():
                 if 'pointwise' in name:
                     state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
             state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
             backbone.load_state_dict(state_dict, False)
-            logger.info('Load pretrained model successfully!')
+            logger.info('Load pretrained model successfully!') """
         return backbone
 
     def build_loss(self, config):
