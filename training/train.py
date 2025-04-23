@@ -130,11 +130,11 @@ def prepare_training_data(config):
     return train_data_loader
 
 
-def prepare_testing_data(config):
-    def get_test_data_loader(config, test_name):
+def prepare_testing_data(config, mode='test'):
+    def get_test_data_loader(config, test_name, mode='test'):
         # update the config dictionary with the specific testing dataset
         config = config.copy()  # create a copy of config to avoid altering the original one
-        config['test_dataset'] = test_name  # specify the current test dataset
+        config[f'{mode}_dataset'] = test_name  # specify the current test dataset
         if config.get('dataset_type', None) == 'lrl':
             test_set = LRLDataset(
                 config=config,
@@ -143,17 +143,17 @@ def prepare_testing_data(config):
         elif config.get('dataset_type', None) == 'bcos':
             test_set = DeepfakeBcosDataset(
                     config=config,
-                    mode='test',
+                    mode=mode,
             )
         else:
             test_set = DeepfakeAbstractBaseDataset(
                     config=config,
-                    mode='test',
+                    mode=mode,
             )
         test_data_loader = \
             torch.utils.data.DataLoader(
                 dataset=test_set,
-                batch_size=config['test_batchSize'],
+                batch_size=config[f'{mode}_batchSize'],
                 shuffle=False,
                 num_workers=int(config['workers']),
                 collate_fn=test_set.collate_fn,
@@ -163,8 +163,8 @@ def prepare_testing_data(config):
         return test_data_loader
 
     test_data_loaders = {}
-    for one_test_name in config['test_dataset']:
-        test_data_loaders[one_test_name] = get_test_data_loader(config, one_test_name)
+    for one_test_name in config[f'{mode}_dataset']:
+        test_data_loaders[one_test_name] = get_test_data_loader(config, one_test_name, mode=mode)
     return test_data_loaders
 
 
@@ -327,14 +327,14 @@ def main():
     if config['ddp'] == False:
         wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
         #group="HP_tuning",  # Same group for all agents
-        #config=self.config
+        config=config,
         dir=None
         )
     else:# elif IS_MAIN_Process
         wandb.init(project="deepfake_training",  
         group=f"DDP_{config['model_name']}_{timestamp}",  # Same group for all agents
         name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
-        #config=self.config
+        config=config,
         dir=None
         )
     # prepare the training data loader
@@ -343,7 +343,8 @@ def main():
     logger.info(f"Train set type for '{config['train_dataset']}': {str(type(train_data_loader.dataset))}")
 
     # prepare the testing data loader
-    test_data_loaders = prepare_testing_data(config)
+    val_data_loaders = prepare_testing_data(config, mode='val')
+    test_data_loaders = prepare_testing_data(config, mode='test')
     # log the type
     for test_name, data_loader in test_data_loaders.items():
         logger.info(f"Test set type for '{test_name}': {str(type(data_loader.dataset))}")
@@ -365,16 +366,22 @@ def main():
     trainer = Trainer(config, model, optimizer, scheduler, logger, metric_scoring, time_now=timenow)
 
     # start training
-    for epoch in range(config['start_epoch'], config['nEpochs'] + 1):
+    for epoch in range(config["start_epoch"], config["nEpochs"] + 1):
         trainer.model.epoch = epoch
-        best_metric = trainer.train_epoch(
-                    epoch=epoch,
-                    train_data_loader=train_data_loader,
-                    test_data_loaders=test_data_loaders,
-                )
-        if best_metric is not None:
-            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {parse_metric_for_print(best_metric)}!")
-    logger.info("Stop Training on best Testing metric {}".format(parse_metric_for_print(best_metric))) 
+        val_best_metric, test_best_metric = trainer.train_epoch(
+            epoch=epoch,
+            train_data_loader=train_data_loader,
+            test_data_loaders=test_data_loaders,
+            val_data_loaders=val_data_loaders
+        )
+        if val_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with val {metric_scoring}: {val_best_metric}!")
+        if test_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {test_best_metric}!")
+
+    logger.info(f"Stop Training on best Validation metric {val_best_metric}")
+    logger.info(f"Stop Training on best Testing metric {test_best_metric}")
+    
     # update
     if 'svdd' in config['model_name']:
         model.update_R(epoch)

@@ -27,17 +27,22 @@ backbone_config:
   logit_bias: #None
   logit_temperature: 1 #None
   b: 1.25
+  norm: BatchNormUncentered2d # choices: AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, 
+  # PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d
+  norm_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++, FF-F2F]
 
 compression: c40  # compression-level for videos
 train_batchSize: 64   # training batch size
+val_batchSize: 64   # test batch size
 test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
-frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
+frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input

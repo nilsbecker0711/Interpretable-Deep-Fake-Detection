@@ -192,7 +192,7 @@ def _vgg(
     cfg: str,
     pretrained: bool = False,
     progress: bool = False,
-    norm_layer: Callable[..., nn.Module] = None,
+    norm_layer: Callable[..., nn.Module] = DEFAULT_NORM_LAYER,
     conv_layer: Callable[..., nn.Module] = BcosConv2d,
     in_chans: int = 6,
     no_pool=False,
@@ -223,7 +223,7 @@ def _vgg(
 
 
 def vgg11(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
-    return _vgg("vgg11", "A", pretrained, progress, norm_layer=nn.Identity, **kwargs)
+    return _vgg("vgg11", "A", pretrained, progress, norm_layer=DEFAULT_NORM_LAYER, **kwargs)#nn.Identity, **kwargs)
 
 
 def vgg11_bnu(

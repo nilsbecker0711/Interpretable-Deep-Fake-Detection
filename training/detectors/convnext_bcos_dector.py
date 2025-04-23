@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.nn import DataParallel
+from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 
 from metrics.base_metrics_class import calculate_metrics_for_train
@@ -19,6 +20,8 @@ from .base_detector import AbstractDetector
 from detectors import DETECTOR
 from networks.base import BACKBONE
 from loss import LOSSFUNC
+
+from convnext import convnext_tiny
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +41,14 @@ class Convnext_Bcos_Detector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
+        
+        # only use to print the model to compare
+        """ print("-------- Summary backbone")
+        summary(backbone, depth=5, input_size=(1, 6, 224, 224))
+
+        model = convnext_tiny(pretrained=False, num_classes=2)
+        print("-------- Summary original implementation")
+        summary(model, depth=5, input_size=(1, 6, 224, 224)) """
         # if donot load the pretrained weights, fail to get good results
         # self.block_setting = config['CNBlockConfig'],
         #self.stochastic_depth_prob = config['',
