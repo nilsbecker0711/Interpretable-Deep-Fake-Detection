@@ -16,7 +16,7 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_eval import GradCamEvaluator
+from GradCam_eval import GradCamEvaluator #from GradCam_evalnew import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
@@ -45,7 +45,7 @@ class GridPointingGameCreator(Analyser):
         Initialize grid creator with specified parameters.
         output_folder: Base directory for grids.
         grid_size: Dimensions of the grid (e.g., (3,3)).
-        xai_method: "bcos", "lime", or "gradcam".
+        xai_method: "bcos", "lime", "gradcam", "xgrad", "grad++" or "layergrad".
         max_grids: Maximum number of grids to create.
         plotting_only: If True, load existing results.
         """
@@ -114,7 +114,7 @@ class GridPointingGameCreator(Analyser):
                 
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
-                if self.xai_method == "lime" or self.xai_method == "gradcam":
+                if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
                     image = image[:,:3]
                     
                 output = self.model({'image': image, 'label': label})
@@ -216,8 +216,8 @@ class GridPointingGameCreator(Analyser):
             evaluator = BCOSEvaluator(self.model, self.device)
         elif self.xai_method == "lime":
             evaluator = LIMEEvaluator(self.model, self.device)
-        elif self.xai_method == "gradcam":
-            evaluator = GradCamEvaluator(self.model, self.device)
+        elif self.xai_method in ["gradcam", "xgrad", "grad++", "layergrad"]:
+            evaluator = GradCamEvaluator(self.model, self.device, method=self.xai_method)
         else:
             raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
