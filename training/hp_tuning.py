@@ -352,6 +352,8 @@ if __name__ == "__main__":
             sweep_config = yaml.safe_load(f)
         sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
     else: # as soon as you have a sweep in which you want to try out more runs, replace the last sweep_id below
-        sweep_id = 'interpretable_deefake_detection/deepfake_training/p62d7k4i'
+        # resnet with b=2 runs: sweep_id = 'p62d7k4i'
+        # vit with b=1.25: 5m8mucm6
+        sweep_id = 'interpretable_deefake_detection/deepfake_training/5m8mucm6'
 
     wandb.agent(sweep_id, function=train) # count=1) -> you can also specify count to only run N combinations
