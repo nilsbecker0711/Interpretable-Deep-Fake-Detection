@@ -30,7 +30,7 @@ class ResNet34(nn.Module):
         self.mode = resnet_config["mode"]
 
         # Define layers of the backbone
-        resnet = torchvision.models.resnet34(pretrained=True)  # FIXME: download the pretrained weights from online
+        resnet = torchvision.models.resnet34(pretrained=False)  # FIXME: download the pretrained weights from online
         # resnet.conv1 = nn.Conv2d(inc, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.resnet = torch.nn.Sequential(*list(resnet.children())[:-2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -58,3 +58,26 @@ class ResNet34(nn.Module):
         x = self.features(inp)
         out = self.classifier(x)
         return out
+
+    def initialize_weights(self, module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.BatchNorm2d):
+            nn.init.constant_(module.weight, 1)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.Linear):
+            nn.init.xavier_normal_(module.weight)# or nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        # Recursively apply to custom modules
+        elif isinstance(module, (torchvision.models.resnet.BasicBlock)):
+            for submodule in module.children():
+                self.initialize_weights(submodule)
+        # Ignore activation, pooling, and sequential layers
+        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
+            pass  # Do nothing
+        else:
+            print(f'unknown module type {type(module)}')

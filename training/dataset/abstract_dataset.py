@@ -115,6 +115,13 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             if self.lmdb:
                 lmdb_path = os.path.join(config['lmdb_dir'], f"{one_data}_lmdb" if one_data not in FFpp_pool else 'FaceForensics++_lmdb')
                 self.env = lmdb.open(lmdb_path, create=False, subdir=True, readonly=True, lock=False)
+        elif mode=='val':
+            one_data = config['val_dataset']
+            # Test dataset should be evaluated separately. So collect only one dataset each time
+            image_list, label_list, name_list = self.collect_img_and_label_for_one_dataset(one_data)
+            if self.lmdb:
+                lmdb_path = os.path.join(config['lmdb_dir'], f"{one_data}_lmdb" if one_data not in FFpp_pool else 'FaceForensics++_lmdb')
+                self.env = lmdb.open(lmdb_path, create=False, subdir=True, readonly=True, lock=False)
         else:
             raise NotImplementedError('Only train and test modes are supported.')
 

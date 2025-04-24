@@ -27,5 +27,5 @@ export MASTER_ADDR="localhost"  # The master node's address (typically localhost
 export MASTER_PORT=29100    # The port for communication (can be any available port)
 
 # Launch the training with two G<PUs
-torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29100 ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos_v2.yaml --ddp --sweep_id xnle4kcz
+torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29100 ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34.yaml --sweep_id xnle4kcz --ddp
 #python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34.yaml
