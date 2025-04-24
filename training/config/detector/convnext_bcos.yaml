@@ -19,8 +19,11 @@ backbone_config:
   # conv_layer: Callable[..., nn.Module] = DEFAULT_CONV_LAYER
   # norm_layer: Optional[Callable[..., nn.Module]] = None
 #THESE LOGIT PARAMS DO NOT WORK RN - EXPLICITLY DEFINED AS NONE IN CODE
-  logit_bias:  None 
-  logit_temperature: None
+  logit_bias:  1.0 
+  logit_temperature: 1.0
+  save_ckpt: true   # whether to save checkpoint
+  save_feat: true   # whether to save features
+  add_inverse_channels: true
   # **kwargs: Any
 
 
@@ -29,19 +32,21 @@ backbone_config:
 #train_dataset: #[df-tp-ffhq] #[FaceForensics++]
 #test_dataset: #[df-tp-ffhq] #[FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
+# dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++, FF-F2F]
 
 compression: c40  # compression-level for videos
 train_batchSize: 64   # training batch size
+val_batchSize: 64
 test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
-frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
+frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 176   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
-add_inverse_channels: true
 
 
 # data augmentation
@@ -66,9 +71,14 @@ std: [0.5, 0.5, 0.5]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: adam
+  type: sam
+  sam:
+    lr: 0.002
+    base_optimizer: adam
+    rho: 0.3
+    momentum: 0.9
   adam:
-    lr: 0.001  # learning rate #orig: 0.0002
+    lr: 0.002  # learning rate #orig: 0.0002
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer
@@ -81,8 +91,12 @@ optimizer:
   gradient_clipping: true
 
 # training config
-lr_scheduler: null   # learning rate scheduler
-nEpochs: 60   # number of epochs to train for
+lr_scheduler: warmup_cosine # step   # learning rate scheduler
+lr_eta_min: 0
+lr_T_max: 200
+# lr_step: 4
+# lr_gamma: 0.2
+nEpochs: 15   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
