@@ -347,13 +347,14 @@ sweep_config = {
 
 # run with python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos_v2.yaml
 if __name__ == "__main__":
-    if True:
-        with open("/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/hp_tuning/resnet34_bcos_v2.yaml", "r") as f:
+    if False:
+        with open("/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/hp_tuning/vit_bcos.yaml", "r") as f:
             sweep_config = yaml.safe_load(f)
         sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
     else: # as soon as you have a sweep in which you want to try out more runs, replace the last sweep_id below
         # resnet with b=2 runs: sweep_id = 'p62d7k4i'
-        # vit with b=1.25: 5m8mucm6
-        sweep_id = 'interpretable_deefake_detection/deepfake_training/5m8mucm6'
+        # vit with b=1.25: 5m8mucm6 -> wide search, maybe better to go through narrow search instead wrt. to norms
+        # vit with b=1.25 working norm and model_type om1v67lc
+        sweep_id = 'interpretable_deefake_detection/deepfake_training/om1v67lc'
 
     wandb.agent(sweep_id, function=train) # count=1) -> you can also specify count to only run N combinations
