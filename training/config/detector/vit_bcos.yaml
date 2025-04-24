@@ -18,10 +18,8 @@ backbone_config:
   logit_temperature: #10 #None
   b: 1.25
   max_out: 2
-
   # either set the model type
-  model_type: simple_vit_ti_patch16_224
-
+  model_type: vitc_ti_patch1_14
   # or the parameters directly, these values are only taken when model_type is not provided
   image_size: 14 #14 # Union[int, Tuple[int, int]],
   patch_size: 1 # Union[int, Tuple[int, int]],
@@ -30,6 +28,10 @@ backbone_config:
   heads: 6
   mlp_dim: 1536
   conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
+  norm: DetachableLayerNorm
+  norm_bias: false
+  norm_2d: BatchNorm2d
+  norm_2d_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -37,7 +39,7 @@ train_dataset: [FaceForensics++]
 val_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
-compression: c40  # compression-level for videos
+compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
 test_batchSize: 64   # test batch size
 val_batchSize: 64
@@ -75,7 +77,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000025  # learning rate -> bcos paper 2.5e-4
+    lr: 0.00025  # learning rate -> bcos paper 2.5e-4
     beta1: 0.8  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.000001  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
@@ -88,7 +90,7 @@ optimizer:
   gradient_clipping: false
 
 # training config
-lr_scheduler: warmup_cosine # step, cosine, warmup_cosine, linear
+lr_scheduler: # step, cosine, warmup_cosine, linear
 lr_eta_min: 0
 lr_T_max: 200
 # lr_step: 4

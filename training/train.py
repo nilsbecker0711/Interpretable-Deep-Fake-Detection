@@ -327,14 +327,14 @@ def main():
     if config['ddp'] == False:
         wandb.init(project="deepfake_training", name=f"{config['model_name']}_{timestamp}", 
         #group="HP_tuning",  # Same group for all agents
-        #config=self.config
+        config=config,
         dir=None
         )
     else:# elif IS_MAIN_Process
         wandb.init(project="deepfake_training",  
         group=f"DDP_{config['model_name']}_{timestamp}",  # Same group for all agents
         name=f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}" if dist.is_initialized() else "single_process",
-        #config=self.config
+        config=config,
         dir=None
         )
     # prepare the training data loader

@@ -144,7 +144,6 @@ class BatchNorm2dUncenteredNoBias(nn.BatchNorm2d):
             result = self.weight[None, ..., None, None] * result
         if self.bias is not None:
             result = result + self.bias[None, ..., None, None]
-
         return result
 
 
