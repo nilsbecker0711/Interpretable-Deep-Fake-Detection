@@ -1,0 +1,75 @@
+method: random  # You can also use 'bayes' here
+metric:
+  name: val_metrics/auc
+  goal: maximize
+parameters:
+  batchSize:
+    values: [16, 32, 64, 128]
+  nEpochs:
+    values: [10]
+  manualSeed:
+    values: [1, 10, 1024]
+  optimizer:
+    values: ['adam', ] #'sgd']
+  lr:
+    min: 2.5e-5
+    max: 2.5e-3
+    distribution: uniform
+  weight_decay:
+    min: 1e-7
+    max: 1e-3
+    distribution: uniform
+  # adam parameters
+  beta1:
+    min: 0.85
+    max: 0.95
+    distribution: uniform
+  beta2:
+    min: 0.8
+    max: 0.999
+    distribution: uniform
+  eps:
+    min: 1e-8
+    max: 1e-5
+    distribution: uniform
+  amsgrad:
+    values: [true, false]
+  # sgd
+  # momentum:
+  #   min: 0.8
+  #   max: 0.99
+  #   distribution: uniform
+  lr_scheduler:
+    values: ['None'] #, 'cosine', 'step', 'linear', 'warmup_cosine']
+  lr_step:
+    min: 4
+    max: 10
+  lr_gamma:
+    min: 0.1
+    max: 0.5
+    distribution: uniform
+  lr_T_max:
+    min: 50
+    max: 200
+    distribution: uniform
+  lr_eta_min:
+    min: 0
+    max: 0.000000001
+    distribution: uniform
+  # data
+  use_data_augmentation:
+    values: [true, false]
+  # model parameters
+  stochastic_depth_prob:
+    values: [0.0]
+    # min: 0.0
+    # max: 0.2
+    # distribution: uniform
+  norm: 
+    values: [AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
+  norm_bias:
+    values: [true, false]
+#early_terminate:
+ # type: hyperband
+  #min_iter: 2
+  #eta: 3

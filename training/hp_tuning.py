@@ -318,11 +318,11 @@ sweep_config = {
         # 'bias': {
         #     'values': [[0.5, 0.5], [0.25, 0.75], [0.75, 0.25], [0.1, 0.9]]
         #     },
-        'b':{
-            'min': 1,
-            'max': 2.5,
-            'distribution': 'uniform',
-        },
+        #'b':{
+        #    'min': 1,
+        #    'max': 2.5,
+        #    'distribution': 'uniform',
+        #},
         'stochastic_depth_prob':{
             'min': 0.0,
             'max': 0.2,
@@ -347,11 +347,12 @@ sweep_config = {
 
 # run with python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos_v2.yaml
 if __name__ == "__main__":
-    if True:
-        with open("/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/hp_tuning/resnet34_bcos_v2.yaml", "r") as f:
+    if False:
+        with open("/home/ma/ma_ma/ma_nilbecke/Interpretable-Deep-Fake-Detection/training/hp_tuning/resnet34.yaml", "r") as f:
             sweep_config = yaml.safe_load(f)
         sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
     else: # as soon as you have a sweep in which you want to try out more runs, replace the last sweep_id below
-        sweep_id = 'interpretable_deefake_detection/deepfake_training/p62d7k4i'
+        #sweep_id = wandb.sweep(sweep=sweep_config, project="deepfake_training")
+        sweep_id = 'interpretable_deefake_detection/deepfake_training/kvf04jr9'
 
     wandb.agent(sweep_id, function=train) # count=1) -> you can also specify count to only run N combinations
