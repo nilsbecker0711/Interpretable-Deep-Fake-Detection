@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet_v2
+log_dir: ./
 
 # model setting -> old
 freeze: false
@@ -32,10 +32,10 @@ backbone_config:
   norm_bias: false
 
 # dataset
-all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
-train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
-val_dataset: [FaceForensics++, FF-F2F]
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV, df-ff-hq]
+train_dataset: [df-tp-ffhq]
+test_dataset: [df-tp-ffhq] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [df-tp-ffhq]
 
 compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
