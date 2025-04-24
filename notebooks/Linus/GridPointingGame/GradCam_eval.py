@@ -25,7 +25,7 @@ from training.detectors.resnet34_detector import ResnetDetector
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
-def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None, threshold = 0.2):
+def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # only diff to bcos method is the heatmap is recieved in grayscale
     heatmap_intensity = heatmap
@@ -39,7 +39,7 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
     # Sum intensity in each cell.
-    intensity_sums = [np.sum([section>threshold]) for section in sections]
+    intensity_sums = [np.sum([section>0]) for section in sections]
     for i, intensity in enumerate(intensity_sums):
         print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
     guessed_fake_position = np.argmax(intensity_sums)
@@ -103,7 +103,7 @@ class GradCamEvaluator:
         #intensity_sum = np.sum(grayscale_cam, axis=(0, 1))
         #guessed_fake_pos = int(np.argmax(intensity_sum)) % grid_split
 
-        return grayscale_cam, heatmap #, guessed_fake_pos, intensity_sum
+        return grayscale_cam, rgb_img, heatmap #, guessed_fake_pos, intensity_sum
 
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
@@ -115,7 +115,7 @@ class GradCamEvaluator:
             true_fake_pos = self.extract_fake_position(path)
 
             # Grad-CAM heatmap
-            intensity_map, heatmap = self.generate_heatmap(tensor[0], path, grid_split, true_fake_pos)
+            intensity_map, rgb_img, heatmap = self.generate_heatmap(tensor[0], path, grid_split, true_fake_pos)
             original_image = self.convert_to_numpy(tensor[0])
             model_prediction = 1  # hardcoded as before
 
@@ -124,18 +124,34 @@ class GradCamEvaluator:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
 
             for t in thresholds:
-                logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
-
+                logger.info("Threshold = %s", t if t is not None else "no threshold")
+                # 1) build a binary mask
+                if t is None:
+                    mask = intensity_map
+                else:
+                    mask = np.copy(intensity_map)
+                    mask[intensity_map < t] = 0.0
+            
+                # 2) re-draw overlay
+                #    show_cam_on_image expects a float [0..1] image + float mask [0..1]
+                thresholded_overlay = show_cam_on_image(
+                    rgb_img,          # your normalized [H,W,3] original
+                    mask,             # now thresholded
+                    use_rgb=True
+                )
+            
+                # 3) compute cell guesses & accuracy as before
                 guessed_fake_pos, intensity_sums, acc = evaluate_heatmap(
-                    heatmap=intensity_map, grid_split=grid_split, true_fake_pos=true_fake_pos,
-                    threshold=t if t is not None else 0
+                    heatmap=mask,      # pass the 2D mask for counting
+                    grid_split=grid_split,
+                    true_fake_pos=true_fake_pos,
                 )
 
                 result = {
                     "threshold": t,
                     "path": path,
                     "original_image": original_image,
-                    "heatmap": heatmap,
+                    "heatmap": thresholded_overlay,
                     "guessed_fake_position": guessed_fake_pos,
                     "true_fake_position": true_fake_pos,
                     "accuracy": acc,
