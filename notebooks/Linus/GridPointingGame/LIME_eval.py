@@ -69,11 +69,15 @@ class LIMEEvaluator:
                          j * section_size_col:(j + 1) * section_size_col]
             for i in range(grid_split) for j in range(grid_split)
         ]
+        print(np.max(heatmap))
         
         # Count non-background pixels per section and choose the section with the maximum count
-        non_0_pixel_count = [np.sum(section > background_pixel) for section in sections]
-        fake_pred_index = np.argmax(non_0_pixel_count)
-        return fake_pred_index, non_0_pixel_count
+        grid_intensity_sums = [np.sum(section) for section in sections]  # sum of intensities, not count
+        for i, grid_intensity in enumerate(grid_intensity_sums):
+            print("Intensitätssumme für Zelle {}: {}".format(i, grid_intensity))
+            
+        fake_pred_index = np.argmax(grid_intensity_sums)
+        return fake_pred_index, grid_intensity_sums
     
     def extract_fake_position(self, path):
         """Extract fake position from filename."""
@@ -98,31 +102,53 @@ class LIMEEvaluator:
             out = self.model(data_dict)
             model_prediction = out['cls'][0].argmax().item()
 
+            
             explanation = self.explainer.explain_instance(
-                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=1000
+                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=500
             )
             fake_label = 1
-            temp, mask = explanation.get_image_and_mask(
-                fake_label, positive_only=False, num_features=100, hide_rest=False
-            )
+            weights = dict(explanation.local_exp[fake_label])
+            
+            weight_values = list(weights.values())
+            print(f"Min weight: {min(weight_values):.6f}, Max weight: {max(weight_values):.6f}")
+            
+            segments = explanation.segments
+            
+            weights = dict(explanation.local_exp[fake_label])  # {segment_idx: weight}
 
+            # Extrahiere positive Gewichte
+            positive_weights = [w for w in weights.values() if w >= 0]
+            
+            # Bestimme das maximale positive Gewicht
+            max_positive_weight = max(positive_weights) if positive_weights else 0
+            
+            # Skaliere die Gewichte relativ zum maximalen positiven Gewicht
+            scaled_weights = {k: (v / max_positive_weight) if v > 0 else 0 for k, v in weights.items()}
+
+            intensity_map = np.zeros(segments.shape, dtype=np.float32)
+            for seg_val in np.unique(segments):
+                if seg_val in scaled_weights:
+                    intensity_map[segments == seg_val] = scaled_weights[seg_val]
+    
             thresholds = [None]
             if threshold_steps > 0:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
-
-            true_fake_pos = self.extract_fake_position(path)
-
+    
             for t in thresholds:
-                if t is None:
-                    thresholded_mask = mask.copy()
-                else:
-                    thresholded_mask = (mask > t).astype(np.uint8)
+                threshold_value = t if t is not None else 0
 
-                fake_pred, pixel_counts = self.lime_grid_eval(thresholded_mask, grid_split=grid_split)
-                total_nonzero = float(sum(pixel_counts))
+                thresholded_map = intensity_map.copy()
 
-                if total_nonzero > 0 and 0 <= true_fake_pos < len(pixel_counts):
-                    grid_accuracy = pixel_counts[true_fake_pos] / total_nonzero
+                # Zero out values below the threshold
+                thresholded_map[thresholded_map < threshold_value] = 0
+                    
+                true_fake_pos = self.extract_fake_position(path)
+                fake_pred, grid_intensity_sums = self.lime_grid_eval(
+                    thresholded_map, grid_split=grid_split, background_pixel=0.0
+                )
+                total_intensity = sum(grid_intensity_sums)
+                if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
+                    grid_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
                 else:
                     grid_accuracy = 0
 
@@ -130,7 +156,7 @@ class LIMEEvaluator:
                     "threshold": t,
                     "path": path,
                     "original_image": img_np,
-                    "heatmap": mark_boundaries(temp, thresholded_mask),
+                    "heatmap": thresholded_map,
                     "guessed_fake_position": fake_pred,
                     "accuracy": grid_accuracy,
                     "true_fake_position": true_fake_pos,

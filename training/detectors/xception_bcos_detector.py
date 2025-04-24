@@ -50,7 +50,6 @@ from detectors import DETECTOR
 from networks.base import BACKBONE
 from loss import LOSSFUNC
 
-
 logger = logging.getLogger(__name__)
 
 @DETECTOR.register_module(module_name='xception_bcos_detector')
@@ -66,9 +65,8 @@ class XceptionBcosDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
-        if config["eval"] == False:
-            backbone.apply(backbone.initialize_weights)
-            logger.info("Initialized backbone weights from scratch!")
+        backbone.apply(backbone.initialize_weights)
+        logger.info("Initialized backbone weights from scratch!")
         return backbone
     
     def build_loss(self, config):

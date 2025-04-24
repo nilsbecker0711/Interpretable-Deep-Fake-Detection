@@ -23,9 +23,10 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run3_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run5_config.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -361,27 +362,8 @@ def main():
     for k, v in state_dict.items():
         new_state_dict[k.replace("module.", "")] = v
 
-    ##########
-    
-    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
-    res = model.load_state_dict(new_state_dict, strict=False)
-    
-    # 3) Logge, was fehlt und was extra war
-    logger.info("Missing keys: %s", res.missing_keys)
-    logger.info("Unexpected keys: %s", res.unexpected_keys)
-    
-    # 4) quick‐check eines Backbone‐Weights
-    first_weight = next(model.backbone.parameters())
-    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
+    model.load_state_dict(new_state_dict, strict=False)
 
-    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
-    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
-
-
-
-
-
-    ########
     
     # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -389,35 +371,6 @@ def main():
 
     model.eval()  # Set model to evaluation mode.
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
-
-    ##########
-
-
-
-
-    
-    # 1. Zähle alle detach-fähigen Module
-    all_detachable = [m for m in model.backbone.modules() if hasattr(m, "detach")]
-    print("Anzahl aller detach-fähigen Module:", len(all_detachable))
-
-    # 2. Vor Explanation-Modus: sollten alle detach=False sein
-    pre = sum(1 for m in all_detachable if m.detach)
-    print("Vorher detach=True:", pre)
-
-    # 3. Im Explanation-Modus
-    with model.backbone.explanation_mode():
-        mid = sum(1 for m in all_detachable if m.detach)
-        print("Im Kontext detach=True:", mid)
-
-    # 4. Nach Exit: wieder alle auf False?
-    post = sum(1 for m in all_detachable if m.detach)
-    print("Danach detach=True:", post)
-    # —––––––––– ENDE ––––––––––
-
-
-
-
-    ############
         
     model_name = config.get("model_name", "defaultModel")
     config_name = os.path.basename(CONFIG_PATH).split('.')[0]

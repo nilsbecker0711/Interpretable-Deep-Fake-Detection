@@ -55,7 +55,7 @@ class BCOSEvaluator:
         # Move tensor to device and enable gradients.
         img = tensor.to(self.device).requires_grad_(True)
         logger.debug("Input tensor shape: %s", img.shape)
-        
+
         self.model.zero_grad()  # Reset gradients.
         out = self.model({'image': img})  # Forward pass.
         
@@ -144,7 +144,15 @@ class BCOSEvaluator:
                 if threshold is None:
                     return heatmap.copy()
                 thresholded = heatmap.copy()
-                thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
+                #thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
+
+                # extract the alpha channel
+                alpha = thresholded[:, :, 3]
+                # zero-out anything under threshold
+                mask = alpha >= threshold
+                alpha_thresholded = alpha.copy()
+                alpha_thresholded[~mask] = 0.0
+                thresholded[:, :, 3] = alpha_thresholded
                 return thresholded
 
             for t in thresholds:

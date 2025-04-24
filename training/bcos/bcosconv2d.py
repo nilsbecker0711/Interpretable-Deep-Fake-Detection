@@ -124,11 +124,6 @@ class BcosConv2d(DetachableModule):
         self.patch_size = int(
             np.prod(self.linear.kernel_size)  # internally converted to a pair
         )
-        
-    def set_explanation_mode(self, mode: bool):
-        self.detach = mode
-        print(f"[DEBUG] {self.__class__.__name__} detach set to {on}")
-        
 
     def forward(self, in_tensor: Tensor) -> Tensor:
         """
