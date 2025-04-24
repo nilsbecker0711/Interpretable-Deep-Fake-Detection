@@ -51,6 +51,7 @@ parser.add_argument('--no-save_feat', dest='save_feat', action='store_false', de
 parser.add_argument("--ddp", action='store_true', default=False)
 # parser.add_argument('--local_rank', type=int, default=0)
 parser.add_argument('--task_target', type=str, default="", help='specify the target of current training task')
+parser.add_argument("--sweep_id", type=str, default="", help="w&b sweep ID")
 args = parser.parse_args()
 local_rank = int(os.environ.get('LOCAL_RANK', 0))  # Default to 0 if not set
 args.local_rank = local_rank

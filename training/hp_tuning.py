@@ -28,6 +28,7 @@ parser.add_argument("--no-save_ckpt", dest="save_ckpt", action="store_false", de
 parser.add_argument("--no-save_feat", dest="save_feat", action="store_false", default=True)
 parser.add_argument("--ddp", action="store_true", default=False)
 parser.add_argument("--task_target", type=str, default="", help="specify the target of current training task")
+parser.add_argument("--sweep_id", type=str, default="", help="w&b sweep ID")
 args = parser.parse_args()
 
 # Distributed Training Setup
@@ -355,6 +356,6 @@ if __name__ == "__main__":
         # resnet with b=2 runs: sweep_id = 'p62d7k4i'
         # vit with b=1.25: 5m8mucm6 -> wide search, maybe better to go through narrow search instead wrt. to norms
         # vit with b=1.25 working norm and model_type om1v67lc
-        sweep_id = 'interpretable_deefake_detection/deepfake_training/om1v67lc'
+        sweep_id = f'interpretable_deefake_detection/deepfake_training/{args.sweep_id}'
 
     wandb.agent(sweep_id, function=train) # count=1) -> you can also specify count to only run N combinations
