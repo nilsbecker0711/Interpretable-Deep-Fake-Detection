@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
+log_dir: ./ # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
 
 # model setting
 pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/resnet34/resnet34_03_18_16_59_57_ckpt_best.pth   # path to a pre-trained model, if using one
@@ -14,15 +14,17 @@ backbone_config:
   mode: Original
 
 # dataset
-all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
-train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++]
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV, df-tp-ffhq]
+train_dataset: [df-tp-ffhq]
+val_dataset: [df-tp-ffhq]
+test_dataset: [df-tp-ffhq]
 
 compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
+val_batchSize: 64
 test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
-frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
+frame_num: {'train': 32, 'val': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
@@ -86,3 +88,4 @@ metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 
 cuda: true   # whether to use CUDA acceleration
 cudnn: true   # whether to use CuDNN for convolution operations
+ddp: false

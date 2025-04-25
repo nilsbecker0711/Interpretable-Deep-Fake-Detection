@@ -8,8 +8,8 @@ from metrics.registry import LOSSFUNC
 class CrossEntropyLoss(AbstractLossClass):
     def __init__(self):
         super().__init__()
-        #class_weights = torch.tensor([1.0, 1.0])
-        self.loss_fn = nn.CrossEntropyLoss() #weight=class_weights
+        # class_weights = torch.tensor([3.0, 1.0])
+        self.loss_fn = nn.CrossEntropyLoss()#weight=class_weights)
 
     def forward(self, inputs, targets):
         """
@@ -24,5 +24,4 @@ class CrossEntropyLoss(AbstractLossClass):
         """
         # Compute the cross-entropy loss
         loss = self.loss_fn(inputs, targets)
-
         return loss

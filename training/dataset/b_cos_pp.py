@@ -156,6 +156,13 @@ class DeepfakeBcosDataset(data.Dataset):
             if self.lmdb:
                 lmdb_path = os.path.join(config['lmdb_dir'], f"{one_data}_lmdb" if one_data not in FFpp_pool else 'FaceForensics++_lmdb')
                 self.env = lmdb.open(lmdb_path, create=False, subdir=True, readonly=True, lock=False)
+        elif mode=='val':
+            one_data = config['val_dataset']
+            # Test dataset should be evaluated separately. So collect only one dataset each time
+            image_list, label_list, name_list = self.collect_img_and_label_for_one_dataset(one_data)
+            if self.lmdb:
+                lmdb_path = os.path.join(config['lmdb_dir'], f"{one_data}_lmdb" if one_data not in FFpp_pool else 'FaceForensics++_lmdb')
+                self.env = lmdb.open(lmdb_path, create=False, subdir=True, readonly=True, lock=False)
         else:
             raise NotImplementedError('Only train and test modes are supported.')
 
@@ -240,9 +247,11 @@ class DeepfakeBcosDataset(data.Dataset):
             #     dataset_info = json.load(f)
             # ALTERNATIVELY, IF THERE IS AN ERROR HERE
             prefix="~/Interpretable-Deep-Fake-Detection/"
+            print(self.config['dataset_json_folder'])
+            print(dataset_name)
             folder_path = os.path.join(self.config['dataset_json_folder'], dataset_name + '.json')
-            correct_path = os.path.expanduser(os.path.join(prefix, folder_path))
-            with open(correct_path, 'r') as f:
+            #correct_path = os.path.expanduser(os.path.join(prefix, folder_path))
+            with open(folder_path, 'r') as f:
                 dataset_info = json.load(f)
         except Exception as e:
             print(e)
@@ -412,13 +421,16 @@ class DeepfakeBcosDataset(data.Dataset):
         if file_path is None:
             return np.zeros((size, size, 1))
         if not self.lmdb:
-            if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+            # if not file_path[0] == '.':
+            #     file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+            # assert os.path.exists(file_path), f"{file_path} does not exist"
             if os.path.exists(file_path):
                 mask = cv2.imread(file_path, 0)
                 if mask is None:
+                    # print(f"{file_path} Mask is None! \n")
                     mask = np.zeros((size, size))
             else:
+                # print(f"{file_path} not found \n")
                 return np.zeros((size, size, 1))
         else:
             with self.env.begin(write=False) as txn:

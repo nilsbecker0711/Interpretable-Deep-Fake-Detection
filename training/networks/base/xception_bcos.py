@@ -381,4 +381,3 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         for m in self.modules():
             if hasattr(m, "set_explanation_mode"):
                 m.set_explanation_mode(False)
-            

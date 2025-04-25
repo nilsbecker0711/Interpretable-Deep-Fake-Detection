@@ -28,6 +28,7 @@ parser.add_argument("--no-save_ckpt", dest="save_ckpt", action="store_false", de
 parser.add_argument("--no-save_feat", dest="save_feat", action="store_false", default=True)
 parser.add_argument("--ddp", action="store_true", default=False)
 parser.add_argument("--task_target", type=str, default="", help="specify the target of current training task")
+parser.add_argument("--sweep_id", type=str, default="", help="w&b sweep ID")
 args = parser.parse_args()
 
 # Distributed Training Setup
@@ -68,80 +69,90 @@ def load_config():
 def set_wandb_config(config):
     """Overrides config values with hyperparameters from W&B Sweeps."""
     wandb_config = wandb.config  # Fetch hyperparameters from sweep
-    print(wandb_config)
 
-    # general parameters
-    #config['freeze'] = wandb_config.freeze
-    config['train_batchSize'] = wandb_config.batchSize
-    config['test_batchSize'] = wandb_config.batchSize
-    config['nEpochs'] = wandb_config.nEpochs
-    config['manualSeed'] = wandb_config.manualSeed
+    # General parameters
+    general_params = ['batchSize', 'nEpochs', 'manualSeed']
+    for param in general_params:
+        value = getattr(wandb_config, param, None)
+        if value is not None:
+            if param == 'batchSize':
+                config['train_batchSize'] = value
+                config['val_batchSize'] = value
+                config['test_batchSize'] = value
+            else:
+                config[param] = value
 
-    # optimizer
-    optimizer_type = wandb_config.optimizer
-    config['optimizer']['type'] = wandb_config.optimizer
-    config['optimizer'][optimizer_type]['lr'] = wandb_config.lr
-    config['optimizer'][optimizer_type]['weight_decay'] = wandb_config.weight_decay
-    if optimizer_type == 'adam':
-        config['optimizer'][optimizer_type]['beta1'] = wandb_config.beta1
-        config['optimizer'][optimizer_type]['beta2'] = wandb_config.beta2
-        config['optimizer'][optimizer_type]['eps'] = wandb_config.eps
-        config['optimizer'][optimizer_type]['amsgrad'] = wandb_config.amsgrad
-    elif optimizer_type == 'sgd':
-        config['optimizer'][optimizer_type]['momentum'] = wandb_config.momentum
+    # Optimizer settings
+    optimizer_type = wandb_config["optimizer"]
+    config["optimizer"]["type"] = optimizer_type
+    opt_config = config["optimizer"][optimizer_type]
+    for key in ["lr", "weight_decay", "beta1", "beta2", "eps", "amsgrad", "momentum"]:
+        if key in wandb_config:
+            opt_config[key] = wandb_config[key]
+
+    # Scheduler
+    lr_scheduler = getattr(wandb_config, 'lr_scheduler', None)
+    if lr_scheduler != "None":
+        config['lr_scheduler'] = lr_scheduler
+        if lr_scheduler == 'step':
+            config['lr_step'] = getattr(wandb_config, 'lr_step', config.get('lr_step'))
+            config['lr_gamma'] = getattr(wandb_config, 'lr_gamma', config.get('lr_gamma'))
+        elif lr_scheduler in ['warmup', 'cosine', 'warmup_cosine']:
+            config['lr_T_max'] = getattr(wandb_config, 'lr_T_max', config.get('lr_T_max'))
+            config['lr_eta_min'] = getattr(wandb_config, 'lr_eta_min', config.get('lr_eta_min'))
+    else:
+        config['lr_scheduler'] = None
+    # Data
+    config['use_data_augmentation'] = getattr(wandb_config, 'use_data_augmentation', False)
     
-    # lr scheduler
-    lr_scheduler = wandb_config.lr_scheduler
-    config['lr_scheduler'] = wandb_config.lr_scheduler
-    if lr_scheduler == 'step':
-        config['lr_step'] = wandb_config.lr_step
-        config['lr_gamma'] = wandb_config.lr_gamma
-    elif  lr_scheduler in ['warmup', 'cosine']:
-        config['lr_T_max'] = wandb_config.lr_T_max
-        config['lr_eta_min'] = wandb_config.lr_eta_min
-
-    # model parameters
-    config['backbone_config']['log_temperature'] = wandb_config.log_temperature
-    config['backbone_config']['bias'] = wandb_config.bias
-    config['backbone_config']['b'] = wandb_config.b
-     
-    config["use_data_augmentation"] = wandb_config.use_data_augmentation
+    # Backbone/model parameters
+    # backbone_params = ['b', 'stochastic_depth_prob']
+    # for param in backbone_params:
+    #     config['backbone_config'][param] = getattr(wandb_config, param, config['backbone_config'].get(param))
+    if "backbone_config" in config:
+        for key in config["backbone_config"].keys():
+            if key in wandb_config:
+                config["backbone_config"][key] = wandb_config[key]
+                print(f"Setting parameter {key}")
+    
     return config
 
 
-def broadcast_config(config):
-    """Broadcast config from rank 0 to all other processes."""
-    if dist.is_initialized():
-        for key, value in config.items():
-            if isinstance(value, (int, float)):  
-                value_tensor = torch.tensor(value, dtype=torch.float32).cuda()
-                dist.broadcast(value_tensor, src=0)
-                config[key] = value_tensor.item()  
-    return config   
+# def broadcast_config(config):
+#     """Broadcast config from rank 0 to all other processes."""
+#     if dist.is_initialized():
+#         for key, value in config.items():
+#             if isinstance(value, (int, float)):  
+#                 value_tensor = torch.tensor(value, dtype=torch.float32).cuda()
+#                 dist.broadcast(value_tensor, src=0)
+#                 config[key] = value_tensor.item()  
+#     return config   
 
 def train():
     """Main training function, called per W&B Sweep run."""
     config = load_config()
+    
+    # if config["ddp"]:
+    #     dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
+    #     logger.addFilter(RankFilter(0))
 
-    timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  # Format: Month_Day_Hour_Minute
-    is_main_process = (not config["ddp"]) or (dist.is_initialized() and dist.get_rank() == 0)
+    timestamp = datetime.datetime.now().strftime("%b_%d_%H_%M")  
+    wandb.init(
+        project="deepfake_training",  
+        group="HP_tuning",  
+        name=f"{config['model_name']}_{timestamp}" if not config["ddp"] else f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}",
+        config=config,
+        dir=None, 
+    )
+    config = set_wandb_config(config)
+    # Fetch WandB config only in the main process
 
-    if is_main_process:  
-        wandb.init(
-            project="deepfake_training",  
-            group="HP_tuning",  
-            name=f"{config['model_name']}_{timestamp}" if not config["ddp"] else f"{config['model_name']}_{timestamp}_rank_{dist.get_rank()}",
-            dir=None
-        )
-        # Fetch WandB config only in the main process
-        config = set_wandb_config(config)
-
-    if config["ddp"]:
-        dist.barrier()  # Ensure all processes wait for W&B to initialize
+    # if config["ddp"]:
+    #     dist.barrier()  # Ensure all processes wait for W&B to initialize
     
     # Now broadcast config from rank 0 to all other processes
-    if config["ddp"]:
-        config = broadcast_config(config)
+    # if config["ddp"]:
+    #     config = broadcast_config(config)
     
     # Update config with WandB Sweep parameters
     config = set_wandb_config(config)
@@ -154,15 +165,11 @@ def train():
     logger = create_logger(os.path.join(logger_path, "training.log"))
     logger.info(f"Save log to {logger_path}")
 
-    if config["ddp"]:
-        dist.init_process_group(backend="nccl", timeout=timedelta(minutes=30))
-        logger.addFilter(RankFilter(0))
-
     # Print Configuration (Only rank 0)
-    if is_main_process:
-        logger.info("--------------- Configuration ---------------")
-        for key, value in config.items():
-            logger.info(f"{key}: {value}")
+    # if is_main_process:
+    logger.info("--------------- Configuration ---------------")
+    for key, value in config.items():
+        logger.info(f"{key}: {value}")
 
     # Initialize Seed
     init_seed(config)
@@ -173,7 +180,8 @@ def train():
 
     # Prepare Data Loaders
     train_data_loader = prepare_training_data(config)
-    test_data_loaders = prepare_testing_data(config)
+    val_data_loaders = prepare_testing_data(config, mode='val')
+    test_data_loaders = prepare_testing_data(config, mode='test')
 
     # Model, Optimizer, Scheduler, Metric
     model_class = DETECTOR[config["model_name"]]
@@ -188,15 +196,19 @@ def train():
     # Start Training
     for epoch in range(config["start_epoch"], config["nEpochs"] + 1):
         trainer.model.epoch = epoch
-        best_metric = trainer.train_epoch(
+        val_best_metric, test_best_metric = trainer.train_epoch(
             epoch=epoch,
             train_data_loader=train_data_loader,
-            test_data_loaders=test_data_loaders
+            test_data_loaders=test_data_loaders,
+            val_data_loaders=val_data_loaders
         )
-        if best_metric is not None:
-            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {best_metric}!")
+        if val_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with val {metric_scoring}: {val_best_metric}!")
+        if test_best_metric is not None:
+            logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {test_best_metric}!")
 
-    logger.info(f"Stop Training on best Testing metric {best_metric}")
+    logger.info(f"Stop Training on best Validation metric {val_best_metric}")
+    logger.info(f"Stop Training on best Testing metric {test_best_metric}")
 
     # Update SVDD Model
     if "svdd" in config["model_name"]:
@@ -209,17 +221,16 @@ def train():
     for writer in trainer.writers.values():
         writer.close()
 
-    if is_main_process:
-        wandb.finish()  # Mark WandB run as complete
+    wandb.finish()  # Mark WandB run as complete
 
 sweep_config = {
     'method': 'random',  # You can also use 'bayes' here
-    'metric': {'name': 'test_metrics/auc', 'goal': 'maximize'},  # Set the metric for optimization
+    'metric': {'name': 'val_metrics/auc', 'goal': 'maximize'},  # Set the metric for optimization
     'parameters': {
         # general parameters
         #'freeze':{'values': [True, False]},
         'batchSize': {'values': [16, 32, 64, 128]},
-        'nEpochs': {'values': [10, 15, 20, 35]},
+        'nEpochs': {'values': [10]},
         'manualSeed': {'values': [1, 10, 1024],},
         #TODO gradient clipping
 
@@ -300,17 +311,22 @@ sweep_config = {
 
 
         # ------   Model parameters --------
-        'log_temperature': {
-            'min': 0,
-            'max': 0.000000001,
-            'distribution': 'uniform',
-        },
-        'bias': {
-            'values': [[0.5, 0.5], [0.25, 0.75], [0.75, 0.25], [0.1, 0.9]]
-            },
+        # 'log_temperature': {
+        #     'min': 0,
+        #     'max': 0.000000001,
+        #     'distribution': 'uniform',
+        # },
+        # 'bias': {
+        #     'values': [[0.5, 0.5], [0.25, 0.75], [0.75, 0.25], [0.1, 0.9]]
+        #     },
         'b':{
             'min': 1,
-            'max': 2,
+            'max': 2.5,
+            'distribution': 'uniform',
+        },
+        'stochastic_depth_prob':{
+            'min': 0.0,
+            'max': 0.2,
             'distribution': 'uniform',
         },
         #TODO other resnet sizes
@@ -321,12 +337,25 @@ sweep_config = {
             'values':[True, False],
         },
 
+    },
+    'early_terminate': {
+        'type': 'hyperband',
+        # 's':2,
+        # 'eta':3,
     }
+
 }
 
-
+# run with python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34_bcos_v2.yaml
 if __name__ == "__main__":
-    sweep_id = 'interpretable_deefake_detection/deepfake_training/mlmd0ips' #
-    # sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
+    if False:
+        with open("/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/hp_tuning/vit_bcos.yaml", "r") as f:
+            sweep_config = yaml.safe_load(f)
+        sweep_id = wandb.sweep(sweep_config, project="deepfake_training")
+    else: # as soon as you have a sweep in which you want to try out more runs, replace the last sweep_id below
+        # resnet with b=2 runs: sweep_id = 'p62d7k4i'
+        # vit with b=1.25: 5m8mucm6 -> wide search, maybe better to go through narrow search instead wrt. to norms
+        # vit with b=1.25 working norm and model_type om1v67lc
+        sweep_id = f'interpretable_deefake_detection/deepfake_training/{args.sweep_id}'
 
-    wandb.agent(sweep_id, function=train, count=1)  # Run one sweep at a time
+    wandb.agent(sweep_id, function=train) # count=1) -> you can also specify count to only run N combinations

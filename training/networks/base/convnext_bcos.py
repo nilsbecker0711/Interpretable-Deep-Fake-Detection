@@ -161,8 +161,8 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.conv_layer = DEFAULT_CONV_LAYER
         norm_layer = DEFAULT_NORM_LAYER
         self.norm_layer = DEFAULT_NORM_LAYER
-        logit_bias = convnext_config["logit_bias"]
-        logit_temperature = convnext_config["logit_temperature"]
+        self.logit_bias = convnext_config["logit_bias"]
+        self.logit_temperature = convnext_config["logit_temperature"]
     #     **kwargs: Any,
     # ) -> None:
 
@@ -254,18 +254,19 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         #self.num_classes = num_classes
         
         #declare here as none to test
-        logit_bias = None
-        logit_temperature = None
+        #logit_bias = None
+        #logit_temperature = None
+
         self.logit_layer = LogitLayer(
-            logit_temperature=logit_temperature,
-            logit_bias=logit_bias or -math.log(self.num_classes - 1),
+            logit_temperature=self.logit_temperature,
+            logit_bias=self.logit_bias or -math.log(self.num_classes - 1),
         )
 
-        for m in self.modules():
-            if isinstance(m, (nn.Conv2d, nn.Linear)):
+        """ for m in self.modules():
+            if isinstance(m, (nn.BcosConv2d, nn.Linear)):
                 nn.init.trunc_normal_(m.weight, std=0.02)
                 if m.bias is not None:
-                    nn.init.zeros_(m.bias)
+                    nn.init.zeros_(m.bias) """
         
     def classifier_impl(self, features):
         x = self.classifier(features)
@@ -286,6 +287,28 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         out = self.classifier_impl(x)
         return out
     
+    def initialize_weights(self, module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.BatchNorm2d):
+            nn.init.constant_(module.weight, 1)
+            nn.init.constant_(module.bias, 0)
+        elif isinstance(module, nn.Linear):
+            nn.init.xavier_normal_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
+        # Recursively apply to custom modules
+        elif isinstance(module, SeparableConv2d) or isinstance(module, Block):
+            for submodule in module.children():
+                self.initialize_weights(submodule)
+        # Ignore activation, pooling, and sequential layers
+        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
+            pass  # Do nothing
+        else:
+            print(f'unknown module type {type(module)}')
+
 
     def get_classifier(self) -> nn.Module:
         """Returns the classifier part of the model. Note this comes before global pooling."""

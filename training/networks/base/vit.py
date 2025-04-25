@@ -29,13 +29,12 @@ Feel free to open up an issue at https://github.com/B-cos/B-cos-v2 if you have a
 """
 from collections import OrderedDict
 from typing import Any, Callable, List, Tuple, Union
-
+import math
 import torch
 from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch import Tensor, nn
 from bcos.modules import DetachableGNLayerNorm2d, BcosConv2d, LogitLayer, norms, BcosLinear
-
 from bcos.modules.common import DetachableModule
 from metrics.registry import BACKBONE
 
@@ -96,6 +95,7 @@ class FeedForward(nn.Module):
         linear_layer: Callable[..., nn.Module] = None,
         norm_layer: Callable[..., nn.Module] = None,
         act_layer: Callable[..., nn.Module] = None,
+        b=1.25,
     ):
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
@@ -105,9 +105,9 @@ class FeedForward(nn.Module):
         self.net = nn.Sequential(
             OrderedDict(
                 norm=norm_layer(dim),
-                linear1=linear_layer(dim, hidden_dim),
+                linear1=linear_layer(dim, hidden_dim, b=b),
                 act=act_layer(),
-                linear2=linear_layer(hidden_dim, dim),
+                linear2=linear_layer(hidden_dim, dim, b=b),
             )
         )
 
@@ -123,6 +123,7 @@ class Attention(DetachableModule):
         dim_head: int = 64,
         linear_layer: nn.Module = None,
         norm_layer: nn.Module = None,
+        b=1.25,
     ):
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
@@ -140,10 +141,10 @@ class Attention(DetachableModule):
 
         self.attend = nn.Softmax(dim=-1)
         self.to_qkv = nn.Linear(dim, inner_dim * n_lins, bias=False)
-        self.to_out = linear_layer(inner_dim, dim, bias=False)
+        self.to_out = linear_layer(inner_dim, dim, bias=False, b=b)
 
     def forward(self, x: Tensor) -> Tensor:
-        print(x.shape)
+        # print(x.shape)
         # x= x.unsqueeze(-1)
         x = self.norm(x)
         qkv = self.to_qkv(x).chunk(3, dim=-1)
@@ -172,6 +173,7 @@ class Encoder(nn.Module):
         linear_layer: Callable[..., nn.Module] = None,
         norm_layer: Callable[..., nn.Module] = None,
         act_layer: Callable[..., nn.Module] = None,
+        b=1.25,
     ):
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
@@ -185,6 +187,7 @@ class Encoder(nn.Module):
             dim_head=dim_head,
             linear_layer=linear_layer,
             norm_layer=norm_layer,
+            b=b,
         )
 
         self.ff = FeedForward(
@@ -193,6 +196,7 @@ class Encoder(nn.Module):
             linear_layer=linear_layer,
             norm_layer=norm_layer,
             act_layer=act_layer,
+            b=b,
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -212,6 +216,7 @@ class Transformer(nn.Sequential):
         linear_layer: Callable[..., nn.Module] = None,
         norm_layer: Callable[..., nn.Module] = None,
         act_layer: Callable[..., nn.Module] = None,
+        b=1.25,
     ):
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
@@ -227,6 +232,7 @@ class Transformer(nn.Sequential):
                 linear_layer=linear_layer,
                 norm_layer=norm_layer,
                 act_layer=act_layer,
+                b=b,
             )
         super().__init__(layers_odict)
 
@@ -235,13 +241,39 @@ class SimpleViT(nn.Module):
     def __init__(self, vit_config):
         #_warn_if_not_called_from_bcos_models_pretrained_or_torch_hub()
         super(SimpleViT, self).__init__()
-        image_size=14
-        patch_size=1
-        depth=12- 1  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
-        dim=384 // 2
-        heads=6 // 2
-        mlp_dim=1536 // 2
-        conv_stem=None#[24, 48, 96, 192]
+        model_type = vit_config['model_type']
+        if model_type == "vitc_ti_patch1_14":
+            image_size, patch_size, depth, dim = 14, 1, 11, 384//2
+            heads, mlp_dim, conv_stem = 6//2, 1536//2, [24, 48, 96, 192]
+        elif model_type == "vitc_s_patch1_14":
+            image_size, patch_size, depth, dim = 14, 1, 11, 384
+            heads, mlp_dim, conv_stem = 6, 1536, [48, 96, 192, 384]
+        elif model_type == "vitc_b_patch1_14":
+            image_size, patch_size, depth, dim = 14, 1, 11, 384 * 2
+            heads, mlp_dim, conv_stem = 6 * 2, 1536 * 2, [64, 128, 128, 256, 256, 512]
+        elif model_type == "vitc_l_patch1_14":
+            image_size, patch_size, depth, dim = 14, 1, 13, 1024
+            heads, mlp_dim, conv_stem = 16, 1024 * 4, [64, 128, 128, 256, 256, 512]
+        elif model_type == "simple_vit_ti_patch16_224":
+            image_size, patch_size, depth, dim = 224, 16, 12, 384 // 2
+            heads, mlp_dim, conv_stem = 6 // 2, 1536 // 2, None
+        elif model_type == "simple_vit_s_patch16_224":
+            image_size, patch_size, depth, dim = 224, 16, 12, 384
+            heads, mlp_dim, conv_stem = 6, 1536, None
+        elif model_type == "simple_vit_b_patch16_224":
+            image_size, patch_size, depth, dim = 224, 16, 12, 384 * 2
+            heads, mlp_dim, conv_stem = 6 * 2, 1536 * 2, None
+        elif model_type == "simple_vit_l_patch16_224":
+            image_size, patch_size, depth, dim = 224, 16, 14, 1024
+            heads, mlp_dim, conv_stem = 16, 1024 * 4, None
+        else:
+            image_size=vit_config['image_size']
+            patch_size=vit_config['patch_size']
+            depth=vit_config['depth'] # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
+            dim=vit_config['dim']
+            heads=vit_config['heads']
+            mlp_dim=vit_config['mlp_dim']
+            conv_stem=vit_config['conv_stem'] #[24, 48, 96, 192]
 
         num_classes = vit_config['num_classes']
         # dim = 384 // 2 #vit_config['dim']
@@ -250,7 +282,7 @@ class SimpleViT(nn.Module):
         # mlp_dim = vit_config['mlp_dim']
         channels = vit_config.get('channels', 6)  # Default to 6 if not provided
         b = vit_config['b']
-        max_out = vit_config['max_out']
+        max_out = vit_config.get('max_out', None)
         # image_size = vit_config['image_size']
         # patch_size = vit_config['patch_size']
 
@@ -261,8 +293,53 @@ class SimpleViT(nn.Module):
         linear_layer = BcosLinear #(b=b, max_out=max_out) # in_features: int, out_features: int, bias: bool = False, device=None, dtype=None,
         conv2d_layer = BcosConv2d #(b=b, max_out=1) # vit_config.get('conv2d_layer', None)
 
-        norm_layer = norms.NoBias(nn.LayerNorm) #norms.NoBias(norms.DetachablePositionNorm2d)#norms.NoBias(norms.BatchNormUncentered2d) #vit_config.get('norm_layer', None)
-        norm2d_layer = norms.NoBias(nn.LayerNorm) #norms.NoBias(norms.DetachablePositionNorm2d)#vit_config.get('norm2d_layer', None)
+        # norm_layer = norms.NoBias(norms.DetachableLayerNorm) #vit_config.get('norm_layer', None)
+        # norm2d_layer = norms.NoBias(DetachableGNLayerNorm2d) #vit_config.get('norm2d_layer', None)
+
+        # Define a mapping of norm names to norm classes
+        norm_mapping = {
+            'AllNormUncentered2d': norms.AllNormUncentered2d,
+            'BatchNormUncentered2d': norms.BatchNormUncentered2d,
+            'GroupNormUncentered2d': norms.GroupNormUncentered2d,
+            'GNInstanceNormUncentered2d': norms.GNInstanceNormUncentered2d,
+            'GNLayerNormUncentered2d': norms.GNLayerNormUncentered2d,
+            'PositionNormUncentered2d': norms.PositionNormUncentered2d,
+            'AllNorm2d': norms.AllNorm2d,
+            'BatchNorm2d': norms.BatchNorm2d,
+            'DetachableGroupNorm2d': norms.DetachableGroupNorm2d,
+            'DetachableGNInstanceNorm2d': norms.DetachableGNInstanceNorm2d,
+            'DetachableGNLayerNorm2d': norms.DetachableGNLayerNorm2d,
+            'DetachableLayerNorm': norms.DetachableLayerNorm,
+            'DetachablePositionNorm2d': norms.DetachablePositionNorm2d
+        }
+
+        # Retrieve the norm class from the mapping based on config
+        norm_class = norm_mapping.get(vit_config['norm'], None)
+
+        if norm_class is None:
+            raise ValueError(f"Unknown norm type: {vit_config['norm']}")
+
+        # Apply norm bias if specified in config
+        if vit_config.get('norm_bias', False):
+            norm_layer = norms.NoBias(norm_class)
+        else:
+            norm_layer = norm_class
+
+        # norm2d_layer = norm_layer #norms.NoBias(norms.BatchNorm2d)
+
+        # Retrieve the norm class from the mapping based on config
+        norm_2d_class = norm_mapping.get(vit_config['norm_2d'], None)
+
+        if norm_2d_class is None:
+            raise ValueError(f"Unknown norm type: {vit_config['norm_2d']}")
+
+        # Apply norm bias if specified in config
+        if vit_config.get('norm_2d_bias', False):
+            norm2d_layer = norms.NoBias(norm_2d_class)
+        else:
+            norm2d_layer = norm_2d_class
+
+
         act_layer = nn.Identity #vit_config.get('act_layer', None)
         assert exists(linear_layer), "Provide a linear layer class!"
         assert exists(norm_layer), "Provide a norm layer (compatible with LN) class!"
@@ -292,7 +369,7 @@ class SimpleViT(nn.Module):
             if conv_stem is None
             else dict(
                 conv_stem=make_conv_stem(
-                    channels, conv_stem, conv2d_layer, norm2d_layer, act_layer
+                    channels, conv_stem, conv2d_layer, norm2d_layer, act_layer, b=b
                 )
             )
         )
@@ -304,7 +381,7 @@ class SimpleViT(nn.Module):
                     p1=patch_height,
                     p2=patch_width,
                 ),
-                linear=linear_layer(self.patch_dim, dim),#, b=b, max_out=max_out),
+                linear=linear_layer(self.patch_dim, dim, b=b), #max_out=max_out),
             )
         )
         self.positional_embedding = PosEmbSinCos2d()
@@ -319,17 +396,23 @@ class SimpleViT(nn.Module):
             linear_layer=linear_layer,
             norm_layer=norm_layer,
             act_layer=act_layer,
+            b=b,
         )
 
         self.to_latent = nn.Identity()
         self.linear_head = nn.Sequential(
             OrderedDict(
                 norm=norm_layer(dim),
-                linear=linear_layer(dim, num_classes),# b=b, max_out=max_out),
+                linear=linear_layer(dim, num_classes, b=b), #max_out=max_out),
             )
         )
-        self.logit_bias = vit_config['logit_bias']
-        self.logit_layer = LogitLayer(logit_bias=self.logit_bias)
+        self.logit_bias = (
+            vit_config['logit_bias']
+            if vit_config['logit_bias'] is not None
+            else math.log(1 / (num_classes - 1))
+        )
+        # self.logit_temperature = vit_config['logit_temperature']
+        # self.logit_layer = LogitLayer(logit_temperature=self.logit_temperature, logit_bias=self.logit_bias)
         #TODO: adapt sequential of model then logit layer BcosSequential(model, self.logit_layer)
 
     def forward(self, img):
@@ -338,12 +421,12 @@ class SimpleViT(nn.Module):
         return out
 
     def features(self, inp):
-        print(inp.shape)
+        # print(inp.shape)
         x = self.to_patch_embedding(inp)
         pe = self.positional_embedding(x)
         x = rearrange(x, "b ... d -> b (...) d") + pe
 
-        print(x.shape)
+        # print(x.shape)
         x = self.transformer(x)
         x = x.mean(dim=1)
         x = self.to_latent(x)
@@ -351,7 +434,8 @@ class SimpleViT(nn.Module):
     
     def classifier(self, x):
         x = self.linear_head(x)
-        x = self.logit_layer(x)
+        # x = self.logit_layer(x)
+        x = x + self.logit_bias
         return x
 
     def initialize_weights(self, module):
@@ -393,6 +477,7 @@ def make_conv_stem(
     conv2d_layer: Callable[..., nn.Module] = None,
     norm2d_layer: Callable[..., nn.Module] = None,
     act_layer: Callable[..., nn.Module] = None,
+    b=1.25,
 ):
     """
     Following the conv stem design in Early Convolutions Help Transformers See Better (Xiao et al.)
@@ -405,124 +490,13 @@ def make_conv_stem(
             kernel_size=3,
             stride=(2 if outc > in_channels else 1),
             padding=1,
+            b=b,
         )
         in_channels = outc
         norm = norm2d_layer(in_channels)
         act = act_layer()
         model += [conv, norm, act]
     return nn.Sequential(*model)
-
-
-def vitc_ti_patch1_14(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=14,
-        patch_size=1,
-        depth=12
-        - 1,  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
-        dim=384 // 2,
-        heads=6 // 2,
-        mlp_dim=1536 // 2,
-        conv_stem=[24, 48, 96, 192],
-        **kwargs,
-    )
-
-
-def vitc_s_patch1_14(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=14,
-        patch_size=1,
-        depth=12
-        - 1,  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
-        dim=384,
-        heads=6,
-        mlp_dim=1536,
-        conv_stem=[48, 96, 192, 384],
-        **kwargs,
-    )
-
-
-def vitc_b_patch1_14(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=14,
-        patch_size=1,
-        depth=12
-        - 1,  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
-        dim=384 * 2,
-        heads=6 * 2,
-        mlp_dim=1536 * 2,
-        conv_stem=[64, 128, 128, 256, 256, 512],
-        **kwargs,
-    )
-
-
-def vitc_l_patch1_14(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=14,
-        patch_size=1,
-        depth=14
-        - 1,  # Early convs. help transformers see better: reduce depth to account for conv stem for fairness
-        dim=1024,
-        heads=16,
-        mlp_dim=1024 * 4,
-        conv_stem=[64, 128, 128, 256, 256, 512],
-        **kwargs,
-    )
-
-
-def simple_vit_s_patch16_224(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=224,
-        patch_size=16,
-        dim=384,
-        depth=12,
-        heads=6,
-        mlp_dim=1536,
-        **kwargs,
-    )
-
-
-def simple_vit_ti_patch16_224(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=224,
-        patch_size=16,
-        dim=384 // 2,
-        heads=6 // 2,
-        mlp_dim=1536 // 2,
-        depth=12,
-        **kwargs,
-    )
-
-
-def simple_vit_b_patch16_224(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=224,
-        patch_size=16,
-        depth=12,
-        dim=384 * 2,
-        heads=6 * 2,
-        mlp_dim=1536 * 2,
-        **kwargs,
-    )
-
-
-def simple_vit_l_patch16_224(**kwargs):
-    kwargs.setdefault("num_classes", 1_000)
-    return SimpleViT(
-        image_size=224,
-        patch_size=16,
-        depth=14,
-        dim=1024,
-        heads=16,
-        mlp_dim=1024 * 4,
-        **kwargs,
-    )
 
 
 def _warn_if_not_called_from_bcos_models_pretrained_or_torch_hub():
