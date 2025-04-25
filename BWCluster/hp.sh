@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -p gpu_a100_il  # Use the dev_gpu_4_a100 partition with A100 GPUs dev_gpu_4
+#SBATCH -p dev_gpu_a100_il  # Use the dev_gpu_4_a100 partition with A100 GPUs dev_gpu_4
 #SBATCH -n 1                   # Number of tasks (1 for single node)
-#SBATCH -t 90           # Time limit (10 minutes for debugging purposes)
+#SBATCH -t 1           # Time limit (10 minutes for debugging purposes)
 #SBATCH --mem=50000             # Memory request (adjust as needed)
 #SBATCH --gres=gpu:2           # Request 1 GPU (adjust if you need more)
 #SBATCH --cpus-per-task=16     # Number of CPUs per GPU (16 for A100)
@@ -9,7 +9,7 @@
 
 module load devel/miniforge
 
-conda activate TP_kernel #/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main
+conda activate /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/envs/TP_main_2
 
 echo "Running on $(hostname)"
 echo "Date: $(date)"
@@ -27,5 +27,5 @@ export MASTER_ADDR="localhost"  # The master node's address (typically localhost
 export MASTER_PORT=29100    # The port for communication (can be any available port)
 
 # Launch the training with two G<PUs
-torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29100 ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/vit_bcos.yaml --ddp
-# python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/vit_bcos.yaml
+#torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29100 ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/xception.yaml --ddp
+python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/xception_bcos.yaml
