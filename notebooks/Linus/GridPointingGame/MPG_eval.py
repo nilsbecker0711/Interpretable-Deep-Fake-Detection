@@ -16,16 +16,20 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-# from GRADCAM_eval import GradCamEvaluator  # Uncomment if implemented.
+from GradCam_eval import GradCamEvaluator
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
-# set model path and additional arguments
+#######################
+# set model path, config path and additional arguments
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_config.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
+#######################
 
 #setpup logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,25 +37,25 @@ logger = logging.getLogger(__name__)
 
 class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
-                 model=None, model_name="default", weights_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None):
+                 model=None, model_name="default", config_name="default",
+                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
-        grid_size: Dimensions of the grid (e.g., (3,3)).
-        xai_method: "bcos", "lime", or "gradcam".
-        max_grids: Maximum number of grids to create.
+        xai_method: a valid xai method
         plotting_only: If True, load existing results.
         """
         self.xai_method = xai_method
-        self.max_images = max_images
         self.model = model
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
         self.model_name = model_name
-        self.weights_name = weights_name
-        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{weights_name}")
+        self.config_name = config_name
+        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
         self.device = device
+        self.overwrite = overwrite
+        self.quantitativ = quantitativ
+        self.threshold_steps = threshold_steps
 
         if plotting_only:
             self.load_results()
@@ -67,24 +71,32 @@ class MaskPointingGameCreator(Analyser):
             self.sorted_confs = self.load_ranking(self.ranking_file)
             logger.info("Loaded sorted confidences from %s", self.ranking_file)
         else:
-            self.sorted_confs = self.compute_sorted_confs()
+            self.sorted_confs = self.compute_sorted_confs_fakes()
             self.save_ranking(self.sorted_confs, self.ranking_file)
             logger.info("Saved sorted confidences to %s", self.ranking_file)
 
-    def compute_sorted_confs_fakes(self):
-        """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
-        ranking = {1: []}
+    def analysis(self):
+        """Analysis takes all images from data loader and plays the mask pointing game.
+        It returns the a list of result dictionaries."""
         key = list(self.test_data_loaders.keys())[0]
         for data_dict in self.test_data_loaders[key]:
             # Move all tensor values in data_dict to the device first.
             for k, value in data_dict.items():
                 if value is not None and hasattr(value, 'to'):
                     data_dict[k] = value.to(self.device)
-            
+
             # Now unpack after moving to device.
             img_batch, label_batch, mask, landmark, path_of_image = (
                 data_dict[k] for k in ['image', 'label', 'mask', 'landmark', 'image_path']
             )
+            
+            # Filter to get only fake images
+            label_mask = (label_batch == 1)
+            img_batch = img_batch[label_mask]
+            label_batch = label_batch[label_mask]
+            if mask is not None:
+                mask = mask[label_mask]
+            landmark = landmark[label_mask]
             
             # Remove extra key if present.
             data_dict.pop('label_spe', None)
@@ -92,57 +104,148 @@ class MaskPointingGameCreator(Analyser):
             data_dict['label'] = torch.where(data_dict['label'] != 0, 1, 0)
 
             num_samples = img_batch.shape[0]
+            
+            #initialize results list to be filled with result dict
+            results = []
+            
             # Process each image in the batch.
             for j in range(num_samples):
                 image = img_batch[j].unsqueeze(0)  # shape: [1, C, H, W]
                 label = label_batch[j]
                 true_label = int(label.item())  # Convert label tensor to int.
                 image_path = path_of_image[j]
-                image_mask = mask[j]
                 
-                if self.xai_method == "bcos":
-                    image = preprocess_image(image)
-                output = self.model({'image': image, 'label': label})
+                #load in mask bc sometimes none with dataloader
+                mask =load_sample_by_path(image_path)[1]
+                
+                #heatmaps for all requested methods in dict of form {method: heatmap}
+                heatmap = generate_heatmaps_for_methods(xai_method = self.xai_method, image=image)
+
+                #Model class and model confidence
                 logit = output['cls']  # Expected shape: [1, num_classes]
                 # Get predicted label from the first (and only) sample.
                 predicted_label = logit[0].argmax().item()
                 # Compute confidence from the corresponding logit.
                 confidence = logit[0, predicted_label].item()
                 
-                # Check for class 1.
-                if true_label == 1:
-                    if predicted_label == 1:
-                        ranking[1].append((image_path, confidence, true_label, image_mask))
+                #Play MPG w/ thresholds
+                thresholds = [None]  # No threshold
+                if threshold_steps > 0:
+                    thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
+                for t in thresholds:
+                    logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
+                    acc, intensity_acc = mask_game(heatmap = heatmap, mask = mask)
+                    result = {
+                        "threshold": t if t is not None else 0,
+                        "path": image_path,
+                        "original_image": image,
+                        "heatmap": heatmap,
+                        "accuracy": acc,
+                        "intensity_accuracy": intensity_acc,
+                        "model_prediction": predicted_label,
+                        "model_confidence": confidence,
+                        "xai_method": xai_method
+                    }
+                    results.append(result)
+        #calculate overall - Does it make sense even??
+        grid_accuracies = [res["accuracy"] for res in raw_results]
+        percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
+        logger.info("Localisation accuracy percentiles: %s", percentiles)
+        overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
+        return overall, results
         
-        # Sort each class's ranking by descending confidence.
-        for cls in ranking:
-            ranking[cls] = sorted(ranking[cls], key=lambda x: x[1], reverse=True)
-            logger.debug("Class %d: %d images after sorting.", cls, len(ranking[cls]))
-        return ranking
+    def save_results(results):
+        # f) group & pickle raw results by threshold
+        threshold_groups = collections.defaultdict(list)
+        for entry in results:
+            thr = entry.get("threshold", None)
+            threshold_groups[thr].append(entry)
     
-    def get_sorted_image_paths(self):
-        """Select top image indices based on rankings for grid creation,
-        filtering each tuple by a confidence threshold (sigmoid(confidence) > 0.5).
-        For class 0 (real), selects k * (grid_size[0] * grid_size[1] - 1) images,
-        and for class 1 (fake), selects k images.
+        out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
+        os.makedirs(out_dir, exist_ok=True)
+    
+        all_raw_path = os.path.join(out_dir, "results_by_threshold.pkl")
+        with open(all_raw_path, "wb") as f:
+            pickle.dump(dict(threshold_groups), f)
+        print(f" → saved grouped results: {all_raw_path}")
+
+    def generate_heatmap_for_method(xai_method, image):
         """
-        # Helper function: returns True if sigmoid(confidence) > 0.5.
-        def get_conf_mask_v(tup):
-            # tup is (img_idx, confidence)
-            return torch.tensor(tup[1]).sigmoid().item() > 0.5
+        Generate a heatmap for each XAI method and return them in a dictionary.
     
-        k = self.max_grids
-        sorted_image_paths = {}
-        for cls in [0, 1]:
-            # Get the sorted list for this class (list of tuples: (img_idx, confidence))
-            cls_list = self.sorted_confs.get(cls, [])
-            # Filter the list by confidence threshold.
-            filtered = [tup for tup in cls_list if get_conf_mask_v(tup)]
-            # Determine the number of required images:
-            required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
-            # Select only the image indices from the filtered list (up to the required number).
-            sorted_image_paths[cls] = filtered[:required]
-        return sorted_image_paths
+        Args:
+            xai_methods (list): List of strings (e.g., ["gradcam", "bcos"])
+            image (torch.Tensor): The input image tensor [1, C, H, W]
+    
+        Returns:
+            heatmap (tensor)
+        """
+        if method == "bcos":
+            image = preprocess_image(image)
+            evaluator = BCOSEvaluator(self.model, self.device)
+        elif method == "lime":
+            image = image[:,:3]
+            evaluator = LIMEEvaluator(self.model, self.device)
+        elif method == "gradcam":
+            image = image[:,:3]
+            raise NotImplementedError("GradCAM evaluator not implemented.") #fix this
+        else:
+            raise ValueError(f"Unknown xai_method: {self.xai_method}")      
+        try:
+            # Call your heatmap generator (you may need to adjust this call signature)
+            heatmap = evaluator.generate_heatmap(image=image)
+            logger.debug("Generated heatmap for method: %s | shape: %s", method, heatmap.shape)
+
+        except Exception as e:
+            logger.error("Error generating heatmap for method %s: %s", method, e)
+        return heatmap
+        
+    def mask_game(mask, heatmap, threshold):
+        """
+        play the mask game for a given heatmap and threshold for both intensity-based and non-intensity based
+        return the respective accuracies
+        """
+        if threshold == None:
+            threshold = 0
+        #without intensity
+        if isinstance(heatmap, torch.Tensor):
+            heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
+        if isinstance(mask, torch.Tensor):
+            mask = mask.cpu().numpy()  # Convert tensor to numpy array
+    
+        heatmap = heatmap[:, :, -1:].copy()
+        intensity_map = heatmap[:,:,-1:].copy()
+        # Ensure both are in the 0-1 range (binary)
+        if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
+            print("heatmap range may be wrong")
+            heatmap = np.where(heatmap > threshold, 1, 0)
+    
+        if np.max(mask) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
+            print("mask range may be wrong")
+            mask = np.where(mask > 0, 1, 0)
+            
+        # assuming mask is a tensor or numpy array
+        correct_pixels = np.sum((heatmap == 1) & (mask == 1))  # Pixels that are both predicted as "1" and ground truth "1"
+        # print(np.array((heatmap == 1) & (mask == 1)).shape)
+        total_predicted_pixels = np.sum(heatmap == 1)  # Total ground truth pixels that are part of the mask
+        # print(np.array(heatmap == 1).shape)
+        # Step 5: Compute the performance metric (e.g., accuracy)
+        accuracy = correct_pixels / total_predicted_pixels if total_predicted_pixels > 0 else 0  # Accuracy based on mask region
+        
+        # Optionally, calculate Intersection over Union (IoU) for better performance measurement
+        intersection = correct_pixels
+        union = np.sum((heatmap == 1) | (mask == 1))  # Union of predicted mask and ground truth mask
+        iou = intersection / union if union > 0 else 0  # IoU
+
+        #with intensity
+        total_intensity = np.sum(intensity_map[intensity_map>threshold])
+        mask_intensity = np.sum(intensity_map[mask ==1])
+        non_mask_intensity = np.sum(intensity_map[mask==0])
+        intensity_accuracy = mask_intensity/total_intensity if total_intensity > 0 else 0
+
+        return accuracy.round(4), intensity_accuracy.round(4)
+
+        
 
     def load_sample_by_path(self, image_path, expected_label):
         """
@@ -168,157 +271,18 @@ class MaskPointingGameCreator(Analyser):
         mask = sample[3]
         return image, mask
     
-    def save_ranking(self, ranking, file_path):
-        with open(file_path, "wb") as f:
-            pickle.dump(ranking, f)
-
-    def load_ranking(self, file_path):
-        with open(file_path, "rb") as f:
-            ranking = pickle.load(f)
-        return ranking
-    
-    def analysis(self):
-        """Evaluate grid tensors and compute overall metrics."""
-        results_folder = os.path.join("results", "MaskPointingGame", f"{self.model_name}_{self.weights_name}")
-        raw_results_file = os.path.join(results_folder, "Masksresults.pkl")
-        if os.path.exists(raw_results_file):
-            raise RuntimeError(f"Results already exist at {raw_results_file}. Use load_results() instead.")
-
-        # List tensor files.
-        mask_dir = os.path.join(self.output_folder, "MaskPointingGame")
-        mask_paths = [os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith('.pt')]
-        logger.info("Found %d grid tensors in %s.", len(mask_paths), mask_dir)
-
-        # Load each grid tensor.
-        preprocessed_tensors = [torch.load(path, map_location=self.device) for path in mask_paths]
-        logger.info("Loaded all grid tensors.")
-
-        # Choose evaluator based on xai_method.
-        if self.xai_method == "bcos":
-            evaluator = BCOSEvaluator(self.model, self.device)
-        elif self.xai_method == "lime":
-            evaluator = LIMEEvaluator(self.model, self.device)
-        elif self.xai_method == "gradcam":
-            raise NotImplementedError("GradCAM evaluator not implemented.")
-        else:
-            raise ValueError(f"Unknown xai_method: {self.xai_method}")
-
-        raw_results = evaluator.evaluate(preprocessed_tensors, mask_paths, self.grid_split)
-        grid_accuracies = [res["accuracy"] for res in raw_results]
-        percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
-        logger.info("Localisation accuracy percentiles: %s", percentiles)
-        overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-        return overall, raw_results
-
-    def create_GPG_grids(self):
-        """Create grids by combining ranked real and fake images."""
-        logger.info("=== Starting GPG grid creation in %s ===", self.output_folder)
-        
-        # Check if grids already exist.
-        existing_files = [f for f in os.listdir(self.output_dir) if f.endswith('.pt')]
-        logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.output_dir)
-        if len(existing_files) >= self.max_grids:
-            logger.info("Existing grid files found. Skipping grid creation.")
-            return
-        
-        # Copy the ranked real/fake lists
-        #ranked_real = self.sorted_confs.get(0, []).copy()
-        #ranked_fake = self.sorted_confs.get(1, []).copy()
-
-        # Get sorted image paths (tuples of (image_path, confidence, label))
-        sorted_image_paths = self.get_sorted_image_paths()
-        # Expect one fake (class 1) and remaining real (class 0) images.
-        ranked_real = sorted_image_paths.get(0, []).copy()
-        ranked_fake = sorted_image_paths.get(1, []).copy()
-        logger.debug("Ranked real: %d, Ranked fake: %d", len(ranked_real), len(ranked_fake))
-        
-        n_imgs = self.grid_size[0] * self.grid_size[1]
-        logger.debug("Total images per grid: %d", n_imgs)
-        side = int(np.sqrt(n_imgs))
-        logger.debug("Calculated grid side length: %d", side)
-        
-        grid_count = 0
-        while grid_count < self.max_grids:
-            logger.info("--- Creating grid %d of %d ---", grid_count + 1, self.max_grids)
-            required_real = n_imgs - 1  # Reserve 1 slot for fake image.
-            fake_count = len(ranked_fake)
-            real_count = len(ranked_real)
-            logger.debug("Need %d real, have %d; need 1 fake, have %d.", required_real, real_count, fake_count)
-            
-            if fake_count < 1 or real_count < required_real:
-                logger.warning("Not enough images: fake %d, real %d (required %d)", fake_count, real_count, required_real)
-                break
-            
-            # Get first fake tuple and remove it.
-            fake_tuple = ranked_fake.pop(0)
-            logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
-            expected_label = 1
-            fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
-            logger.debug("Fake image shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
-            
-            # Select first required_real real image tuples.
-            selected_real_tuples = ranked_real[:required_real]
-            logger.info("Selected real image paths: %s", selected_real_tuples)
-            ranked_real = ranked_real[required_real:]  # Remove used entries.
-            
-            # Retrieve real images using load_sample_by_path for consistency.
-            expected_label = 0
-            selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
-            logger.debug("Retrieved %d real images.", len(selected_real))
-            
-            # Combine real and fake images.
-            images = selected_real + [fake_img]
-            logger.debug("Combined image count: %d", len(images))
-            random.shuffle(images)  # Shuffle grid placement.
-            logger.debug("Images shuffled.")
-            
-            # Find fake image index in shuffled list.
-            fake_index = next(i for i, img in enumerate(images) if torch.equal(img, fake_img))
-            final_fake_index = (fake_index % side) * side + (fake_index // side)
-            logger.debug("Fake image: shuffled index %d, final index %d", fake_index, final_fake_index)
-            
-            # Stack images and reshape into grid tensor.
-            stacked = torch.stack(images, dim=0)
-            logger.debug("Stacked images shape: %s", stacked.shape)
-            grid_tensor = (
-                stacked.view(-1, side, side, *stacked.shape[-3:])
-                       .permute(0, 3, 2, 4, 1, 5)
-                       .reshape(-1, stacked.shape[1], stacked.shape[2] * side, stacked.shape[3] * side)
-            )
-            logger.debug("Grid tensor shape: %s", grid_tensor.shape)
-            
-            # Save grid tensor with fake position encoded in filename.
-            base_name = f"grid_{grid_count}_fake_{final_fake_index}.pt"
-            path_to_grid = os.path.join(self.output_dir, base_name)
-            torch.save(grid_tensor, path_to_grid)
-            logger.info("Saved grid tensor: %s", path_to_grid)
-            
-            grid_count += 1
-        
-        logger.info("=== Finished grid creation. Created %d grids. ===", grid_count)
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Evaluate grids using a model and XAI method.")
-    parser.add_argument("--base_output_dir", type=str, default="datasets/GPG_grids",
-                        help="Base output directory for grids.")
-    parser.add_argument("--max_grids", type=int, default=10, help="Max number of grids to create.")
-    parser.add_argument("--xai_method", type=str, default="bcos",
-                        choices=["bcos", "lime", "gradcam"], help="XAI method to use.")
-    parser.add_argument("--model_path", type=str, default=MODEL_PATH,
-                        help="Path to model configuration file.")
-    parser.add_argument("--grid_split", type=int, default=3,
-                        help="Grid split (e.g., 3 for a 3x3 grid).")
-    return parser.parse_args()
-
 def main():
-    args = parse_arguments()
-    grid_size = (args.grid_split, args.grid_split)
-    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d",
-                args.xai_method, args.base_output_dir, args.model_path, args.grid_split, args.grid_split)
+    config = load_config(MODEL_PATH, CONFIG_PATH, additional_args=ADDITIONAL_ARGS)
 
-    config = load_config(args.model_path, additional_args=ADDITIONAL_ARGS)
+    required_keys = ["overwrite", "quantitativ", "xai_method", "max_images"]
+    for key in required_keys:
+        if key not in config:
+            raise ValueError(f"Missing required config key: {key}")
+
+    logger.info("Parameters: XAI=%s, Base=%s, Model=%s", config['xai_method'], config['base_output_dir'], MODEL_PATH)
+
     model = load_model(config)
-    
+
     pretrained_path = config['pretrained']
     state_dict = torch.load(pretrained_path)
     # Remove "module." prefix from state_dict keys if necessary.
@@ -326,46 +290,75 @@ def main():
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         new_state_dict[k.replace("module.", "")] = v
-    model.load_state_dict(new_state_dict)
+
+    ##########
+    
+    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
+    res = model.load_state_dict(new_state_dict, strict=False)
+    
+    # 3) Logge, was fehlt und was extra war
+    logger.info("Missing keys: %s", res.missing_keys)
+    logger.info("Unexpected keys: %s", res.unexpected_keys)
+    
+    # 4) quick‐check eines Backbone‐Weights
+    first_weight = next(model.backbone.parameters())
+    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
+
+    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
+    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
+
+
+
+
+
+    ########
     
     # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    print(next(model.parameters()).device)
 
     model.eval()  # Set model to evaluation mode.
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
+
+    ##########
+
+
+
+
+    
+    # 1. Zähle alle detach-fähigen Module
+    all_detachable = [m for m in model.backbone.modules() if hasattr(m, "detach")]
+    print("Anzahl aller detach-fähigen Module:", len(all_detachable))
+
+    # 2. Vor Explanation-Modus: sollten alle detach=False sein
+    pre = sum(1 for m in all_detachable if m.detach)
+    print("Vorher detach=True:", pre)
+
+    # 3. Im Explanation-Modus
+    with model.backbone.explanation_mode():
+        mid = sum(1 for m in all_detachable if m.detach)
+        print("Im Kontext detach=True:", mid)
+
+    # 4. Nach Exit: wieder alle auf False?
+    post = sum(1 for m in all_detachable if m.detach)
+    print("Danach detach=True:", post)
+    # —––––––––– ENDE ––––––––––
+
+    ############
         
     model_name = config.get("model_name", "defaultModel")
-    if not os.path.exists(pretrained_path):
-        raise FileNotFoundError(f"Weight file not found: {pretrained_path}")
-    weights_name = os.path.basename(pretrained_path).split('.')[0]
+    config_name = os.path.basename(CONFIG_PATH).split('.')[0]
 
     # Prepare testing data.
     from train import prepare_testing_data
     test_data_loaders = prepare_testing_data(config)
     test_loader = list(test_data_loaders.values())[0]
+    dataset = test_loader.dataset
 
-    # Initialize grid creator with all required objects.
-    grid_creator = MaskPointingGameCreator(
-        base_output_dir=args.base_output_dir,
-        grid_size=grid_size,
-        xai_method=args.xai_method,
-        max_grids=args.max_grids,
-        model=model,
-        model_name=model_name,
-        weights_name=weights_name,
-        test_data_loaders= test_data_loaders,
-        dataset=test_loader.dataset,
-        device=device,
-        grid_split=args.grid_split
-    )
-
-    grid_creator.create_GPG_grids()  # Create new grids.
-    grid_creator.run()               # Run analysis.
-    grid_creator.load_results(load_overall=False)  # Load and display results.
+    MPG_creator.run() # Run analysis.
+    MPG_creator.save_results()
 
 if __name__ == "__main__":
     main()
 
-# python notebooks/Linus/GridPointingGame/GPG_eval.py
+# python notebooks/Linus/GridPointingGame/MPG_eval.py
