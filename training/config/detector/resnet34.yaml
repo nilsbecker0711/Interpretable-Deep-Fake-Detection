@@ -90,3 +90,4 @@ metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 ddp : false   # whether to use distributed data parallel
 cuda: true   # whether to use CUDA acceleration
 cudnn: true   # whether to use CuDNN for convolution operations
+ddp: false

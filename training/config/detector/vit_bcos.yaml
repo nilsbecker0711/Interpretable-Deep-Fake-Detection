@@ -28,6 +28,10 @@ backbone_config:
   heads: 6
   mlp_dim: 1536
   conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
+  norm: DetachableLayerNorm
+  norm_bias: false
+  norm_2d: BatchNorm2d
+  norm_2d_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -35,7 +39,7 @@ train_dataset: [FaceForensics++]
 val_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
-compression: c40  # compression-level for videos
+compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
 test_batchSize: 64   # test batch size
 val_batchSize: 64

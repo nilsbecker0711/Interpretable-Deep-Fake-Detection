@@ -293,19 +293,52 @@ class SimpleViT(nn.Module):
         linear_layer = BcosLinear #(b=b, max_out=max_out) # in_features: int, out_features: int, bias: bool = False, device=None, dtype=None,
         conv2d_layer = BcosConv2d #(b=b, max_out=1) # vit_config.get('conv2d_layer', None)
 
-        norm_layer = norms.NoBias(norms.DetachableLayerNorm) #vit_config.get('norm_layer', None)
-        norm2d_layer = norms.NoBias(DetachableGNLayerNorm2d) #vit_config.get('norm2d_layer', None)
+        # norm_layer = norms.NoBias(norms.DetachableLayerNorm) #vit_config.get('norm_layer', None)
+        # norm2d_layer = norms.NoBias(DetachableGNLayerNorm2d) #vit_config.get('norm2d_layer', None)
 
-        # "AllNorm2d",
-        # "BatchNorm2d",
-        # "DetachableGroupNorm2d",
-        # "DetachableGNInstanceNorm2d",
-        # "DetachableGNLayerNorm2d",
-        # "DetachableLayerNorm",
-        # "DetachablePositionNorm2d",
-        # BatchNormUncentered2d
-        # norm_layer = norms.NoBias(norms.BatchNormUncentered2d) 
-        norm2d_layer = norms.NoBias(norms.BatchNorm2d)
+        # Define a mapping of norm names to norm classes
+        norm_mapping = {
+            'AllNormUncentered2d': norms.AllNormUncentered2d,
+            'BatchNormUncentered2d': norms.BatchNormUncentered2d,
+            'GroupNormUncentered2d': norms.GroupNormUncentered2d,
+            'GNInstanceNormUncentered2d': norms.GNInstanceNormUncentered2d,
+            'GNLayerNormUncentered2d': norms.GNLayerNormUncentered2d,
+            'PositionNormUncentered2d': norms.PositionNormUncentered2d,
+            'AllNorm2d': norms.AllNorm2d,
+            'BatchNorm2d': norms.BatchNorm2d,
+            'DetachableGroupNorm2d': norms.DetachableGroupNorm2d,
+            'DetachableGNInstanceNorm2d': norms.DetachableGNInstanceNorm2d,
+            'DetachableGNLayerNorm2d': norms.DetachableGNLayerNorm2d,
+            'DetachableLayerNorm': norms.DetachableLayerNorm,
+            'DetachablePositionNorm2d': norms.DetachablePositionNorm2d
+        }
+
+        # Retrieve the norm class from the mapping based on config
+        norm_class = norm_mapping.get(vit_config['norm'], None)
+
+        if norm_class is None:
+            raise ValueError(f"Unknown norm type: {vit_config['norm']}")
+
+        # Apply norm bias if specified in config
+        if vit_config.get('norm_bias', False):
+            norm_layer = norms.NoBias(norm_class)
+        else:
+            norm_layer = norm_class
+
+        # norm2d_layer = norm_layer #norms.NoBias(norms.BatchNorm2d)
+
+        # Retrieve the norm class from the mapping based on config
+        norm_2d_class = norm_mapping.get(vit_config['norm_2d'], None)
+
+        if norm_2d_class is None:
+            raise ValueError(f"Unknown norm type: {vit_config['norm_2d']}")
+
+        # Apply norm bias if specified in config
+        if vit_config.get('norm_2d_bias', False):
+            norm2d_layer = norms.NoBias(norm_2d_class)
+        else:
+            norm2d_layer = norm_2d_class
+
 
         act_layer = nn.Identity #vit_config.get('act_layer', None)
         assert exists(linear_layer), "Provide a linear layer class!"

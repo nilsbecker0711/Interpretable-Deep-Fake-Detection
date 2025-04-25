@@ -65,6 +65,8 @@ class ResnetDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
+        backbone.apply(backbone.initialize_weights)
+        logger.info("Initialized backbone weights from scratch!")
         #FIXME: current load pretrained weights only from the backbone, not here
         # # if donot load the pretrained weights, fail to get good results
         # state_dict = torch.load(config['pretrained'])
@@ -110,4 +112,3 @@ class ResnetDetector(AbstractDetector):
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
         return pred_dict
-

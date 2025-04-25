@@ -37,7 +37,7 @@ train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 val_dataset: [FaceForensics++, FF-F2F]
 
-compression: c40  # compression-level for videos
+compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
 val_batchSize: 64   # test batch size
 test_batchSize: 64   # test batch size
