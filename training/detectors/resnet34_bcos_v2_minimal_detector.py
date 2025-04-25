@@ -75,7 +75,7 @@ class ResnetBcosDetector_v2_minimal(AbstractDetector):
         else:
             #FIXME: current load pretrained weights only from the backbone, not here
             # # if donot load the pretrained weights, fail to get good results
-            state_dict = torch.load(config['pretrained'], weights_only=False)
+            state_dict = torch.load(config['pretrained'], weights_only=False, map_location=torch.device('cuda')if torch.cuda.is_available() else torch.device('cpu'))
             # state_dict = {'resnet.'+k:v for k, v in state_dict.items() if 'fc' not in k}
             # backbone.load_state_dict(state_dict, False)
             if 'resnet34-333f7ec4.pth' in str(config['pretrained']):# kai: handle the ImageNet weights differently, 

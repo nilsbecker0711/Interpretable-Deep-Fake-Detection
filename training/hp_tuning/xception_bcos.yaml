@@ -61,17 +61,9 @@ parameters:
     values: [true, false]
   # model parameters
   b:
-    values: [1.75]
-    # min: 1
-    # max: 2.5
-    # distribution: uniform
-  stochastic_depth_prob:
-    values: [0.0]
-    # min: 0.0
-    # max: 0.2
-    # distribution: uniform
+    values: [1.25]
   norm: 
-    values: [AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
+    values: [DetachableLayerNorm] #[AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
   norm_bias:
     values: [true, false]
 early_terminate:
