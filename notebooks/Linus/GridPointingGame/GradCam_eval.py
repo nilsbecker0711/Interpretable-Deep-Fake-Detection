@@ -25,7 +25,7 @@ from training.detectors.resnet34_detector import ResnetDetector
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
-def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
+def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None, background_pixel=0):
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # only diff to bcos method is the heatmap is recieved in grayscale
     heatmap_intensity = heatmap
@@ -38,15 +38,29 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
     # Split into grid cells.
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
+
+    # unweighted prediction 
+    # Count of pixels with intensity in each cell.
+    intensity_counts = [np.sum(section > background_pixel) for section in sections]
+    fake_pred_unweighted = np.argmax(intensity_counts)
+
+    total_nonzero_count = float(sum(intensity_counts))
+ 
+    if total_nonzero_count > 0 and 0 <= true_fake_pos < len(intensity_counts):
+        unweighted_accuracy = intensity_counts[true_fake_pos] / total_nonzero_count
+
+    # weighted prediction 
     # Sum intensity in each cell.
     intensity_sums = [np.sum([section>0]) for section in sections]
     for i, intensity in enumerate(intensity_sums):
         print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
-    guessed_fake_position = np.argmax(intensity_sums)
+    fake_pred_weighted = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
-    # Compute accuracy as fraction of total intensity in the true fake cell.
-    accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
-    return guessed_fake_position, intensity_sums, accuracy
+    # Compute weighted_accuracy as fraction of total intensity in the true fake cell.
+    weighted_accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
+
+
+    return fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy
 
 
 class WrappedModel(nn.Module):
@@ -141,25 +155,28 @@ class GradCamEvaluator:
                 )
             
                 # 3) compute cell guesses & accuracy as before
-                guessed_fake_pos, intensity_sums, acc = evaluate_heatmap(
+                fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy = evaluate_heatmap(
                     heatmap=mask,      # pass the 2D mask for counting
                     grid_split=grid_split,
                     true_fake_pos=true_fake_pos,
                 )
 
                 result = {
-                    "threshold": t,
+                    "threshold": t if t is not None else 0,
                     "path": path,
                     "original_image": original_image,
                     "heatmap": thresholded_overlay,
-                    "guessed_fake_position": guessed_fake_pos,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
                     "true_fake_position": true_fake_pos,
-                    "weighted_localization_score": acc,
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": fake_pred_unweighted,
                     "model_prediction": model_prediction
                 }
 
-                logger.info("Threshold %s | %s: true pos %d, predicted %d, accuracy: %.3f",
-                            str(t), os.path.basename(path), true_fake_pos, guessed_fake_pos, acc)
+
+                logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
 
                 results.append(result)
 

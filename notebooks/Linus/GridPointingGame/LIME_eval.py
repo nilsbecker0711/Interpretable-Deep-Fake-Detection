@@ -148,15 +148,15 @@ class LIMEEvaluator:
                 )
                 total_intensity = sum(grid_intensity_sums)
                 if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
-                    grid_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
+                    weighted_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
                 else:
-                    grid_accuracy = 0
+                    weighted_accuracy = 0
 
                 # unweighted prediction 
                 total_nonzero_count = float(sum(non_0_counts))
  
                 if total_nonzero_count > 0 and 0 <= true_fake_pos < len(non_0_counts):
-                    unweighted_grid_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
+                    unweighted_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
 
                 result = {
                     "threshold": t if t is not None else 0,
@@ -165,14 +165,14 @@ class LIMEEvaluator:
                     "heatmap": thresholded_map,
                     "weighted_guessed_fake_position": fake_pred_weighted,
                     "unweighted_guess_fake_position": fake_pred_unweighted,
-                    "weighted_localization_score": grid_accuracy,
-                    "unweighted_localization_score": unweighted_grid_accuracy,
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": unweighted_accuracy,
                     "true_fake_position": true_fake_pos,
                     "model_prediction": model_prediction,
                 }
                 results.append(result)
 
                 logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
-                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, grid_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
 
         return results
