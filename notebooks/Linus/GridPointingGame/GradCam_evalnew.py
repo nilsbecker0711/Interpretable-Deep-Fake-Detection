@@ -77,6 +77,10 @@ class GradCamEvaluator:
         self.target_layer = find_last_valid_conv_layer(self.model.backbone)
         if self.target_layer is None:
             raise ValueError("No valid Conv2d layer found in model backbone.")
+        logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
+
+        self.target_layer = dict(self.model.backbone.named_modules())["resnet.7.2.conv2"]
+        logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
 
         # wrap detector for CAM
         self.wrapped_model = WrappedModel(self.model)
@@ -114,15 +118,14 @@ class GradCamEvaluator:
         inp = tensor.unsqueeze(0).to(self.device)
         if self.method == "layergrad":
             attributions = self.cam.attribute(inp, target=true_fake_pos)
-            grayscale = attributions.squeeze().cpu().detach().numpy()
+            grayscale_cam = attributions.squeeze().cpu().detach().numpy()
         else:
-            targets = [ClassifierOutputTarget(true_fake_pos)]
-            grayscale = self.cam(input_tensor=inp, targets=targets)[0]
+            grayscale_cam = self.cam(input_tensor=tensor.unsqueeze(0), targets=[ClassifierOutputTarget(1)])[0]
         # original image for overlay
         img = tensor.cpu().permute(1,2,0).numpy()
         img = (img - img.min())/(img.max()-img.min()+1e-8)
-        heatmap = show_cam_on_image(img, grayscale, use_rgb=True)
-        return grayscale, heatmap
+        heatmap = show_cam_on_image(img, grayscale_cam, use_rgb=True)
+        return grayscale_cam, heatmap
 
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
@@ -147,4 +150,3 @@ class GradCamEvaluator:
                     "original": orig
                 })
         return results
-"
