@@ -9,11 +9,19 @@ from typing import Any, Callable, Dict, List, Optional, Union, cast
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from torchinfo import summary
+import os
+import sys
+current_file_path = os.path.abspath(__file__)
+parent_dir = os.path.dirname(os.path.dirname(current_file_path))
+project_root_dir = os.path.dirname(parent_dir)
+sys.path.append(parent_dir)
+sys.path.append(project_root_dir)
 from bcos.common import BcosUtilMixin
 from bcos.modules import BcosConv2d, LogitLayer, norms
 from bcos.utils import MyAdaptiveAvgPool2d
 from metrics.registry import BACKBONE
+import torchvision.models as models
 
 __all__ = [
     "BcosVGG",
@@ -44,8 +52,10 @@ class BcosVGG(BcosUtilMixin, nn.Module):
         config = None
     ) -> None:
         super(BcosVGG, self).__init__()
-        self.logit_bias = config["bias"]
-        self.temperature = config["temperature"]
+        #self.logit_bias = config["bias"]
+        #self.temperature = config["temperature"]
+        self.logit_bias = 0.0000001
+        self.temperature = 0.0000001
         self.features = features
         # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         
@@ -192,7 +202,7 @@ def _vgg(
     cfg: str,
     pretrained: bool = False,
     progress: bool = False,
-    norm_layer: Callable[..., nn.Module] = DEFAULT_NORM_LAYER,
+    norm_layer: Callable[..., nn.Module] = None,
     conv_layer: Callable[..., nn.Module] = BcosConv2d,
     in_chans: int = 6,
     no_pool=False,
@@ -222,8 +232,8 @@ def _vgg(
     return model
 
 
-def vgg11(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
-    return _vgg("vgg11", "A", pretrained, progress, norm_layer=DEFAULT_NORM_LAYER, **kwargs)#nn.Identity, **kwargs)
+#def vgg11(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
+    return _vgg("vgg11", "A", pretrained, progress, norm_layer=nn.Identity, **kwargs)
 
 
 def vgg11_bnu(
@@ -253,7 +263,7 @@ def vgg16_bnu(
 
 
 def vgg19(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
-    return _vgg("vgg19", "E", pretrained, progress, norm_layer=nn.Identity, **kwargs)
+    return _vgg("vgg19", "A", pretrained, progress, norm_layer=nn.Identity, **kwargs)
 
 
 def vgg19_bnu(
@@ -263,4 +273,17 @@ def vgg19_bnu(
 
 @BACKBONE.register_module(module_name="vgg11_v2_bcos")
 def vgg(vgg_config) -> BcosVGG:
-    return _vgg("vgg", "A", config = vgg_config, norm_layer=nn.Identity)
+    return _vgg("vgg", "E", config = vgg_config, norm_layer=nn.Identity)
+
+@BACKBONE.register_module(module_name="vgg11_v2_bcos")
+def vgg11_bcos(vgg_config, pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
+    return _vgg("vgg11", "A", pretrained, progress, norm_layer=nn.Identity, **kwargs,config = vgg_config)
+
+def vgg11(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> BcosVGG:
+    return _vgg("vgg11", "A", pretrained, progress, norm_layer=nn.Identity, **kwargs)
+
+print("model ours:")
+summary(vgg11_bcos(vgg_config = None), depth = 4)
+#summary(vgg19(vgg_config = None))
+print("model paper:")
+summary(vgg11(), depth = 4)
