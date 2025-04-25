@@ -55,10 +55,10 @@ class Analyser:
 
     def run(self):
         # Run analysis and save both raw and overall results.
-        overall, raw = self.analysis()
-        self.save_results(raw, overall)
+        raw = self.analysis()
+        self.save_results(raw)
 
-    def save_results(self, raw, overall):
+    def save_results(self, raw):
         """Save grouped results and overall metrics per threshold."""
         import collections
 
@@ -77,11 +77,15 @@ class Analyser:
         # Compute per-threshold overall metrics
         overall_by_threshold = {}
         for threshold, results in threshold_groups.items():
-            accuracies = [res["accuracy"] for res in results]
-            percentiles = np.percentile(np.array(accuracies), [25, 50, 75, 100])
+            weighted_localization_score = [res["weighted_localization_score"] for res in results]
+            unweighted_localization_score = [res["unweighted_localization_score"] for res in results]            
+            weighted_percentiles = np.percentile(np.array(weighted_localization_score), [25, 50, 75, 100])
+            unweighted_percentiles = np.percentile(np.array(unweighted_localization_score), [25, 50, 75, 100])
             overall_by_threshold[threshold] = {
-                "localisation_metric": accuracies,
-                "percentiles": percentiles
+                "weighted_localization_score": weighted_localization_score,
+                "weighted_percentiles": weighted_percentiles,
+                "unweighted_localization_score": unweighted_localization_score,
+                "unweighted_percentiles": unweighted_percentiles               
             }
 
         # Save overall metrics in a single file
@@ -90,6 +94,7 @@ class Analyser:
             pickle.dump(overall_by_threshold, f)
         logger.info("Saved overall metrics grouped by threshold to %s", overall_path)
 
+    '''
     def load_results(self, load_overall=True):
         """Load results from disk and print summary info."""
         file_path = os.path.join(self.results_dir, "overall.pkl" if load_overall else "results.pkl")
@@ -109,3 +114,4 @@ class Analyser:
             for idx, res in enumerate(sorted_results[:10]):
                 logger.info("[%d] %s - Accuracy: %s", idx + 1, res.get("path", "N/A"), res.get("accuracy", "N/A"))
         return loaded
+    '''

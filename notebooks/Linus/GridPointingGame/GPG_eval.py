@@ -23,9 +23,9 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run5_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_run1_config.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 class GridPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0):
+                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0, b_value_name=0):
         """
         Initialize grid creator with specified parameters.
         output_folder: Base directory for grids.
@@ -58,22 +58,25 @@ class GridPointingGameCreator(Analyser):
         self.dataset = dataset
         self.model_name = model_name
         self.config_name = config_name
-        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
         self.device = device
         self.grid_split = grid_split
         self.overwrite = overwrite
         self.quantitativ = quantitativ
         self.threshold_steps = threshold_steps
-        
-        # Create output directory for grids.
-        self.output_folder = os.path.join("results", f"{model_name}_{config_name}")
-        self.grid_dir = os.path.join(self.output_folder, f"{self.grid_size[0]}x{self.grid_size[1]}", "grids")
-        self.results_dir = os.path.join(self.output_folder, f"{self.grid_size[0]}x{self.grid_size[1]}", "results")
+        self.b_value_name = b_value_name
+        self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
+        self.confidence_dir= os.path.join(base_output_dir, f"{model_name}_{b_value_name}")
+        self.grid_dir = os.path.join(base_output_dir, f"{model_name}_{b_value_name}", f"{grid_size[0]}x{grid_size[1]}")
+        self.results_dir = os.path.join(self.output_folder, f"{grid_size[0]}x{grid_size[1]}")
+
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.confidence_dir, exist_ok=True)
         os.makedirs(self.grid_dir, exist_ok=True)
         os.makedirs(self.results_dir, exist_ok=True)
+        
 
         # Load or compute sorted image rankings.
-        self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
+        self.ranking_file = os.path.join(self.confidence_dir, "sorted_confs.pkl")
 
         if os.path.exists(self.ranking_file) and not self.overwrite:
             self.sorted_confs = self.load_ranking(self.ranking_file)
@@ -225,17 +228,12 @@ class GridPointingGameCreator(Analyser):
         # Run evaluation with thresholding
         raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split, threshold_steps=self.threshold_steps)
 
-        grid_accuracies = [res["accuracy"] for res in raw_results]
-        percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
-        logger.info("Localisation accuracy percentiles: %s", percentiles)
-
-        overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-        return overall, raw_results
+        return raw_results
 
     def create_GPG_grids(self):
         """Create grids by combining ranked real and fake images."""
         logger.info("=== Starting GPG grid creation in %s ===", self.output_folder)
-        random.seed(42) 
+        random.seed(32) 
         
         # Check if grids already exist.
         existing_files = [f for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
@@ -330,7 +328,7 @@ class GridPointingGameCreator(Analyser):
             logger.debug("Grid tensor shape: %s", grid_tensor.shape)
             
             # Save grid tensor with fake position encoded in filename.
-            base_name = f"grid_{grid_count}_fake_{final_fake_index}.pt"
+            base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}.pt"
             path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)
@@ -374,6 +372,8 @@ def main():
         
     model_name = config.get("model_name", "defaultModel")
     config_name = os.path.basename(CONFIG_PATH).split('.')[0]
+    b_value_name= config.get("b", "0").replace(".", "_")
+
 
     # Prepare testing data.
     from train import prepare_testing_data
@@ -396,7 +396,8 @@ def main():
         grid_split=config["grid_split"],
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
-        threshold_steps= config["threshold_steps"]
+        threshold_steps=config["threshold_steps"],
+        b_value_name=b_value_name
     )
 
     grid_creator.create_GPG_grids()  # Create new grids.

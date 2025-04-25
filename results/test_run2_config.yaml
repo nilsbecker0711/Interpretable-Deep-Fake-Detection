@@ -8,12 +8,12 @@ dataset_json_folder: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_expl
 ######################################################################################################################################################
 test_batchSize: 12
 xai_method: bcos
-grid_split: 1
-max_grids: 20
+grid_split: 3
+max_grids: 10
 overwrite: true
 quantitativ: false
 base_output_dir: results
-threshold_steps: 0
+threshold_steps: 10
 ######################################################################################################################################################
 
 label_dict:

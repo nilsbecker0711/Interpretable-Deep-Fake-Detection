@@ -43,10 +43,6 @@ class LIMEEvaluator:
         return probs
 
     def lime_grid_eval(self, heatmap, grid_split=3, background_pixel=0):
-        """
-        Evaluates the heatmap by splitting it into a grid and counting non-background pixels in each cell.
-        Returns the index of the grid cell with the highest count and the counts per section.
-        """
 
         original_size = heatmap.shape  # (H, W)
         logger.debug("[LIME] Original heatmap size: %s", original_size)
@@ -70,14 +66,16 @@ class LIMEEvaluator:
             for i in range(grid_split) for j in range(grid_split)
         ]
         print(np.max(heatmap))
+
+        non_0_counts = [np.sum(section > background_pixel) for section in sections]
+        fake_pred_unweighted = np.argmax(non_0_counts)
         
-        # Count non-background pixels per section and choose the section with the maximum count
-        grid_intensity_sums = [np.sum(section) for section in sections]  # sum of intensities, not count
+        grid_intensity_sums = [np.sum(section) for section in sections]  # sum of intensities
         for i, grid_intensity in enumerate(grid_intensity_sums):
             print("Intensitätssumme für Zelle {}: {}".format(i, grid_intensity))
             
-        fake_pred_index = np.argmax(grid_intensity_sums)
-        return fake_pred_index, grid_intensity_sums
+        fake_pred_weighted = np.argmax(grid_intensity_sums)
+        return fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts
     
     def extract_fake_position(self, path):
         """Extract fake position from filename."""
@@ -143,7 +141,9 @@ class LIMEEvaluator:
                 thresholded_map[thresholded_map < threshold_value] = 0
                     
                 true_fake_pos = self.extract_fake_position(path)
-                fake_pred, grid_intensity_sums = self.lime_grid_eval(
+
+                # weighted prediction
+                fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts = self.lime_grid_eval(
                     thresholded_map, grid_split=grid_split, background_pixel=0.0
                 )
                 total_intensity = sum(grid_intensity_sums)
@@ -152,19 +152,27 @@ class LIMEEvaluator:
                 else:
                     grid_accuracy = 0
 
+                # unweighted prediction 
+                total_nonzero_count = float(sum(non_0_counts))
+ 
+                if total_nonzero_count > 0 and 0 <= true_fake_pos < len(non_0_counts):
+                    unweighted_grid_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
+
                 result = {
-                    "threshold": t,
+                    "threshold": t if t is not None else 0,
                     "path": path,
                     "original_image": img_np,
                     "heatmap": thresholded_map,
-                    "guessed_fake_position": fake_pred,
-                    "accuracy": grid_accuracy,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
+                    "weighted_localization_score": grid_accuracy,
+                    "unweighted_localization_score": unweighted_grid_accuracy,
                     "true_fake_position": true_fake_pos,
-                    "model_prediction": model_prediction
+                    "model_prediction": model_prediction,
                 }
                 results.append(result)
 
-                logger.info("Threshold %s | %s: true pos %d, predicted %d, accuracy: %.3f",
-                            str(t), os.path.basename(path), true_fake_pos, fake_pred, grid_accuracy)
+                logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, grid_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
 
         return results

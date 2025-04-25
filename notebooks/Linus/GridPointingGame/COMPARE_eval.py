@@ -44,7 +44,7 @@ shared_grid_paths = []
 for cfg in model_configs:
     # each model’s grids live under results/{name}_{runname}/{grid_subpath}
     runname = os.path.splitext(os.path.basename(cfg["run_yaml"]))[0]
-    folder = f"results/{cfg['name']}_{runname}/{grid_subpath}"
+    folder = f"results/{cfg['name']}/{grid_subpath}"
     pts = sorted(glob.glob(os.path.join(folder, "*.pt")))
     shared_grid_paths += pts[:K]
 

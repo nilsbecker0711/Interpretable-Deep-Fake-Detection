@@ -5,14 +5,15 @@ lmdb_dir:  './datasets/lmdb'
 dataset_json_folder: '/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/dataset_json_v3'
 #dataset_json_folder: 'preprocessing/dataset_json_v3' # './preprocessing/dataset_json'
 
-######################################################################################################################################################
+###################################################################################################################################################### 
+#if only eval use only .run() in GPG_eval.py
 test_batchSize: 12
-xai_method: gradcam
+xai_method: lime
 grid_split: 3
 max_grids: 5
 overwrite: true
 quantitativ: false
-base_output_dir: results
+base_output_dir: "results"
 threshold_steps: 10 
 ######################################################################################################################################################
 

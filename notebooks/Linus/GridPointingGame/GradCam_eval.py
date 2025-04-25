@@ -154,7 +154,7 @@ class GradCamEvaluator:
                     "heatmap": thresholded_overlay,
                     "guessed_fake_position": guessed_fake_pos,
                     "true_fake_position": true_fake_pos,
-                    "accuracy": acc,
+                    "weighted_localization_score": acc,
                     "model_prediction": model_prediction
                 }
 

@@ -18,7 +18,7 @@ def to_numpy(t):
     """Convert tensor to numpy array."""
     return t.detach().cpu().numpy() if not isinstance(t, np.ndarray) else t
 
-def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=None):
+def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None):
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # Convert heatmap to grayscale (average first 3 channels).
     heatmap_intensity = heatmap[:,:,-1]
@@ -33,16 +33,28 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
 
+    # Count of pixels with intensity in each cell.
+    intensity_counts = [np.sum(section > background_pixel) for section in sections]
+    fake_pred_unweighted = np.argmax(intensity_counts)
+
+    # unweighted prediction 
+    total_nonzero_count = float(sum(intensity_counts))
+ 
+    if total_nonzero_count > 0 and 0 <= true_fake_pos < len(intensity_counts):
+        unweighted_grid_accuracy = intensity_counts[true_fake_pos] / total_nonzero_count
+    
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
     for i, intensity in enumerate(intensity_sums):
         print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
-    guessed_fake_position = np.argmax(intensity_sums)
+    fake_pred_weighted = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
     
-    # Compute accuracy as fraction of total intensity in the true fake cell.
-    accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
-    return guessed_fake_position, intensity_sums, accuracy
+    # Compute weighted accuracy as fraction of total intensity in the true fake cell.
+    weighted_accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
+
+    
+    return fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy
 
 class BCOSEvaluator:
     def __init__(self, model=None, device=None):
@@ -159,21 +171,24 @@ class BCOSEvaluator:
                 logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
                 thresholded_heatmap = apply_threshold(heatmap, t)
 
-                guessed_fake_position, intensity_sums, acc = evaluate_heatmap(
-                    thresholded_heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos
-                )
+                fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy = evaluate_heatmap(thresholded_heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos)
 
                 result = {
                     "threshold": t if t is not None else 0,                    
                     "path": path,
                     "original_image": original_image,
                     "heatmap": thresholded_heatmap,
-                    "guessed_fake_position": guessed_fake_position,
-                    "accuracy": acc,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,                    
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": unweighted_accuracy,
                     "true_fake_position": true_fake_pos,
                     "model_prediction": model_prediction
                 }
+                
                 results.append(result)
-            logger.info("For grid %s: true pos %d, predicted %d, accuracy: %.3f",
-                        os.path.basename(path), true_fake_pos, guessed_fake_position, acc)
+                
+                logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, grid_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
+                
         return results
