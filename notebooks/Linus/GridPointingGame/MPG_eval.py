@@ -26,6 +26,7 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_config.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -65,16 +66,6 @@ class MaskPointingGameCreator(Analyser):
         self.output_dir = os.path.join(self.output_folder, "MaskPointingGame")
         os.makedirs(self.output_dir, exist_ok=True)
 
-        # Load or compute sorted image rankings.
-        self.ranking_file = os.path.join(self.output_folder, "sorted_confs.pkl")
-        if os.path.exists(self.ranking_file):
-            self.sorted_confs = self.load_ranking(self.ranking_file)
-            logger.info("Loaded sorted confidences from %s", self.ranking_file)
-        else:
-            self.sorted_confs = self.compute_sorted_confs_fakes()
-            self.save_ranking(self.sorted_confs, self.ranking_file)
-            logger.info("Saved sorted confidences to %s", self.ranking_file)
-
     def analysis(self):
         """Analysis takes all images from data loader and plays the mask pointing game.
         It returns the a list of result dictionaries."""
@@ -91,12 +82,30 @@ class MaskPointingGameCreator(Analyser):
             )
             
             # Filter to get only fake images
+            logger.debug("img_batch shape prior to mask application: %s", img_batch.shape)
             label_mask = (label_batch == 1)
+            label_mask = label_mask.bool()
+            # Filter path_of_image first while label_mask is still aligned to original batch
+            if isinstance(path_of_image, list):
+                path_of_image = [p for i, p in enumerate(path_of_image) if label_mask[i].item()]
+            
+            # Now filter tensors
+            label_mask = (label_batch == 1).bool()
+
+            # Convert to CPU if needed (to avoid torch indexing issues in lists)
+            label_mask_cpu = label_mask.cpu()
+            
+            # Filter path_of_image FIRST using list comprehension
+            if isinstance(path_of_image, list):
+                path_of_image = [p for i, p in enumerate(path_of_image) if label_mask_cpu[i].item()]
+            
+            # Now apply the mask to tensors
             img_batch = img_batch[label_mask]
             label_batch = label_batch[label_mask]
             if mask is not None:
                 mask = mask[label_mask]
-            landmark = landmark[label_mask]
+            logger.debug(f"Shapes after mask filter: img_batch={img_batch.shape}, label_batch={label_batch.shape}, path_batch={len(path_of_image)}")
+            logger.debug("labels after mask: %s", label_batch)
             
             # Remove extra key if present.
             data_dict.pop('label_spe', None)
@@ -112,16 +121,25 @@ class MaskPointingGameCreator(Analyser):
             for j in range(num_samples):
                 image = img_batch[j].unsqueeze(0)  # shape: [1, C, H, W]
                 label = label_batch[j]
+                logger.debug("Sample %d | Label: %s", j, label.item())
                 true_label = int(label.item())  # Convert label tensor to int.
                 image_path = path_of_image[j]
                 
                 #load in mask bc sometimes none with dataloader
-                mask =load_sample_by_path(image_path)[1]
+                mask = self.load_sample_by_path(image_path, expected_label = 1)[1]
+                original_image = image.clone()
+                #preprocess image and then generate heatmap
+                if self.xai_method == "bcos":
+                    image = preprocess_image(image)
+                elif self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
+                    image = image[:,:3]
+                else:
+                    raise ValueError(f"Unknown xai_method: {self.xai_method}")   
                 
-                #heatmaps for all requested methods in dict of form {method: heatmap}
-                heatmap = generate_heatmaps_for_methods(xai_method = self.xai_method, image=image)
+                heatmap = self.generate_heatmap_for_method(self.xai_method,image)
 
                 #Model class and model confidence
+                output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
                 # Get predicted label from the first (and only) sample.
                 predicted_label = logit[0].argmax().item()
@@ -130,23 +148,41 @@ class MaskPointingGameCreator(Analyser):
                 
                 #Play MPG w/ thresholds
                 thresholds = [None]  # No threshold
-                if threshold_steps > 0:
-                    thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
-                for t in thresholds:
-                    logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
-                    acc, intensity_acc = mask_game(heatmap = heatmap, mask = mask)
-                    result = {
-                        "threshold": t if t is not None else 0,
-                        "path": image_path,
-                        "original_image": image,
-                        "heatmap": heatmap,
-                        "accuracy": acc,
-                        "intensity_accuracy": intensity_acc,
-                        "model_prediction": predicted_label,
-                        "model_confidence": confidence,
-                        "xai_method": xai_method
-                    }
-                    results.append(result)
+                if self.threshold_steps > 0:
+                    thresholds += [i / self.threshold_steps for i in range(1, self.threshold_steps + 1)]
+                    for t in thresholds:
+                        logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
+                        #apply threshold to map and zero out values below
+                        thresholded_map = heatmap.copy()
+                        thresholded_map[thresholded_map < t] = 0
+                        acc, intensity_acc = self.mask_game(mask, thresholded_map)
+                        result = {
+                            "threshold": t if t is not None else 0,
+                            "path": image_path,
+                            "original_image": original_image,
+                            "heatmap": heatmap,
+                            "accuracy": acc,
+                            "intensity_accuracy": intensity_acc,
+                            "model_prediction": predicted_label,
+                            "model_confidence": confidence,
+                            "xai_method": xai_method
+                        }
+                        results.append(result)
+                    else:
+                        acc, intensity_acc = self.mask_game(mask, heatmap)
+                        result = {
+                            "threshold": t if t is not None else 0,
+                            "path": image_path,
+                            "original_image": original_image,
+                            "heatmap": heatmap,
+                            "accuracy": acc,
+                            "intensity_accuracy": intensity_acc,
+                            "model_prediction": predicted_label,
+                            "model_confidence": confidence,
+                            "xai_method": xai_method
+                        }
+                        results.append(result)
+                        
         #calculate overall - Does it make sense even??
         grid_accuracies = [res["accuracy"] for res in raw_results]
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
@@ -154,7 +190,7 @@ class MaskPointingGameCreator(Analyser):
         overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
         return overall, results
         
-    def save_results(results):
+    def save_results(self, results):
         # f) group & pickle raw results by threshold
         threshold_groups = collections.defaultdict(list)
         for entry in results:
@@ -169,56 +205,51 @@ class MaskPointingGameCreator(Analyser):
             pickle.dump(dict(threshold_groups), f)
         print(f" → saved grouped results: {all_raw_path}")
 
-    def generate_heatmap_for_method(xai_method, image):
+    def generate_heatmap_for_method(self, xai_method, image):
         """
         Generate a heatmap for each XAI method and return them in a dictionary.
     
         Args:
-            xai_methods (list): List of strings (e.g., ["gradcam", "bcos"])
+            xai_methods (string): A string representing a valid XAI method
             image (torch.Tensor): The input image tensor [1, C, H, W]
     
         Returns:
             heatmap (tensor)
-        """
-        if method == "bcos":
-            image = preprocess_image(image)
+        """  
+        if xai_method == "bcos":
             evaluator = BCOSEvaluator(self.model, self.device)
-        elif method == "lime":
-            image = image[:,:3]
+        elif xai_method == "lime":
             evaluator = LIMEEvaluator(self.model, self.device)
-        elif method == "gradcam":
-            image = image[:,:3]
-            raise NotImplementedError("GradCAM evaluator not implemented.") #fix this
+        elif xai_method == "gradcam":
+            evaluator = GradCamEvaluator(self.model, self.device)
         else:
-            raise ValueError(f"Unknown xai_method: {self.xai_method}")      
+            raise ValueError(f"Unknown xai_method: {self.xai_method}")   
         try:
             # Call your heatmap generator (you may need to adjust this call signature)
-            heatmap = evaluator.generate_heatmap(image=image)
-            logger.debug("Generated heatmap for method: %s | shape: %s", method, heatmap.shape)
+            heatmap = evaluator.generate_heatmap(image)[0]
+            logger.debug("Generated heatmap for method: %s | shape: %s, type: %s", xai_method, heatmap.shape, type(heatmap))
 
         except Exception as e:
-            logger.error("Error generating heatmap for method %s: %s", method, e)
+            logger.error("Error generating heatmap for method %s: %s", xai_method, e)
         return heatmap
         
-    def mask_game(mask, heatmap, threshold):
+    def mask_game(self, mask, heatmap):
         """
-        play the mask game for a given heatmap and threshold for both intensity-based and non-intensity based
+        play the mask game for a given heatmap for both intensity-based and non-intensity based
         return the respective accuracies
         """
-        if threshold == None:
-            threshold = 0
         #without intensity
         if isinstance(heatmap, torch.Tensor):
             heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
         if isinstance(mask, torch.Tensor):
             mask = mask.cpu().numpy()  # Convert tensor to numpy array
     
-        heatmap = heatmap[:, :, -1:].copy()
-        intensity_map = heatmap[:,:,-1:].copy()
+        heatmap = heatmap[:, :, -1].copy()
+        intensity_map = heatmap[:,:,-1].copy()
         # Ensure both are in the 0-1 range (binary)
         if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
             print("heatmap range may be wrong")
-            heatmap = np.where(heatmap > threshold, 1, 0)
+            heatmap = np.where(heatmap > 0, 1, 0)
     
         if np.max(mask) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
             print("mask range may be wrong")
@@ -238,7 +269,7 @@ class MaskPointingGameCreator(Analyser):
         iou = intersection / union if union > 0 else 0  # IoU
 
         #with intensity
-        total_intensity = np.sum(intensity_map[intensity_map>threshold])
+        total_intensity = np.sum(intensity_map)
         mask_intensity = np.sum(intensity_map[mask ==1])
         non_mask_intensity = np.sum(intensity_map[mask==0])
         intensity_accuracy = mask_intensity/total_intensity if total_intensity > 0 else 0
@@ -274,7 +305,7 @@ class MaskPointingGameCreator(Analyser):
 def main():
     config = load_config(MODEL_PATH, CONFIG_PATH, additional_args=ADDITIONAL_ARGS)
 
-    required_keys = ["overwrite", "quantitativ", "xai_method", "max_images"]
+    required_keys = ["overwrite", "quantitativ", "xai_method"]
     for key in required_keys:
         if key not in config:
             raise ValueError(f"Missing required config key: {key}")
@@ -290,28 +321,8 @@ def main():
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         new_state_dict[k.replace("module.", "")] = v
-
-    ##########
     
-    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
-    res = model.load_state_dict(new_state_dict, strict=False)
-    
-    # 3) Logge, was fehlt und was extra war
-    logger.info("Missing keys: %s", res.missing_keys)
-    logger.info("Unexpected keys: %s", res.unexpected_keys)
-    
-    # 4) quick‐check eines Backbone‐Weights
-    first_weight = next(model.backbone.parameters())
-    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
-
-    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
-    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
-
-
-
-
-
-    ########
+    model.load_state_dict(new_state_dict, strict=False)
     
     # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -319,32 +330,6 @@ def main():
 
     model.eval()  # Set model to evaluation mode.
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
-
-    ##########
-
-
-
-
-    
-    # 1. Zähle alle detach-fähigen Module
-    all_detachable = [m for m in model.backbone.modules() if hasattr(m, "detach")]
-    print("Anzahl aller detach-fähigen Module:", len(all_detachable))
-
-    # 2. Vor Explanation-Modus: sollten alle detach=False sein
-    pre = sum(1 for m in all_detachable if m.detach)
-    print("Vorher detach=True:", pre)
-
-    # 3. Im Explanation-Modus
-    with model.backbone.explanation_mode():
-        mid = sum(1 for m in all_detachable if m.detach)
-        print("Im Kontext detach=True:", mid)
-
-    # 4. Nach Exit: wieder alle auf False?
-    post = sum(1 for m in all_detachable if m.detach)
-    print("Danach detach=True:", post)
-    # —––––––––– ENDE ––––––––––
-
-    ############
         
     model_name = config.get("model_name", "defaultModel")
     config_name = os.path.basename(CONFIG_PATH).split('.')[0]
@@ -355,8 +340,21 @@ def main():
     test_loader = list(test_data_loaders.values())[0]
     dataset = test_loader.dataset
 
+    MPG_creator = MaskPointingGameCreator(
+        base_output_dir=config.get("base_output_dir", "results"),
+        xai_method=config["xai_method"],
+        model=model,
+        model_name=model_name,
+        config_name=config_name,
+        test_data_loaders=test_data_loaders,
+        dataset=dataset,
+        device=device,
+        overwrite=config["overwrite"],
+        quantitativ=config["quantitativ"],
+        threshold_steps= config["threshold_steps"]
+    )
+    
     MPG_creator.run() # Run analysis.
-    MPG_creator.save_results()
 
 if __name__ == "__main__":
     main()
