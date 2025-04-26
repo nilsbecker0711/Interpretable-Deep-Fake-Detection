@@ -41,7 +41,7 @@ def evaluate_heatmap(heatmap, grid_split=3, top_percentile=99.9, true_fake_pos=N
 
     # unweighted prediction 
     # Count of pixels with intensity in each cell.
-    intensity_counts = [np.sum(section > background_pixel) for section in sections]
+    intensity_counts = [section.sum() for section in sections]
     fake_pred_unweighted = np.argmax(intensity_counts)
 
     total_nonzero_count = float(sum(intensity_counts))
@@ -170,13 +170,13 @@ class GradCamEvaluator:
                     "unweighted_guess_fake_position": fake_pred_unweighted,
                     "true_fake_position": true_fake_pos,
                     "weighted_localization_score": weighted_accuracy,
-                    "unweighted_localization_score": fake_pred_unweighted,
+                    "unweighted_localization_score": unweighted_accuracy,
                     "model_prediction": model_prediction
                 }
 
 
                 logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
-                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
 
                 results.append(result)
 
