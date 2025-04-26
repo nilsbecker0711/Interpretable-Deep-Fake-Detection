@@ -131,7 +131,7 @@ class GradCamEvaluator:
             # Grad-CAM heatmap
             intensity_map, rgb_img, heatmap = self.generate_heatmap(tensor[0], path, grid_split, true_fake_pos)
             original_image = self.convert_to_numpy(tensor[0])
-            model_prediction = 1  # hardcoded as before
+            model_prediction = 1  # hardcoded
 
             thresholds = [None]
             if threshold_steps > 0:
