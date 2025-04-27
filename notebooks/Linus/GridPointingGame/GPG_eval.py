@@ -285,10 +285,10 @@ class GridPointingGameCreator(Analyser):
             if fake_count < 1 or real_count < required_real:
                 logger.warning("Not enough images: fake %d, real %d (required %d)", fake_count, real_count, required_real)
                 break
-            
+
             # Get first fake tuple and remove it.
             fake_tuple = ranked_fake.pop(0)
-            logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
+            logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], torch.tensor(fake_tuple[1]).sigmoid().item())
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
             if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
@@ -329,7 +329,7 @@ class GridPointingGameCreator(Analyser):
             logger.debug("Grid tensor shape: %s", grid_tensor.shape)
             
             # Save grid tensor with fake position encoded in filename.
-            base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}.pt"
+            base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}_conf_fake{torch.tensor(fake_tuple[1]).sigmoid().item()}.pt"
             path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)
