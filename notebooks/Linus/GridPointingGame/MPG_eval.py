@@ -20,6 +20,7 @@ from GradCam_eval import GradCamEvaluator
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
+import collections
 
 #######################
 # set model path, config path and additional arguments
@@ -33,13 +34,13 @@ ADDITIONAL_ARGS = {
 #######################
 
 #setpup logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0):
+                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
@@ -57,6 +58,7 @@ class MaskPointingGameCreator(Analyser):
         self.overwrite = overwrite
         self.quantitativ = quantitativ
         self.threshold_steps = threshold_steps
+        self.max_images = max_images
 
         if plotting_only:
             self.load_results()
@@ -81,32 +83,6 @@ class MaskPointingGameCreator(Analyser):
                 data_dict[k] for k in ['image', 'label', 'mask', 'landmark', 'image_path']
             )
             
-            # Filter to get only fake images
-            logger.debug("img_batch shape prior to mask application: %s", img_batch.shape)
-            label_mask = (label_batch == 1)
-            label_mask = label_mask.bool()
-            # Filter path_of_image first while label_mask is still aligned to original batch
-            if isinstance(path_of_image, list):
-                path_of_image = [p for i, p in enumerate(path_of_image) if label_mask[i].item()]
-            
-            # Now filter tensors
-            label_mask = (label_batch == 1).bool()
-
-            # Convert to CPU if needed (to avoid torch indexing issues in lists)
-            label_mask_cpu = label_mask.cpu()
-            
-            # Filter path_of_image FIRST using list comprehension
-            if isinstance(path_of_image, list):
-                path_of_image = [p for i, p in enumerate(path_of_image) if label_mask_cpu[i].item()]
-            
-            # Now apply the mask to tensors
-            img_batch = img_batch[label_mask]
-            label_batch = label_batch[label_mask]
-            if mask is not None:
-                mask = mask[label_mask]
-            logger.debug(f"Shapes after mask filter: img_batch={img_batch.shape}, label_batch={label_batch.shape}, path_batch={len(path_of_image)}")
-            logger.debug("labels after mask: %s", label_batch)
-            
             # Remove extra key if present.
             data_dict.pop('label_spe', None)
             # Convert labels to binary.
@@ -116,17 +92,43 @@ class MaskPointingGameCreator(Analyser):
             
             #initialize results list to be filled with result dict
             results = []
-            
+            processed_images = 0
             # Process each image in the batch.
             for j in range(num_samples):
-                image = img_batch[j].unsqueeze(0)  # shape: [1, C, H, W]
                 label = label_batch[j]
+                #only process fake labels for MPG
+                if label == 0:
+                    continue
+                image = img_batch[j].unsqueeze(0)  # shape: [1, C, H, W]
                 logger.debug("Sample %d | Label: %s", j, label.item())
                 true_label = int(label.item())  # Convert label tensor to int.
                 image_path = path_of_image[j]
                 
                 #load in mask bc sometimes none with dataloader
                 mask = self.load_sample_by_path(image_path, expected_label = 1)[1]
+                #mask = mask[j]
+                # After loading mask
+                if mask is None:
+                    logger.warning(f"Mask is None for image {image_path}. Skipping sample.")
+                    continue
+                if isinstance(mask, torch.Tensor):
+                    mask = mask.cpu().numpy()
+                # Now handle faulty shapes
+                if mask.ndim == 0:
+                    logger.warning(f"Mask is scalar for image {image_path}. Skipping sample.")
+                    continue
+                if mask.ndim == 1:
+                    logger.warning(f"Mask is 1D for image {image_path}. Skipping sample.")
+                    continue
+                if mask.ndim == 3:
+                    mask = mask.squeeze()
+                if mask.shape != (224, 224):
+                    logger.warning(f"Mask has wrong shape {mask.shape} for image {image_path}. Skipping sample.")
+                    continue
+                logger.debug(f"mask shape before: {mask.shape}")
+                
+                #logger.debug(f"mask: {mask}")
+                logger.debug(f"image path: {image_path}")
                 original_image = image.clone()
                 #preprocess image and then generate heatmap
                 if self.xai_method == "bcos":
@@ -145,7 +147,7 @@ class MaskPointingGameCreator(Analyser):
                 predicted_label = logit[0].argmax().item()
                 # Compute confidence from the corresponding logit.
                 confidence = logit[0, predicted_label].item()
-                
+                processed_images += 1
                 #Play MPG w/ thresholds
                 thresholds = [None]  # No threshold
                 if self.threshold_steps > 0:
@@ -168,23 +170,33 @@ class MaskPointingGameCreator(Analyser):
                             "xai_method": xai_method
                         }
                         results.append(result)
-                    else:
-                        acc, intensity_acc = self.mask_game(mask, heatmap)
-                        result = {
-                            "threshold": t if t is not None else 0,
-                            "path": image_path,
-                            "original_image": original_image,
-                            "heatmap": heatmap,
-                            "accuracy": acc,
-                            "intensity_accuracy": intensity_acc,
-                            "model_prediction": predicted_label,
-                            "model_confidence": confidence,
-                            "xai_method": xai_method
-                        }
-                        results.append(result)
+                #if without threshold
+                else:
+                    acc, intensity_acc = self.mask_game(mask, heatmap)
+                    result = {
+                        "threshold": 0,
+                        "path": image_path,
+                        "original_image": original_image,
+                        "heatmap": heatmap,
+                        "accuracy": acc,
+                        "intensity_accuracy": intensity_acc,
+                        "model_prediction": predicted_label,
+                        "model_confidence": confidence,
+                        "xai_method": self.xai_method
+                    }
+                    results.append(result)
+                if self.max_images is not None and processed_images >= self.max_images:
+                    logger.info(f"Reached max_images={self.max_images}, exiting early.")
+                    grid_accuracies = [res["accuracy"] for res in results]
+                    logger.info(f"Grid Accuracies: {grid_accuracies}, type: {type(grid_accuracies)}")
+                    percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
+                    logger.info("Localisation accuracy percentiles: %s", percentiles)
+                    overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
+                    return overall, results
                         
         #calculate overall - Does it make sense even??
-        grid_accuracies = [res["accuracy"] for res in raw_results]
+        grid_accuracies = [res["accuracy"] for res in results]
+        logger.info(f"Grid Accuracies: {grid_accuracies}, type: {type(grid_accuracies)}")
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
         logger.info("Localisation accuracy percentiles: %s", percentiles)
         overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
@@ -243,9 +255,10 @@ class MaskPointingGameCreator(Analyser):
             heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
         if isinstance(mask, torch.Tensor):
             mask = mask.cpu().numpy()  # Convert tensor to numpy array
-    
-        heatmap = heatmap[:, :, -1].copy()
+        logger.debug(f"mask is: {mask}")
         intensity_map = heatmap[:,:,-1].copy()
+        heatmap = heatmap[:, :, -1].copy()
+        logger.debug(f"Intensity map shape: {intensity_map.shape}")
         # Ensure both are in the 0-1 range (binary)
         if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
             print("heatmap range may be wrong")
@@ -294,6 +307,7 @@ class MaskPointingGameCreator(Analyser):
         
         # Retrieve the sample from the dataset using its __getitem__.
         sample = self.dataset[idx]  # Expected to be a tuple: (image, label, landmark, mask, stored_index)
+        logger.debug(f"sample looks like: {sample}")
         sample_label = int(sample[1])
         if sample_label != expected_label:
             raise ValueError(f"Label mismatch at {image_path}: expected {expected_label} but got {sample_label}")
@@ -351,7 +365,8 @@ def main():
         device=device,
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
-        threshold_steps= config["threshold_steps"]
+        threshold_steps= config["threshold_steps"],
+        max_images = config["max_images"]
     )
     
     MPG_creator.run() # Run analysis.
