@@ -60,18 +60,11 @@ parameters:
   use_data_augmentation:
     values: [true, false]
   # model parameters
-  b:
-    values: [2.5]
+ 
   norm: 
     values: [DetachableLayerNorm] #[AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
   norm_bias:
     values: [true, false]
-  norm_2d:
-    values: [BatchNorm2d, BatchNormUncentered2d] #[AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
-  norm_2d_bias:
-    values: [true, false]
-  model_type: 
-    values: [vitc_ti_patch1_14] #, vitc_s_patch1_14, vitc_b_patch1_14, vitc_l_patch1_14, simple_vit_ti_patch16_224, simple_vit_s_patch16_224, simple_vit_b_patch16_224, simple_vit_l_patch16_224]
 early_terminate:
   type: hyperband
   min_iter: 2

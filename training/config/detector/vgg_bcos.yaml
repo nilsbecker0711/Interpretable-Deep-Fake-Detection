@@ -18,24 +18,28 @@ backbone_config:
   max_out: 2  # Used in BcosConv2d classification layer
   bias : 0.0000000000001
   temperature : 0.1 
-  b : 1
+  b : 1.25
   pretrained_weights: False
 
 
 
 # Dataset settings
 dataset_type: bcos 
-all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++]
-compression: c40
-train_batchSize: 32
-test_batchSize: 32
-workers: 8
-frame_num: {'train': 32, 'test': 32}
-resolution: 224
-with_mask: false
-with_landmark: false
+test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++, FF-F2F]
+
+compression: c40  # compression-level for videos
+train_batchSize: 64   # training batch size
+val_batchSize: 64
+test_batchSize: 64   # test batch size
+workers: 8   # number of data loading workers
+frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
+resolution: 176   # resolution of output image to network
+with_mask: false   # whether to include mask information in the input
+with_landmark: false   # whether to include facial landmark information in the input
+
 save_ckpt: true
 save_feat: true
 add_inverse_channels: true
