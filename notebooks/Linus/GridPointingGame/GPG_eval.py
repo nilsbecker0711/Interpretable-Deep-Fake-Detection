@@ -25,10 +25,12 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 #######################
 # set model path, config path and additional arguments
 
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_layergrad_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_gradcam_config.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
