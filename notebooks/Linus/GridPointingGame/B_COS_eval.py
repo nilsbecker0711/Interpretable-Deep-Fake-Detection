@@ -24,6 +24,10 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     heatmap_intensity = heatmap[:,:,-1]
     print(f"shape: {heatmap_intensity.shape}")
 
+        # needs to be defined 
+    unweighted_accuracy = 0.0
+    weighted_accuracy   = 0.0
+
     # Calculate cell dimensions.
     rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
@@ -130,7 +134,7 @@ class BCOSEvaluator:
     def extract_fake_position(self, path):
         """Extract fake position from filename."""
         try:
-            return int(os.path.basename(path).split('_fake_')[1].split('.')[0])
+            return int(os.path.basename(path).split('_fake_')[1].split('_conf_')[0])
         except Exception as e:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1

@@ -80,7 +80,7 @@ class LIMEEvaluator:
     def extract_fake_position(self, path):
         """Extract fake position from filename."""
         try:
-            return int(os.path.basename(path).split('_fake_')[1].split('.')[0])
+            return int(os.path.basename(path).split('_fake_')[1].split('_conf_')[0])
         except Exception as e:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1

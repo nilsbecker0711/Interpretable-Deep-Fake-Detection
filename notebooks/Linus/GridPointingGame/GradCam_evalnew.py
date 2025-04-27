@@ -12,6 +12,7 @@ import torch
 import logging
 import torch.nn as nn
 import numpy as np
+import cv2
 from tqdm import tqdm #if not used, clean 
 from pytorch_grad_cam import GradCAM, XGradCAM, GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image
@@ -30,8 +31,12 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # heatmap is recieved in grayscale
     heatmap_intensity = heatmap
-
     print(f"shape: {heatmap_intensity.shape}")
+
+    # needs to be defined 
+    unweighted_accuracy = 0.0
+    weighted_accuracy   = 0.0
+
     # Calculate cell dimensions.
     rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
@@ -46,7 +51,7 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     fake_pred_unweighted = np.argmax(intensity_counts)
 
     total_nonzero_count = float(sum(intensity_counts))
- 
+
     if total_nonzero_count > 0 and 0 <= true_fake_pos < len(intensity_counts):
         unweighted_accuracy = intensity_counts[true_fake_pos] / total_nonzero_count
 
@@ -116,7 +121,7 @@ class GradCamEvaluator:
 
     def extract_fake_position(self, path):
         try:
-            return int(os.path.basename(path).split("_fake_")[1].split('.')[0])
+            return int(os.path.basename(path).split("_fake_")[1].split('_conf_')[0])
         except:
             logger.warning("Could not extract fake position from %s", path)
             return -1
@@ -152,6 +157,16 @@ class GradCamEvaluator:
         # rgb = normalized float image (shape H×W×3, values in [0..1]) 
         rgb_img = tensor.cpu().permute(1,2,0).numpy()
         rgb_img = (rgb_img - rgb_img.min())/(rgb_img.max()-rgb_img.min()+1e-8)
+        
+    # for layergrad upsample the CAM to match rgb_img
+        if self.method == "layergrad":
+            h, w, _ = rgb_img.shape
+            grayscale_cam = cv2.resize(
+                grayscale_cam,
+                (w, h),
+                interpolation=cv2.INTER_LINEAR
+            )
+
         heatmap = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
 
         return grayscale_cam, rgb_img, heatmap
