@@ -12,6 +12,7 @@ overwrite: true
 quantitativ: false
 base_output_dir: results
 threshold_steps: 0
+max_images: 10
 ######################################################################################################################################################
 
 label_dict:
