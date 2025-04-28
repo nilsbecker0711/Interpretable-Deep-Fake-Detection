@@ -1,56 +1,56 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/resnet_v2
+log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/vit
 
 # model setting -> old
 freeze: false
 pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
 #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
-model_name: resnet34_bcos_v2   # model name
-backbone_name: resnet34_bcos_v2  # backbone name
+model_name: vit_bcos   # model name
+backbone_name: vit_bcos  # backbone name
 
 #backbone setting
 backbone_config:
   num_classes: 2
-  in_chans: 6
-  #dropout: false
+  channels: 6
   #pretrained: false
-  groups: 1
-  base_width: 64
-  zero_init_residual: false
-  # replace_stride_with_dilation: None
-  # norm_layer: None
-  # short_cat: False
-  # mode: Original
-  small_inputs: false
-  stochastic_depth_prob: 0.0
-  logit_bias: #None
-  logit_temperature: 1 #None
-  b: 2.5
-  norm: BatchNormUncentered2d # choices: AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, 
-  # PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d
+  logit_bias: #0.0 #None
+  logit_temperature: #10 #None
+  b: 1.75
+  max_out: 2
+  # either set the model type
+  model_type: vitc_ti_patch1_14
+  # or the parameters directly, these values are only taken when model_type is not provided
+  image_size: 14 #14 # Union[int, Tuple[int, int]],
+  patch_size: 1 # Union[int, Tuple[int, int]],
+  dim: 384 #192
+  depth: 11 # 12-1
+  heads: 6
+  mlp_dim: 1536
+  conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
+  norm: DetachableLayerNorm
   norm_bias: false
-
+  norm_2d: BatchNorm2d
+  norm_2d_bias: true
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
+val_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
-val_dataset: [FaceForensics++]
 
 compression: c23  # compression-level for videos
 train_batchSize: 16   # training batch size
-val_batchSize: 16   # test batch size
 test_batchSize: 16   # test batch size
+val_batchSize: 16
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+resolution: 224   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-add_inverse_channels: true
-save_avg: true
+# add_inverse_channels: true
 
 
 # data augmentation
@@ -77,28 +77,28 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0008942959775828073  # learning rate
-    beta1: 0.8604610739921135  # beta1 for Adam optimizer
-    beta2: 0.8825739261087244 # beta2 for Adam optimizer
-    eps: 0.0000079717450849303  # epsilon for Adam optimizer
-    weight_decay: 0.0004049427788883216  # weight decay for regularization
-    amsgrad: true
+    lr: 0.00005459276777003285  # learning rate -> bcos paper 2.5e-4
+    beta1: 0.8936642837797104  # beta1 for Adam optimizer
+    beta2: 0.9355837693261222 # beta2 for Adam optimizer
+    eps: 0.00000444877338496266  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
+    weight_decay: 0.000528368830528258  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
+    amsgrad: false
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
-  gradient_clipping: true
+  gradient_clipping: false
 
 # training config
-lr_scheduler: # step   # learning rate scheduler
-lr_eta_min: 0.00000000081967301091
-lr_T_max: 61.431326210605256
-lr_step: 6
-lr_gamma: 0.44069089507946746
+lr_scheduler: # step, cosine, warmup_cosine, linear
+lr_eta_min: 0.00000000067012825235
+lr_T_max: 168.83338581709222
+lr_step: 9
+lr_gamma: 0.2273327834382767
 nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
-rec_iter: 100   # interval iterations for recording
+rec_iter: 500   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 10   # manual seed for random number generation
 

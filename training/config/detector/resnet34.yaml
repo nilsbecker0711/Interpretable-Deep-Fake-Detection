@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_nilbecke/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
+log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
 
 # model setting
 pretrained: # /home/zhiyuanyan/disfin/deepfake_benchmark/training/pretrained/resnet34-b627a593.pth   # path to a pre-trained model, if using one
@@ -16,14 +16,14 @@ backbone_config:
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-val_dataset: [FaceForensics++, FF-F2F]
-test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
-val_batchSize: 64   # test batch size
-test_batchSize: 64   # test batch size
+train_batchSize: 128   # training batch size
+val_batchSize: 128   # test batch size
+test_batchSize: 128   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
@@ -36,7 +36,7 @@ add_inverse_channels: false
 
 # data augmentation
 #dataset_type: 'bcos'
-use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -58,25 +58,25 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000025  # learning rate
-    beta1: 0.9  # beta1 for Adam optimizer
-    beta2: 0.999 # beta2 for Adam optimizer
-    eps: 0.00000001  # epsilon for Adam optimizer
-    weight_decay: 0.0005  # weight decay for regularization
-    amsgrad: false
+    lr: 0.000274494353197441  # learning rate
+    beta1: 0.8638397377028062  # beta1 for Adam optimizer
+    beta2: 0.8618653317725739 # beta2 for Adam optimizer
+    eps: 0.00000420800126268523  # epsilon for Adam optimizer
+    weight_decay: 0.0008638852468412627  # weight decay for regularization
+    amsgrad: true
   sgd:
     lr: 0.0002  # learning rate
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
 
 # training config
-lr_scheduler: null   # learning rate scheduler
+lr_scheduler:   # learning rate scheduler
 nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
-manualSeed: 1024   # manual seed for random number generation
+manualSeed: 1   # manual seed for random number generation
 save_ckpt: false   # whether to save checkpoint
 
 # loss function
@@ -90,4 +90,3 @@ metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 ddp : false   # whether to use distributed data parallel
 cuda: true   # whether to use CUDA acceleration
 cudnn: true   # whether to use CuDNN for convolution operations
-ddp: false
