@@ -83,6 +83,10 @@ def get_test_metrics(y_pred, y_true, img_names):
     prediction_class = (y_pred > 0.5).astype(int)
     correct = (prediction_class == np.clip(y_true, a_min=0, a_max=1)).sum().item()
     acc = correct / len(prediction_class)
+    # f1 and rc
+    rc = metrics.recall_score(y_true, prediction_class)
+    f1 = metrics.f1_score(y_true, prediction_class)
+
     if type(img_names[0]) is not list:
         # calculate video-level auc for the frame-level methods.
         v_auc, _ = get_video_metrics(img_names, y_pred, y_true)
@@ -90,4 +94,4 @@ def get_test_metrics(y_pred, y_true, img_names):
         # video-level methods
         v_auc=auc
 
-    return {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'pred': y_pred, 'video_auc': v_auc, 'label': y_true}
+    return {'acc': acc, 'auc': auc, 'eer': eer, 'ap': ap, 'rc':rc, 'f1':f1, 'pred': y_pred, 'video_auc': v_auc, 'label': y_true}
