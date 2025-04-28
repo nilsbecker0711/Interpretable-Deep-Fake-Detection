@@ -34,7 +34,7 @@ ADDITIONAL_ARGS = {
 #######################
 
 #setpup logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class MaskPointingGameCreator(Analyser):
@@ -83,7 +83,7 @@ class MaskPointingGameCreator(Analyser):
             img_batch, label_batch, mask, landmark, path_of_image = (
                 data_dict[k] for k in ['image', 'label', 'mask', 'landmark', 'image_path']
             )
-            
+            logger.debug(f"raw mask: {mask}")
             # Remove extra key if present.
             data_dict.pop('label_spe', None)
             # Convert labels to binary.
@@ -106,27 +106,22 @@ class MaskPointingGameCreator(Analyser):
                 image_path = path_of_image[j]
                 
                 #load in mask bc sometimes none with dataloader
-                mask = self.load_sample_by_path(image_path, expected_label = 1)[1]
-                #mask = mask[j]
-                # After loading mask
-                if mask is None:
-                    logger.warning(f"Mask is None for image {image_path}. Skipping sample.")
+                try:
+                    mask = mask[j]
+                    #mask = self.load_sample_by_path(image_path, expected_label = 1)[1]
+                    logger.debug(f"mask max is: {np.max(mask)} with type: {type(mask)}, and shape {mask.shape}")
+                finally:
                     continue
+
+                # After loading mask
                 if isinstance(mask, torch.Tensor):
                     mask = mask.cpu().numpy()
-                # Now handle faulty shapes
-                if mask.ndim == 0:
-                    logger.warning(f"Mask is scalar for image {image_path}. Skipping sample.")
+                if not isinstance(mask, np.ndarray):
                     continue
-                if mask.ndim == 1:
-                    logger.warning(f"Mask is 1D for image {image_path}. Skipping sample.")
-                    continue
-                if mask.ndim == 3:
-                    mask = mask.squeeze()
+                mask = mask.squeeze()
                 if mask.shape != (224, 224):
                     logger.warning(f"Mask has wrong shape {mask.shape} for image {image_path}. Skipping sample.")
                     continue
-                logger.debug(f"mask shape before: {mask.shape}")
                 
                 #logger.debug(f"mask: {mask}")
                 logger.debug(f"image path: {image_path}")
@@ -139,7 +134,6 @@ class MaskPointingGameCreator(Analyser):
                     image = image[:,:3]
                 else:
                     raise ValueError(f"Unknown xai_method: {self.xai_method}")   
-                logger.debug(f"original image in shape: {original_image.shape}")
                 heatmap = self.generate_heatmap_for_method(self.xai_method,image)
 
                 #Model class and model confidence
@@ -160,6 +154,8 @@ class MaskPointingGameCreator(Analyser):
                         thresholded_map = heatmap.copy()
                         thresholded_map[thresholded_map < t] = 0
                         acc, intensity_acc = self.mask_game(mask, thresholded_map)
+                        logger.debug(f"Unweighted accuracy: {acc}")
+                        logger.debug(f"Weighted Accuracies: {intensity_acc}")
                         result = {
                             "threshold": t if t is not None else 0,
                             "path": image_path,
@@ -176,6 +172,8 @@ class MaskPointingGameCreator(Analyser):
                 #if without threshold
                 else:
                     acc, intensity_acc = self.mask_game(mask, heatmap)
+                    logger.debug(f"Unweighted accuracy: {acc}")
+                    logger.debug(f"Weighted Accuracies: {intensity_acc}")
                     result = {
                             "threshold": 0,
                             "path": image_path,
@@ -191,35 +189,10 @@ class MaskPointingGameCreator(Analyser):
                     results.append(result)
                 if self.max_images is not None and processed_images >= self.max_images:
                     logger.info(f"Reached max_images={self.max_images}, exiting early.")
-                    grid_accuracies = [res["weighted_localization_score"] for res in results]
-                    logger.info(f"Grid Accuracies: {grid_accuracies}, type: {type(grid_accuracies)}")
-                    percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
-                    logger.info("Localisation accuracy percentiles: %s", percentiles)
-                    overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-                    return results #overall,
+                    return results 
                         
-        #calculate overall - Does it make sense even??
-        grid_accuracies = [res["accuracy"] for res in results]
-        logger.info(f"Grid Accuracies: {grid_accuracies}, type: {type(grid_accuracies)}")
-        percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
-        logger.info("Localisation accuracy percentiles: %s", percentiles)
-        overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-        return results  #overall,
+        return results 
         
-    # def save_results(self, results):
-    #     # f) group & pickle raw results by threshold
-    #     threshold_groups = collections.defaultdict(list)
-    #     for entry in results:
-    #         thr = entry.get("threshold", None)
-    #         threshold_groups[thr].append(entry)
-    
-    #     out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
-    #     os.makedirs(out_dir, exist_ok=True)
-    
-    #     all_raw_path = os.path.join(out_dir, "results_by_threshold.pkl")
-    #     with open(all_raw_path, "wb") as f:
-    #         pickle.dump(dict(threshold_groups), f)
-    #     print(f" → saved grouped results: {all_raw_path}")
 
     def generate_heatmap_for_method(self, xai_method, image):
         """
@@ -259,26 +232,24 @@ class MaskPointingGameCreator(Analyser):
             heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
         if isinstance(mask, torch.Tensor):
             mask = mask.cpu().numpy()  # Convert tensor to numpy array
-        logger.debug(f"mask is: {mask}")
         intensity_map = heatmap[:,:,-1].copy()
         heatmap = heatmap[:, :, -1].copy()
-        logger.debug(f"Intensity map shape: {intensity_map.shape}")
+        #logger.debug(f"Intensity map shape: {intensity_map.shape}")
         # Ensure both are in the 0-1 range (binary)
-        if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
-            print("heatmap range may be wrong")
-            heatmap = np.where(heatmap > 0, 1, 0)
+        # if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
+        #     print("heatmap range may be wrong")
+        #     heatmap = np.where(heatmap > 0, 1, 0)
     
-        if np.max(mask) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
-            print("mask range may be wrong")
-            mask = np.where(mask > 0, 1, 0)
+        # if np.max(mask) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
+        #     print("mask range may be wrong")
+        #     mask = np.where(mask > 0, 1, 0)
             
-        # assuming mask is a tensor or numpy array
-        correct_pixels = np.sum((heatmap == 1) & (mask == 1))  # Pixels that are both predicted as "1" and ground truth "1"
-        # print(np.array((heatmap == 1) & (mask == 1)).shape)
-        total_predicted_pixels = np.sum(heatmap == 1)  # Total ground truth pixels that are part of the mask
-        # print(np.array(heatmap == 1).shape)
-        # Step 5: Compute the performance metric (e.g., accuracy)
+        #Without Intensity
+        heatmap = heatmap.astype(np.uint8)
+        correct_pixels = np.sum((heatmap == 1) & (mask == 1))  
+        total_predicted_pixels = np.sum(heatmap == 1) 
         accuracy = correct_pixels / total_predicted_pixels if total_predicted_pixels > 0 else 0  # Accuracy based on mask region
+        logger.debug(f"mask game accuracy for unweighted: {accuracy}")
         
         # Optionally, calculate Intersection over Union (IoU) for better performance measurement
         intersection = correct_pixels
@@ -311,7 +282,6 @@ class MaskPointingGameCreator(Analyser):
         
         # Retrieve the sample from the dataset using its __getitem__.
         sample = self.dataset[idx]  # Expected to be a tuple: (image, label, landmark, mask, stored_index)
-        logger.debug(f"sample looks like: {sample}")
         sample_label = int(sample[1])
         if sample_label != expected_label:
             raise ValueError(f"Label mismatch at {image_path}: expected {expected_label} but got {sample_label}")
