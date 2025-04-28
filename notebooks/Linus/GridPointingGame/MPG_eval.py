@@ -131,6 +131,7 @@ class MaskPointingGameCreator(Analyser):
                 #logger.debug(f"mask: {mask}")
                 logger.debug(f"image path: {image_path}")
                 original_image = image.clone()
+                original_image = original_image[:,:3].squeeze()
                 #preprocess image and then generate heatmap
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
@@ -138,7 +139,7 @@ class MaskPointingGameCreator(Analyser):
                     image = image[:,:3]
                 else:
                     raise ValueError(f"Unknown xai_method: {self.xai_method}")   
-                
+                logger.debug(f"original image in shape: {original_image.shape}")
                 heatmap = self.generate_heatmap_for_method(self.xai_method,image)
 
                 #Model class and model confidence
@@ -168,23 +169,25 @@ class MaskPointingGameCreator(Analyser):
                             "weighted_localization_score": intensity_acc,
                             "model_prediction": predicted_label,
                             "model_confidence": confidence,
-                            "xai_method": xai_method
+                            "xai_method": self.xai_method,
+                            "mask" : mask
                         }
                         results.append(result)
                 #if without threshold
                 else:
                     acc, intensity_acc = self.mask_game(mask, heatmap)
                     result = {
-                        "threshold": 0,
-                        "path": image_path,
-                        "original_image": original_image,
-                        "heatmap": heatmap,
-                        "unweighted_localization_score": acc,
-                        "weighted_localization_score": intensity_acc,
-                        "model_prediction": predicted_label,
-                        "model_confidence": confidence,
-                        "xai_method": self.xai_method
-                    }
+                            "threshold": 0,
+                            "path": image_path,
+                            "original_image": original_image,
+                            "heatmap": heatmap,
+                            "unweighted_localization_score": acc,
+                            "weighted_localization_score": intensity_acc,
+                            "model_prediction": predicted_label,
+                            "model_confidence": confidence,
+                            "xai_method": self.xai_method,
+                            "mask" : mask
+                        }
                     results.append(result)
                 if self.max_images is not None and processed_images >= self.max_images:
                     logger.info(f"Reached max_images={self.max_images}, exiting early.")
