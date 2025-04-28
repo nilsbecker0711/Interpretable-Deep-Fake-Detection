@@ -59,6 +59,7 @@ class MaskPointingGameCreator(Analyser):
         self.quantitativ = quantitativ
         self.threshold_steps = threshold_steps
         self.max_images = max_images
+        self.results_dir = os.path.join(self.output_folder, f"MaskPointingGame")
 
         if plotting_only:
             self.load_results()
@@ -163,8 +164,8 @@ class MaskPointingGameCreator(Analyser):
                             "path": image_path,
                             "original_image": original_image,
                             "heatmap": heatmap,
-                            "accuracy": acc,
-                            "intensity_accuracy": intensity_acc,
+                            "unweighted_localization_score": acc,
+                            "weighted_localization_score": intensity_acc,
                             "model_prediction": predicted_label,
                             "model_confidence": confidence,
                             "xai_method": xai_method
@@ -178,8 +179,8 @@ class MaskPointingGameCreator(Analyser):
                         "path": image_path,
                         "original_image": original_image,
                         "heatmap": heatmap,
-                        "accuracy": acc,
-                        "intensity_accuracy": intensity_acc,
+                        "unweighted_localization_score": acc,
+                        "weighted_localization_score": intensity_acc,
                         "model_prediction": predicted_label,
                         "model_confidence": confidence,
                         "xai_method": self.xai_method
@@ -187,12 +188,12 @@ class MaskPointingGameCreator(Analyser):
                     results.append(result)
                 if self.max_images is not None and processed_images >= self.max_images:
                     logger.info(f"Reached max_images={self.max_images}, exiting early.")
-                    grid_accuracies = [res["accuracy"] for res in results]
+                    grid_accuracies = [res["weighted_localization_score"] for res in results]
                     logger.info(f"Grid Accuracies: {grid_accuracies}, type: {type(grid_accuracies)}")
                     percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
                     logger.info("Localisation accuracy percentiles: %s", percentiles)
                     overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-                    return overall, results
+                    return results #overall,
                         
         #calculate overall - Does it make sense even??
         grid_accuracies = [res["accuracy"] for res in results]
@@ -200,22 +201,22 @@ class MaskPointingGameCreator(Analyser):
         percentiles = np.percentile(np.array(grid_accuracies), [25, 50, 75, 100])
         logger.info("Localisation accuracy percentiles: %s", percentiles)
         overall = {"localisation_metric": grid_accuracies, "percentiles": percentiles}
-        return overall, results
+        return results  #overall,
         
-    def save_results(self, results):
-        # f) group & pickle raw results by threshold
-        threshold_groups = collections.defaultdict(list)
-        for entry in results:
-            thr = entry.get("threshold", None)
-            threshold_groups[thr].append(entry)
+    # def save_results(self, results):
+    #     # f) group & pickle raw results by threshold
+    #     threshold_groups = collections.defaultdict(list)
+    #     for entry in results:
+    #         thr = entry.get("threshold", None)
+    #         threshold_groups[thr].append(entry)
     
-        out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
-        os.makedirs(out_dir, exist_ok=True)
+    #     out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
+    #     os.makedirs(out_dir, exist_ok=True)
     
-        all_raw_path = os.path.join(out_dir, "results_by_threshold.pkl")
-        with open(all_raw_path, "wb") as f:
-            pickle.dump(dict(threshold_groups), f)
-        print(f" → saved grouped results: {all_raw_path}")
+    #     all_raw_path = os.path.join(out_dir, "results_by_threshold.pkl")
+    #     with open(all_raw_path, "wb") as f:
+    #         pickle.dump(dict(threshold_groups), f)
+    #     print(f" → saved grouped results: {all_raw_path}")
 
     def generate_heatmap_for_method(self, xai_method, image):
         """
