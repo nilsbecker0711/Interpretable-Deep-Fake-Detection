@@ -16,5 +16,6 @@ logs/
 .ipynb_checkpoints/
 BWCluster/
 BWCluster/
+!BWCluster/Steffen_sh_scipts
 weights
 wandb/
