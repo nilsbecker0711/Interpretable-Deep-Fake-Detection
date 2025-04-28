@@ -1,7 +1,7 @@
 import os
 import shutil
 
-path = "results/resnet34_0"
+path = "results"
 
 if os.path.isfile(path):
     os.remove(path)

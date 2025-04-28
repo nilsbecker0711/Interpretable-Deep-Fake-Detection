@@ -93,25 +93,3 @@ class Analyser:
         with open(overall_path, "wb") as f:
             pickle.dump(overall_by_threshold, f)
         logger.info("Saved overall metrics grouped by threshold to %s", overall_path)
-
-    '''
-    def load_results(self, load_overall=True):
-        """Load results from disk and print summary info."""
-        file_path = os.path.join(self.results_dir, "overall.pkl" if load_overall else "results.pkl")
-        with open(file_path, "rb") as f:
-            loaded = pickle.load(f)
-        logger.info("Results loaded from %s", file_path)
-        if load_overall:
-            localisation_metric = loaded.get("localisation_metric", None)
-            percentiles = loaded.get("percentiles", None)
-            if localisation_metric is not None and percentiles is not None:
-                logger.info("Overall results: %d evaluations, percentiles: %s", len(localisation_metric), percentiles)
-            else:
-                logger.warning("Overall results missing expected keys.")
-        else:
-            sorted_results = sorted(loaded, key=lambda res: res.get("accuracy", 0), reverse=True)
-            logger.info("Top raw results:")
-            for idx, res in enumerate(sorted_results[:10]):
-                logger.info("[%d] %s - Accuracy: %s", idx + 1, res.get("path", "N/A"), res.get("accuracy", "N/A"))
-        return loaded
-    '''

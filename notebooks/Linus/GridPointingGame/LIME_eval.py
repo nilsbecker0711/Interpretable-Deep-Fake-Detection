@@ -84,15 +84,25 @@ class LIMEEvaluator:
         except Exception as e:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
+            
+    def convert_to_numpy(self, tensor):
+        """Auto-rescale a tensor to HxW x 3 uint8."""
+        tensor = tensor.squeeze(0)
+        np_img = tensor.permute(1, 2, 0).detach().cpu().numpy()
+        np_img = np_img - np_img.min()
+        np_img = np_img / np_img.max()
+        np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
+        return np_img
 
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
+
+            
         for tensor, path in zip(tensor_list, path_list):
             logger.info("Processing file: %s", path)
+            img_np = self.convert_to_numpy(tensor)
+            
             img = tensor.to(self.device)
-            img_np = np.transpose(img[0, ...].cpu().numpy(), (1, 2, 0))
-            if img_np.max() <= 1.0:
-                img_np = (img_np * 255).astype(np.uint8)
             img.requires_grad_(True)
 
             data_dict = {'image': img, 'label': 0}

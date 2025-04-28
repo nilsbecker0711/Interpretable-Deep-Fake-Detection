@@ -33,7 +33,6 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     heatmap_intensity = heatmap
     print(f"shape: {heatmap_intensity.shape}")
 
-    # needs to be defined 
     unweighted_accuracy = 0.0
     weighted_accuracy   = 0.0
 
@@ -127,9 +126,11 @@ class GradCamEvaluator:
             return -1
 
     def convert_to_numpy(self, tensor):
-        """Convert a [C,H,W] float tensor in [0..1] to HxW x 3 uint8."""
+        """Auto-rescale a tensor to HxW x 3 uint8."""
         tensor = tensor.squeeze(0)
         np_img = tensor.permute(1, 2, 0).detach().cpu().numpy()
+        np_img = np_img - np_img.min()
+        np_img = np_img / np_img.max()
         np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
         return np_img
 
@@ -241,26 +242,3 @@ class GradCamEvaluator:
                 results.append(result)
 
         return results
- 
-#    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
- #       results = []
-  #      for tensor, path in zip(tensor_list, path_list):
-   #         true_pos = self.extract_fake_position(path)
-    #        intensity_map, heatmap = self.generate_heatmap(tensor[0], true_pos, grid_split)
-     #       orig = self.convert_to_numpy(tensor[0])
-      #     thresholds = [None] + ([i/threshold_steps for i in range(1, threshold_steps+1)] if threshold_steps>0 else [])
-       #     for t in thresholds:
-        #        guessed_pos, intensity_sums, acc = evaluate_heatmap(
-         #           heatmap=intensity_map, grid_split=grid_split,
-          #          true_fake_pos=true_pos, threshold=(t or 0)
-           #     )
-            #    results.append({
-             #       "path": path,
-              #      "threshold": t,
-               #     "true_pos": true_pos,
-                #    "guessed_pos": guessed_pos,
-                 #   "accuracy": acc,
-                  #  "heatmap": heatmap,
-                   # "original": orig
-#                })
- #       return results

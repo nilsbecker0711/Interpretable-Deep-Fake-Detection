@@ -25,14 +25,21 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 #######################
 # set model path, config path and additional arguments
 
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_gradcam_config.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_xgrad_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_layergrad_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_grad++_config.yaml")
+
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
+
 ADDITIONAL_ARGS = {
-    "test_batchSize": 12
+    "test_batchSize": 20
 }
 #######################
 
@@ -46,12 +53,7 @@ class GridPointingGameCreator(Analyser):
                  model=None, model_name="default", config_name="default",
                  test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0, b_value_name=0):
         """
-        Initialize grid creator with specified parameters.
-        output_folder: Base directory for grids.
-        grid_size: Dimensions of the grid (e.g., (3,3)).
-        xai_method: "bcos", "lime", "gradcam", "xgrad", "grad++" or "layergrad".
-        max_grids: Maximum number of grids to create.
-        plotting_only: If True, load existing results.
+
         """
         self.grid_size = grid_size
         self.xai_method = xai_method
@@ -164,6 +166,7 @@ class GridPointingGameCreator(Analyser):
             cls_list = self.sorted_confs.get(cls, [])
             # Filter the list by confidence threshold.
             filtered = [tup for tup in cls_list if get_conf_mask_v(tup)]
+            print(len(filtered))
             # Determine the number of required images:
             required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
             # Select only the image indices from the filtered list (up to the required number).
@@ -307,6 +310,7 @@ class GridPointingGameCreator(Analyser):
             selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
             if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
                 selected_real = [img[:3] for img in selected_real]
+                
             logger.debug("Retrieved %d real images.", len(selected_real))
             
             # Combine real and fake images.
@@ -363,7 +367,30 @@ def main():
     for k, v in state_dict.items():
         new_state_dict[k.replace("module.", "")] = v
 
-    model.load_state_dict(new_state_dict, strict=False)
+ 
+     
+    ##########
+     
+     
+    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
+    res = model.load_state_dict(new_state_dict, strict=False)
+     
+    # 3) Logge, was fehlt und was extra war
+    logger.info("Missing keys: %s", res.missing_keys)
+    logger.info("Unexpected keys: %s", res.unexpected_keys)
+     
+    # 4) quick‐check eines Backbone‐Weights
+    first_weight = next(model.backbone.parameters())
+    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
+ 
+    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
+    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
+ 
+ 
+ 
+ 
+ 
+     ########
 
     
     # Set device and move model.
@@ -375,9 +402,8 @@ def main():
         
     model_name = config.get("model_name", "defaultModel")
     config_name = os.path.basename(CONFIG_PATH).split('.')[0]
-    b_value_name= config.get("b", "0").replace(".", "_")
-
-
+    b_value_name = str(config.get("backbone_config", {}).get("b", "default")).replace(".", "_")
+    
     # Prepare testing data.
     from train import prepare_testing_data
     test_data_loaders = prepare_testing_data(config)

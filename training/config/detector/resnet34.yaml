@@ -2,7 +2,7 @@
 log_dir: /home/ma/ma_ma/ma_nilbecke/Interpretable-Deep-Fake-Detection/logs/resnet # /mntcephfs/lab_data/zhiyuanyan/benchmark_results/logs_final/resnet18
 
 # model setting
-pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/resnet34/resnet34_03_18_16_59_57_ckpt_best.pth   # path to a pre-trained model, if using one
+pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/resnet34.pth   # path to a pre-trained model, if using one
 model_name: resnet34   # model name
 backbone_name: resnet34  # backbone name
 
@@ -16,8 +16,8 @@ backbone_config:
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-val_dataset: [FaceForensics++, FF-F2F]
-test_dataset: [FaceForensics++, FF-F2F] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 
 compression: c23  # compression-level for videos

@@ -22,7 +22,6 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
     # Convert heatmap to grayscale (average first 3 channels).
     heatmap_intensity = heatmap[:,:,-1]
-    print(f"shape: {heatmap_intensity.shape}")
 
         # needs to be defined 
     unweighted_accuracy = 0.0
@@ -50,8 +49,8 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     # weighted prediction 
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
-    for i, intensity in enumerate(intensity_sums):
-        print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
+    #for i, intensity in enumerate(intensity_sums):
+        #print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
     fake_pred_weighted = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
     
@@ -76,15 +75,6 @@ class BCOSEvaluator:
         self.model.zero_grad()  # Reset gradients.
         out = self.model({'image': img})  # Forward pass.
         
-        # ─── Logit-Check ───────────────────────────────────────────────
-        # raw logits before softmax/sigmoid
-        logits = out['cls'][0]  
-        logger.info(
-            "Logits → min: %.4f   mean: %.4f   max: %.4f",
-            logits.min().item(), logits.mean().item(), logits.max().item()
-        )
-        # ────────────────────────────────────────────────────────────────
-        
         logger.debug("Model output: %s", out)
         
         scalar_out = out['prob'][0]  # Use first output probability.
@@ -96,27 +86,8 @@ class BCOSEvaluator:
         # Get explanation from model's backbone.
         explanation = self.model.backbone.explain(img, idx=1)
 
-        # ────────────────────────────────────────────────────────────────
-        # Log dynamic linear weights
-        dyn = explanation["dynamic_linear_weights"]
-        logger.info(
-            "DynWeights → min: %.4f  mean: %.4f  max: %.4f",
-            dyn.min().item(), dyn.mean().item(), dyn.max().item()
-        )
-
-        # Log contribution map
-        cmap = explanation["contribution_map"]
-        logger.info(
-            "ContribMap → min: %.4f  mean: %.4f  max: %.4f",
-            cmap.min().item(), cmap.mean().item(), cmap.max().item()
-        )
-        # ────────────────────────────────────────────────────────────────
-
-
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
-
-        #heatmap = explanation["explanation"][:,:,:].copy()
         
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
@@ -161,7 +132,6 @@ class BCOSEvaluator:
                 if threshold is None:
                     return heatmap.copy()
                 thresholded = heatmap.copy()
-                #thresholded[:, :, -1] = (thresholded[:, :, -1] > threshold).astype(np.uint8)
 
                 # extract the alpha channel
                 alpha = thresholded[:, :, 3]
@@ -173,7 +143,7 @@ class BCOSEvaluator:
                 return thresholded
 
             for t in thresholds:
-                logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
+                #logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
                 thresholded_heatmap = apply_threshold(heatmap, t)
 
                 fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy = evaluate_heatmap(thresholded_heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos)
@@ -193,7 +163,7 @@ class BCOSEvaluator:
                 
                 results.append(result)
                 
-                logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
-                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_grid_accuracy)
+                #logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
+                            #str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
                 
         return results
