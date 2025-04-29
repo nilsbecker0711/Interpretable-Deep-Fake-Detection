@@ -134,7 +134,7 @@ class GradCamEvaluator:
         np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
         return np_img
 
-    def generate_heatmap(self, tensor, path, grid_split, true_fake_pos):
+    def generate_heatmap(self, tensor):
         # First, get a 2D “grayscale_cam” of shape [H,W]:
         if self.method == "layergrad":
             # Captum expects requires_grad on the inputs

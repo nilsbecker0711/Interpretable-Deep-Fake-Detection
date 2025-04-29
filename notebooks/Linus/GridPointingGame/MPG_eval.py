@@ -40,14 +40,14 @@ logger = logging.getLogger(__name__)
 class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None):
+                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=224):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
         xai_method: a valid xai method
         plotting_only: If True, load existing results.
         """
-        self.xai_method = xai_method
+        self.xai_method = xai_method.lower().strip()
         self.model = model
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
@@ -60,6 +60,7 @@ class MaskPointingGameCreator(Analyser):
         self.threshold_steps = threshold_steps
         self.max_images = max_images
         self.results_dir = os.path.join(self.output_folder, f"MaskPointingGame")
+        self.mask_resolution = mask_resolution
 
         if plotting_only:
             self.load_results()
@@ -109,9 +110,11 @@ class MaskPointingGameCreator(Analyser):
                     mask = mask[j]
                     logger.debug(f"raw mask: {mask}")
                     mask = mask.squeeze()
-                    if mask.shape != torch.Size([224, 224]):
-                        raise ValueError(f"Mask shape is {mask.shape}, expected torch.Size([224, 224])")
-                    print(f"Mask loaded with shape: {mask.shape}")
+                    if mask.shape != torch.Size([self.mask_resolution, self.mask_resolution]):
+                        raise ValueError(f"Mask shape is {mask.shape}, expected torch.Size([{self.mask_resolution},{self.mask_resolution})")
+                    if torch.max(mask) == 0:
+                        raise ValueError(f"Mask has max value of {torch.max(mask)}")
+                    logger.info(f"Mask loaded with shape: {mask.shape}")
                 except Exception as e:
                     print(f"Error loading or processing mask for image {image_path}: {e}")
                      #print(f"Rejected Mask type: {type(mask)}, mask: {mask}")
@@ -141,44 +144,27 @@ class MaskPointingGameCreator(Analyser):
                 thresholds = [None]  # No threshold
                 if self.threshold_steps > 0:
                     thresholds += [i / self.threshold_steps for i in range(1, self.threshold_steps + 1)]
-                    for t in thresholds:
-                        logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
-                        #apply threshold to map and zero out values below
-                        thresholded_map = heatmap.copy()
-                        thresholded_map[thresholded_map < t] = 0
-                        acc, intensity_acc = self.mask_game(mask, thresholded_map)
-                        logger.info(f"Unweighted accuracy: {acc}")
-                        logger.info(f"Weighted Accuracies: {intensity_acc}")
-                        result = {
-                            "threshold": t if t is not None else 0,
-                            "path": image_path,
-                            "original_image": original_image,
-                            "heatmap": thresholded_map,
-                            "unweighted_localization_score": acc,
-                            "weighted_localization_score": intensity_acc,
-                            "model_prediction": predicted_label,
-                            "model_confidence": confidence,
-                            "xai_method": self.xai_method,
-                            "mask" : mask
-                        }
-                        results.append(result)
-                #if without threshold
-                else:
-                    acc, intensity_acc = self.mask_game(mask, heatmap)
+                for t in thresholds:
+                    threshold_value = t if t is not None else 0
+                    logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
+                    #apply threshold to map and zero out values below
+                    thresholded_map = heatmap.copy()
+                    thresholded_map[thresholded_map < threshold_value] = 0
+                    acc, intensity_acc = self.mask_game(mask, thresholded_map)
                     logger.info(f"Unweighted accuracy: {acc}")
                     logger.info(f"Weighted Accuracies: {intensity_acc}")
                     result = {
-                            "threshold": 0,
-                            "path": image_path,
-                            "original_image": original_image,
-                            "heatmap": thresholded_map,
-                            "unweighted_localization_score": acc,
-                            "weighted_localization_score": intensity_acc,
-                            "model_prediction": predicted_label,
-                            "model_confidence": confidence,
-                            "xai_method": self.xai_method,
-                            "mask" : mask
-                        }
+                        "threshold": threshold_value,
+                        "path": image_path,
+                        "original_image": original_image,
+                        "heatmap": thresholded_map,
+                        "unweighted_localization_score": acc,
+                        "weighted_localization_score": intensity_acc,
+                        "model_prediction": predicted_label,
+                        "model_confidence": confidence,
+                        "xai_method": self.xai_method,
+                        "mask" : mask
+                    }
                     results.append(result)
                     processed_images += 1
                     logger.info(f"{processed_images} have been processed so far!")
@@ -204,7 +190,8 @@ class MaskPointingGameCreator(Analyser):
             evaluator = BCOSEvaluator(self.model, self.device)
         elif xai_method == "lime":
             evaluator = LIMEEvaluator(self.model, self.device) #how do i get intensity map here for LIME
-        elif xai_method == ["gradcam", "xgrad", "grad++", "layergrad"]:
+        elif xai_method in ["gradcam", "xgrad", "grad++", "layergrad"]:
+            image = image.squeeze(0)
             evaluator = GradCamEvaluator(self.model, self.device)
         else:
             raise ValueError(f"Unknown xai_method: {self.xai_method}")   
@@ -227,8 +214,11 @@ class MaskPointingGameCreator(Analyser):
             heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
         if isinstance(mask, torch.Tensor):
             mask = mask.cpu().numpy()  # Convert tensor to numpy array
-        intensity_map = heatmap[:,:,-1].copy()
-        heatmap = heatmap[:, :, -1].copy()
+        if self.xai_method == 'bcos':
+            intensity_map = heatmap[:,:,-1].copy()
+            heatmap = heatmap[:, :, -1].copy()
+        else:
+            intensity_map = heatmap.copy()
         #logger.debug(f"Intensity map shape: {intensity_map.shape}")
         # Ensure both are in the 0-1 range (binary)
         # if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
@@ -256,11 +246,21 @@ class MaskPointingGameCreator(Analyser):
         mask_intensity = np.sum(intensity_map[mask ==1])
         non_mask_intensity = np.sum(intensity_map[mask==0])
         intensity_accuracy = mask_intensity/total_intensity if total_intensity > 0 else 0
-
-        return accuracy.round(4), intensity_accuracy.round(4)
-
+        logger.info(f"total intensity: {total_intensity}, mask_intensity: {mask_intensity}, non_mask_intensity: {non_mask_intensity}")
+        logger.debug(f"mask max: {np.max(mask)}")
+        try:
+            accuracy = round(accuracy, 4)
+        except TypeError:
+            pass  # if it's an int, do nothing
         
-
+        try:
+            intensity_accuracy = round(intensity_accuracy, 4)
+        except TypeError:
+            pass
+        
+        return accuracy, intensity_accuracy
+            
+            
     def load_sample_by_path(self, image_path, expected_label):
         """
         Retrieve the sample (image, label, etc.) from the dataset by matching the stored image path.
@@ -335,7 +335,8 @@ def main():
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
         threshold_steps= config["threshold_steps"],
-        max_images = config["max_images"]
+        max_images = config["max_images"],
+        mask_resolution = config["mask_resolution"]
     )
     
     MPG_creator.run() # Run analysis.
