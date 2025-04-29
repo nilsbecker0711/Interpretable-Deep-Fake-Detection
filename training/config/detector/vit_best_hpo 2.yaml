@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/vit
+log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/vit
 
 # model setting -> old
 freeze: false
@@ -76,11 +76,11 @@ optimizer:
   type: adam
   adam:
     lr: 0.00007192223000243303  # learning rate -> bcos paper 2.5e-4
-    beta1: 0.8500104065467161  # beta1 for Adam optimizer
+    beta1: 0.8500104065467161 # beta1 for Adam optimizer
     beta2: 0.8647581613630827 # beta2 for Adam optimizer
     eps: 0.0000064793846460061  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
     weight_decay: 0.0003518840539162793  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
-    amsgrad: false
+    amsgrad: false 
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
@@ -93,13 +93,13 @@ lr_eta_min: 0
 lr_T_max: 200
 # lr_step: 4
 # lr_gamma: 0.2
-nEpochs: 20   # number of epochs to train for
+nEpochs: 20  # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
-rec_iter: 500   # interval iterations for recording
+rec_iter: 500  # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
-manualSeed: 1024   # manual seed for random number generation
-#save_ckpt: false   # whether to save checkpoint
+manualSeed: 1024  # manual seed for random number generation
+save_ckpt: true   # whether to save checkpoint
 
 # loss function
 loss_func: cross_entropy   # loss function to use

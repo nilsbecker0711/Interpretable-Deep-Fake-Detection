@@ -6,30 +6,32 @@ freeze: false
 pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
 #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
-model_name: vit   # model name
-backbone_name: vit  # backbone name
+model_name: vit_bcos   # model name
+backbone_name: vit_bcos  # backbone name
 
 #backbone setting
 backbone_config:
   num_classes: 2
-  channels: 3
+  channels: 6
   #pretrained: false
   logit_bias: #0.0 #None
   logit_temperature: #10 #None
+  b: 2.0
+  max_out: 2
   # either set the model type
   model_type: vitc_ti_patch1_14
   # or the parameters directly, these values are only taken when model_type is not provided
-  # image_size: 14 #14 # Union[int, Tuple[int, int]],
-  # patch_size: 1 # Union[int, Tuple[int, int]],
-  # dim: 384 #192
-  # depth: 11 # 12-1
-  # heads: 6
-  # mlp_dim: 1536
-  # conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
-  # norm: DetachableLayerNorm
-  # norm_bias: false
-  # norm_2d: BatchNorm2d
-  # norm_2d_bias: false
+  image_size: 14 #14 # Union[int, Tuple[int, int]],
+  patch_size: 1 # Union[int, Tuple[int, int]],
+  dim: 384 #192
+  depth: 11 # 12-1
+  heads: 6
+  mlp_dim: 1536
+  conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
+  norm: DetachableLayerNorm
+  norm_bias: true
+  norm_2d: BatchNorm2d
+  norm_2d_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -38,9 +40,9 @@ val_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
-test_batchSize: 64   # test batch size
-val_batchSize: 64
+train_batchSize: 128   # training batch size
+test_batchSize: 128   # test batch size
+val_batchSize: 128
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 224   # resolution of output image to network
@@ -52,7 +54,7 @@ save_feat: true   # whether to save features
 
 
 # data augmentation
-dataset_type: #'bcos'
+dataset_type: 'bcos'
 use_data_augmentation: false  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
@@ -75,11 +77,11 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.00007192223000243303  # learning rate -> bcos paper 2.5e-4
-    beta1: 0.8500104065467161  # beta1 for Adam optimizer
-    beta2: 0.8647581613630827 # beta2 for Adam optimizer
-    eps: 0.0000064793846460061  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
-    weight_decay: 0.0003518840539162793  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
+    lr: 0.00032086943394567095  # learning rate -> bcos paper 2.5e-4
+    beta1: 0.8828181052726068  # beta1 for Adam optimizer
+    beta2: 0.9208917530344364 # beta2 for Adam optimizer
+    eps: 0.00000472669097714452  # epsilon for Adam optimizer (KAI: added in denominator to resolve division by zero if too low may cause NaNs!!)
+    weight_decay: 0.00034855517087620046  # weight decay for regularization (KAI -> according to bcos paper, not necessary since weights normalized to unit norm) 
     amsgrad: false
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
@@ -89,17 +91,16 @@ optimizer:
 
 # training config
 lr_scheduler: # step, cosine, warmup_cosine, linear
-lr_eta_min: 0
-lr_T_max: 200
-# lr_step: 4
-# lr_gamma: 0.2
+lr_eta_min: 0.00000000038012692876
+lr_T_max: 83.23812331716289
+lr_step: 6 
+lr_gamma: 0.42964583351812025
 nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 500   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
-manualSeed: 1024   # manual seed for random number generation
-#save_ckpt: false   # whether to save checkpoint
+manualSeed: 10   # manual seed for random number generation
 
 # loss function
 loss_func: cross_entropy   # loss function to use
