@@ -16,7 +16,6 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-#from GradCam_eval import GradCamEvaluator 
 from GradCam_evalnew import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
@@ -27,8 +26,8 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_xgrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_layergrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_grad++_config.yaml")
@@ -97,51 +96,47 @@ class GridPointingGameCreator(Analyser):
         """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
         ranking = {0: [], 1: []}
         key = list(self.test_data_loaders.keys())[0]
+    
         for data_dict in self.test_data_loaders[key]:
             # Move all tensor values in data_dict to the device first.
             for k, value in data_dict.items():
                 if value is not None and hasattr(value, 'to'):
                     data_dict[k] = value.to(self.device)
-            
+    
             # Now unpack after moving to device.
             img_batch, label_batch, mask, landmark, path_of_image = (
                 data_dict[k] for k in ['image', 'label', 'mask', 'landmark', 'image_path']
             )
-            
+    
             # Remove extra key if present.
             data_dict.pop('label_spe', None)
             # Convert labels to binary.
             data_dict['label'] = torch.where(data_dict['label'] != 0, 1, 0)
-
+    
             num_samples = img_batch.shape[0]
-            # Process each image in the batch.
             for j in range(num_samples):
                 image = img_batch[j].unsqueeze(0)  # shape: [1, C, H, W]
                 label = label_batch[j]
-                true_label = int(label.item())  # Convert label tensor to int.
+                true_label = int(label.item())
                 image_path = path_of_image[j]
-                
+    
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
                 if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                    image = image[:,:3]
-                    
+                    image = image[:, :3]
+    
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
-                # Get predicted label from the first (and only) sample.
                 predicted_label = logit[0].argmax().item()
-                # Compute confidence from the corresponding logit.
-                confidence = logit[0, predicted_label].item()
-                
-                # Check for class 1.
-                if true_label == 1:
-                    if predicted_label == 1:
-                        ranking[1].append((image_path, confidence, true_label))
-                # Check for class 0.
-                if true_label == 0:
-                    if predicted_label == 0:
-                        ranking[0].append((image_path, confidence, true_label))
-        
+    
+                # Compute confidence using softmax
+                probabilities = torch.nn.functional.softmax(logit, dim=1)
+                confidence = probabilities[0, predicted_label].item()
+    
+                # Only store if prediction is correct
+                if true_label == predicted_label:
+                    ranking[true_label].append((image_path, confidence, true_label))
+    
         # Sort each class's ranking by descending confidence.
         for cls in ranking:
             ranking[cls] = sorted(ranking[cls], key=lambda x: x[1], reverse=True)
@@ -150,26 +145,21 @@ class GridPointingGameCreator(Analyser):
     
     def get_sorted_image_paths(self):
         """Select top image indices based on rankings for grid creation,
-        filtering each tuple by a confidence threshold (sigmoid(confidence) > 0.5).
+        filtering each tuple by a confidence threshold (confidence > 0.5).
         For class 0 (real), selects k * (grid_size[0] * grid_size[1] - 1) images,
         and for class 1 (fake), selects k images.
         """
-        # Helper function: returns True if sigmoid(confidence) > 0.5.
+        # Helper function: returns True if confidence > 0.5 (confidence is already from softmax)
         def get_conf_mask_v(tup):
-            # tup is (img_idx, confidence)
-            return torch.tensor(tup[1]).sigmoid().item() > 0.5
+            return tup[1] > 0.5
     
         k = self.max_grids
         sorted_image_paths = {}
         for cls in [0, 1]:
-            # Get the sorted list for this class (list of tuples: (img_idx, confidence))
             cls_list = self.sorted_confs.get(cls, [])
-            # Filter the list by confidence threshold.
             filtered = [tup for tup in cls_list if get_conf_mask_v(tup)]
             print(len(filtered))
-            # Determine the number of required images:
             required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
-            # Select only the image indices from the filtered list (up to the required number).
             sorted_image_paths[cls] = filtered[:required]
         return sorted_image_paths
 
@@ -335,7 +325,7 @@ class GridPointingGameCreator(Analyser):
             logger.debug("Grid tensor shape: %s", grid_tensor.shape)
             
             # Save grid tensor with fake position encoded in filename.
-            base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}_conf_fake{torch.tensor(fake_tuple[1]).sigmoid().item()}.pt"
+base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}_conf_fake{fake_tuple[1]:.4f}.pt"
             path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)

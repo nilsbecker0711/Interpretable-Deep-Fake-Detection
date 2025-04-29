@@ -5,54 +5,116 @@ import glob
 import pickle
 import torch
 import collections
+from collections import defaultdict
 from B_COS_eval import BCOSEvaluator
-from GradCam_eval import GradCamEvaluator
-from LIME_eval import LIMEEvaluator
+from LIME_eval import LIMEEvaluator  
+from GradCam_evalnew import GradCamEvaluator
 from Utils_PointingGame import load_config, load_model
 
 # ─── PARAMETERS ────────────────────────────────────────────────────────────────
 N = 4  # total number of grids to evaluate
 model_configs = [
     {
-        "name":        "resnet34_bcos_v2_minimal",
-        "model_yaml":  "training/config/detector/resnet34_bcos_v2_minimal.yaml",
-        "run_yaml":    "results/test_run3_config.yaml",
+        "name":        "resnet34_bcos_v2",
+        "gridpath":    "resnet34_bcos_v2_1_25",
+        "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
+        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
+        "weights_key": "pretrained",
+        "xai":         "bcos",
+    },
+    {
+        "name":        "resnet34_bcos_v2",
+        "gridpath":    "resnet34_bcos_v2_2_5",
+        "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml",
+        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
         "weights_key": "pretrained",
         "xai":         "bcos",
     },
     {
         "name":        "resnet34",
+        "gridpath":    "resnet34_default",
         "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_run1_config.yaml",
+        "run_yaml":    "results/test_res_lime_config.yaml",
+        "weights_key": "pretrained",
+        "xai":         "lime",
+    },
+    {
+        "name":        "resnet34",
+        "gridpath":    "resnet34_default",
+        "model_yaml":  "training/config/detector/resnet34.yaml",
+        "run_yaml":    "results/test_res_gradcam_config.yaml",
         "weights_key": "pretrained",
         "xai":         "gradcam",
     },
+    {
+        "name":        "resnet34",
+        "gridpath":    "resnet34_default",
+        "model_yaml":  "training/config/detector/resnet34.yaml",
+        "run_yaml":    "results/test_res_layergrad_config.yaml",
+        "weights_key": "pretrained",
+        "xai":         "layergrad",
+    },
+    {
+        "name":        "resnet34",
+        "gridpath":    "resnet34_default",
+        "model_yaml":  "training/config/detector/resnet34.yaml",
+        "run_yaml":    "results/test_res_xgrad_config.yaml",
+        "weights_key": "pretrained",
+        "xai":         "xgrad",
+    },
+    {
+        "name":        "resnet34",
+        "gridpath":    "resnet34_default",
+        "model_yaml":  "training/config/detector/resnet34.yaml",
+        "run_yaml":    "results/test_res_grad++_config.yaml",
+        "weights_key": "pretrained",
+        "xai":         "grad++",
+    },
     # … add more models here …
 ]
-grid_subpath = "3x3/grids"      # relative inside each results folder
-OUTPUT_BASE_DIR = "results/comparemode"
+grid_subpath = "3x3"      # relative inside each results folder
+OUTPUT_BASE_DIR = "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG/comparemode"
 # ────────────────────────────────────────────────────────────────────────────────
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 1) figure out how many grids per model
-M = len(model_configs)
-K = N // M
-
-# 2) gather up to K grids from each model’s own results folder
-shared_grid_paths = []
+# 1) Gruppiere Konfigurationen nach eindeutigem gridpath (nicht mehr nur name)
+gridpath_to_configs = defaultdict(list)
 for cfg in model_configs:
-    # each model’s grids live under results/{name}_{runname}/{grid_subpath}
-    runname = os.path.splitext(os.path.basename(cfg["run_yaml"]))[0]
-    folder = f"results/{cfg['name']}/{grid_subpath}"
+    gridpath_to_configs[cfg["gridpath"]].append(cfg)
+
+unique_gridpaths = list(gridpath_to_configs.keys())
+U = len(unique_gridpaths)
+K = max(1, N // U)
+
+grid_cache = {}
+shared_grid_paths = []
+
+# 2) Für jeden eindeutigen gridpath: Grids einmalig sammeln
+for gridpath in unique_gridpaths:
+    folder = f"/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG/{gridpath}/{grid_subpath}"
+    
+    print(f"\n🔍 Looking for .pt grids in: {folder}")
     pts = sorted(glob.glob(os.path.join(folder, "*.pt")))
-    shared_grid_paths += pts[:K]
+    print(f"→ Found {len(pts)} files.")
 
-# now you have exactly M * K == N grid files
-assert len(shared_grid_paths) == K * M, f"expected {K*M}, got {len(shared_grid_paths)}"
+    selected = pts[:K]
+    shared_grid_paths += selected
 
-# 3) load the actual tensors once
-shared_grids = [ torch.load(p, map_location=device) for p in shared_grid_paths ]
+    for path in selected:
+        if path not in grid_cache:
+            grid_cache[path] = torch.load(path, map_location=device)
+
+# 3) Lade die Grids aus dem Cache
+shared_grids = [grid_cache[p] for p in shared_grid_paths]
+
+print("\n Shared grids selected for evaluation:")
+for i, path in enumerate(shared_grid_paths):
+    print(f"  [{i+1:02}] {path}")
+print(f"\n→ Total: {len(shared_grid_paths)} grid(s) used across all model configs.")
+
+# 4) Optional: absichern
+assert len(shared_grids) == len(shared_grid_paths), "Mismatch in loaded grids"
 
 # 4) loop over each model, load weights, evaluate on *the same* shared_grids
 for cfg in model_configs:
@@ -75,12 +137,12 @@ for cfg in model_configs:
 
     # c) pick your evaluator
     if   cfg["xai"] == "bcos":    evaluator = BCOSEvaluator(model, device)
-    elif cfg["xai"] == "gradcam": evaluator = GradCamEvaluator(model, device)
+    elif cfg["xai"] in ["gradcam", "xgrad", "grad++", "layergrad"]: evaluator = GradCamEvaluator(model, device, method=cfg["xai"])
     elif cfg["xai"] == "lime":    evaluator = LIMEEvaluator(model, device)
     else: raise RuntimeError(f"Unknown XAI '{cfg['xai']}'")
 
     # d) drop to 3 channels if needed
-    if cfg["xai"] in ("lime", "gradcam"):
+    if cfg["xai"] in ("lime", "gradcam", "xgrad", "grad++", "layergrad"):
         grids = []
         for g in shared_grids:
             # if [1,6,H,W] or [6,H,W]
@@ -107,7 +169,10 @@ for cfg in model_configs:
     out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
     os.makedirs(out_dir, exist_ok=True)
 
-    all_raw_path = os.path.join(out_dir, "results_by_threshold.pkl")
+    all_raw_path = os.path.join(
+    out_dir,
+    f"results_by_threshold_{cfg['name']}_{cfg['xai']}.pkl"
+)
     with open(all_raw_path, "wb") as f:
         pickle.dump(dict(threshold_groups), f)
     print(f" → saved grouped raw results: {all_raw_path}")

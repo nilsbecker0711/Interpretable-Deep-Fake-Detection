@@ -8,7 +8,7 @@ dataset_json_folder: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_expl
 #if only eval use only .run() in GPG_eval.py
 xai_method: bcos
 grid_split: 3
-max_grids: 150
+max_grids: 200
 overwrite: true
 quantitativ: false
 base_output_dir: "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG"

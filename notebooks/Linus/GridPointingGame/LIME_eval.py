@@ -96,7 +96,6 @@ class LIMEEvaluator:
 
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
-
             
         for tensor, path in zip(tensor_list, path_list):
             logger.info("Processing file: %s", path)
@@ -112,7 +111,7 @@ class LIMEEvaluator:
 
             
             explanation = self.explainer.explain_instance(
-                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=500
+                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256
             )
             fake_label = 1
             weights = dict(explanation.local_exp[fake_label])

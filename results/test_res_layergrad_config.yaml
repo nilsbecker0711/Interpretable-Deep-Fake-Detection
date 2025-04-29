@@ -8,10 +8,11 @@ dataset_json_folder: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_expl
 #if only eval use only .run() in GPG_eval.py
 xai_method: layergrad
 grid_split: 3
-max_grids: 5
-overwrite: true
+max_grids: 150
+overwrite: false
+#Waring if overwrite: true is enabled the grid and results.pkl of the model gets overwritten so if they already exist from another XAI on the same model--> recomendet to use falseoverwrite: trueoverwrite: false
 quantitativ: false
-base_output_dir: results
+base_output_dir: "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG"
 threshold_steps: 10
 ######################################################################################################################################################
 

@@ -156,7 +156,7 @@ class GradCamEvaluator:
 
         # build overlay
         # rgb = normalized float image (shape H×W×3, values in [0..1]) 
-        rgb_img = tensor.cpu().permute(1,2,0).numpy()
+        rgb_img = tensor.detach().cpu().permute(1,2,0).numpy()
         rgb_img = (rgb_img - rgb_img.min())/(rgb_img.max()-rgb_img.min()+1e-8)
         
     # for layergrad upsample the CAM to match rgb_img
