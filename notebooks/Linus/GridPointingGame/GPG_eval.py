@@ -26,8 +26,8 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_xgrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_layergrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_grad++_config.yaml")
@@ -131,6 +131,7 @@ class GridPointingGameCreator(Analyser):
     
                 # Compute confidence using softmax
                 probabilities = torch.nn.functional.softmax(logit, dim=1)
+
                 confidence = probabilities[0, predicted_label].item()
     
                 # Only store if prediction is correct
@@ -283,7 +284,7 @@ class GridPointingGameCreator(Analyser):
 
             # Get first fake tuple and remove it.
             fake_tuple = ranked_fake.pop(0)
-            logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], torch.tensor(fake_tuple[1]).sigmoid().item())
+            logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
             if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
@@ -325,7 +326,7 @@ class GridPointingGameCreator(Analyser):
             logger.debug("Grid tensor shape: %s", grid_tensor.shape)
             
             # Save grid tensor with fake position encoded in filename.
-base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}_conf_fake{fake_tuple[1]:.4f}.pt"
+            base_name = f"{self.model_name}_{self.b_value_name}_grid_{grid_count}_fake_{final_fake_index}_conf_fake{fake_tuple[1]:.2f}.pt"
             path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)

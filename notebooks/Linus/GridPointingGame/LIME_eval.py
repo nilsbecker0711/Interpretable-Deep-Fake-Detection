@@ -94,48 +94,54 @@ class LIMEEvaluator:
         np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
         return np_img
 
+    def generate_heatmap(self, tensor):
+        """Generate LIME-based heatmap for a single tensor."""
+        img_np = self.convert_to_numpy(tensor)
+    
+        # Move tensor to device and enable gradients
+        img = tensor.to(self.device).requires_grad_(True)
+        logger.debug("Input tensor shape: %s", img.shape)
+    
+        self.model.zero_grad()
+    
+        data_dict = {'image': img, 'label': 0}  # <<<< Corrected here
+        out = self.model(data_dict)  # Pass data_dict
+    
+        logger.debug("Model output: %s", out)
+    
+        model_prediction = out['cls'][0].argmax().item()
+    
+        # Run LIME explainer
+        explanation = self.explainer.explain_instance(
+            img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256
+        )
+    
+        # Select the explanation for the 'fake' label (class 1)
+        fake_label = 1
+        segments = explanation.segments
+        weights = dict(explanation.local_exp[fake_label])
+    
+        # Extract and rescale positive weights
+        positive_weights = [w for w in weights.values() if w >= 0]
+        max_positive_weight = max(positive_weights) if positive_weights else 0
+        scaled_weights = {k: (v / max_positive_weight) if v > 0 else 0 for k, v in weights.items()}
+    
+        # Build intensity map
+        intensity_map = np.zeros(segments.shape, dtype=np.float32)
+        for seg_val in np.unique(segments):
+            if seg_val in scaled_weights:
+                intensity_map[segments == seg_val] = scaled_weights[seg_val]
+    
+        logger.debug("Generated LIME heatmap: shape=%s, min=%.6f, max=%.6f", 
+                     intensity_map.shape, intensity_map.min(), intensity_map.max())
+    
+        return intensity_map, out, model_prediction, img_np
+    
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
         results = []
             
         for tensor, path in zip(tensor_list, path_list):
-            logger.info("Processing file: %s", path)
-            img_np = self.convert_to_numpy(tensor)
-            
-            img = tensor.to(self.device)
-            img.requires_grad_(True)
-
-            data_dict = {'image': img, 'label': 0}
-            self.model.zero_grad()
-            out = self.model(data_dict)
-            model_prediction = out['cls'][0].argmax().item()
-
-            
-            explanation = self.explainer.explain_instance(
-                img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256
-            )
-            fake_label = 1
-            weights = dict(explanation.local_exp[fake_label])
-            
-            weight_values = list(weights.values())
-            print(f"Min weight: {min(weight_values):.6f}, Max weight: {max(weight_values):.6f}")
-            
-            segments = explanation.segments
-            
-            weights = dict(explanation.local_exp[fake_label])  # {segment_idx: weight}
-
-            # Extrahiere positive Gewichte
-            positive_weights = [w for w in weights.values() if w >= 0]
-            
-            # Bestimme das maximale positive Gewicht
-            max_positive_weight = max(positive_weights) if positive_weights else 0
-            
-            # Skaliere die Gewichte relativ zum maximalen positiven Gewicht
-            scaled_weights = {k: (v / max_positive_weight) if v > 0 else 0 for k, v in weights.items()}
-
-            intensity_map = np.zeros(segments.shape, dtype=np.float32)
-            for seg_val in np.unique(segments):
-                if seg_val in scaled_weights:
-                    intensity_map[segments == seg_val] = scaled_weights[seg_val]
+            intensity_map, out, model_prediction, img_np = self.generate_heatmap(tensor)
     
             thresholds = [None]
             if threshold_steps > 0:
