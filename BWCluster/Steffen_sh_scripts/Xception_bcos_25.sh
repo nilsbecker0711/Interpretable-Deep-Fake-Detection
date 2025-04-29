@@ -24,8 +24,8 @@ export RANK=0                  # Set the rank of the current process (0 for firs
 export WORLD_SIZE=2            # Set the total number of processes (2 for two GPUs)
 # export LOCAL_RANK=0            # Local rank (used by DDP for each process)
 export MASTER_ADDR="localhost"  # The master node's address (typically localhost for single-node)
-export MASTER_PORT=29100    # The port for communication (can be any available port)
+export MASTER_PORT=29103    # The port for communication (can be any available port)
 
 # Launch the training with two G<PUs
-torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29100 /BS/robust-architectures/work/bcos-df/training/hp_tuning.py --detector_path /BS/robust-architectures/work/bcos-df/training/config/detector/xception_bcos.yaml --sweep_id lagky710 --ddp
+torchrun --nproc_per_node=2 --nnodes=1 --node_rank=0 --master_addr="localhost" --master_port=29103 /BS/robust-architectures/work/bcos-df/training/hp_tuning.py --detector_path /BS/robust-architectures/work/bcos-df/training/config/detector/xception_bcos.yaml --sweep_id lagky710 --ddp
 #python ~/Interpretable-Deep-Fake-Detection/training/hp_tuning.py --detector_path ~/Interpretable-Deep-Fake-Detection/training/config/detector/resnet34.yaml

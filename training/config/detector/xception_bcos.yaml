@@ -1,5 +1,5 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/training/
+log_dir: ./
 
 # model setting
 model_name: xception_bcos_detector   # model name
