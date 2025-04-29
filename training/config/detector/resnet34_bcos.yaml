@@ -33,7 +33,7 @@ all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, Deep
 train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
-compression: c40  # compression-level for videos
+compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
 test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers

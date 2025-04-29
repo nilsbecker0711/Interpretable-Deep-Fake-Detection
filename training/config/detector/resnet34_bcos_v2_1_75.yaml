@@ -37,7 +37,7 @@ train_dataset: [df-tp-ffhq]
 test_dataset: [df-tp-ffhq] #, FF-F2F, FF-DF, FF-FS, FF-NT, Celeb-DF-v2, DFDCP,  FaceShifter, DeepFakeDetection, UADFV] # DFDC,
 val_dataset: [df-tp-ffhq] # Celeb-DF-v2, DFDCP, DFDC,  FaceShifter, DeepFakeDetection, DFDC,
 
-compression: c40  # compression-level for videos
+compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
 val_batchSize: 64   # test batch size
 test_batchSize: 64   # test batch size

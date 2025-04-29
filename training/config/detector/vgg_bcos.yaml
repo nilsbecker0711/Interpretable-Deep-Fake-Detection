@@ -28,7 +28,7 @@ dataset_type: bcos
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
 train_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++]
-compression: c40
+compression: c23
 train_batchSize: 32
 test_batchSize: 32
 workers: 8
