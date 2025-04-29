@@ -16,7 +16,7 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_eval import GradCamEvaluator
+from GradCam_evalnew import GradCamEvaluator
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
@@ -26,8 +26,8 @@ import collections
 # set model path, config path and additional arguments
 CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_config.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 ADDITIONAL_ARGS = {
     "test_batchSize": 12
 }
@@ -203,8 +203,8 @@ class MaskPointingGameCreator(Analyser):
         if xai_method == "bcos":
             evaluator = BCOSEvaluator(self.model, self.device)
         elif xai_method == "lime":
-            evaluator = LIMEEvaluator(self.model, self.device)
-        elif xai_method == "gradcam":
+            evaluator = LIMEEvaluator(self.model, self.device) #how do i get intensity map here for LIME
+        elif xai_method == ["gradcam", "xgrad", "grad++", "layergrad"]:
             evaluator = GradCamEvaluator(self.model, self.device)
         else:
             raise ValueError(f"Unknown xai_method: {self.xai_method}")   
