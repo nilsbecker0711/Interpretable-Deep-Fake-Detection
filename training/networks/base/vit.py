@@ -36,6 +36,7 @@ from einops.layers.torch import Rearrange
 from torch import Tensor, nn
 from bcos.modules import DetachableGNLayerNorm2d, BcosConv2d, LogitLayer, norms, BcosLinear
 from bcos.modules.common import DetachableModule
+from bcos.common import BcosUtilMixin
 from metrics.registry import BACKBONE
 
 
@@ -237,10 +238,11 @@ class Transformer(nn.Sequential):
         super().__init__(layers_odict)
 
 @BACKBONE.register_module(module_name="vit_bcos")
-class SimpleViT(nn.Module):
+class SimpleViT(BcosUtilMixin, nn.Module):
     def __init__(self, vit_config):
         #_warn_if_not_called_from_bcos_models_pretrained_or_torch_hub()
         super(SimpleViT, self).__init__()
+        BcosUtilMixin.__init__(self,)
         model_type = vit_config['model_type']
         if model_type == "vitc_ti_patch1_14":
             image_size, patch_size, depth, dim = 14, 1, 11, 384//2
