@@ -17,6 +17,7 @@ from Utils_PointingGame import load_model, load_config, preprocess_image, Analys
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
 from GradCam_evalnew import GradCamEvaluator
+#from GradCam_evalbcos import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
@@ -26,15 +27,15 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_xgrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_layergrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_grad++_config.yaml")
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
 
 ADDITIONAL_ARGS = {
@@ -119,11 +120,13 @@ class GridPointingGameCreator(Analyser):
                 label = label_batch[j]
                 true_label = int(label.item())
                 image_path = path_of_image[j]
-    
+
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
                 if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
                     image = image[:, :3]
+                #if want to use with bcos 
+                #   image = preprocess_image(image)
     
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
