@@ -57,8 +57,6 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     # weighted prediction 
     # Sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
-    for i, intensity in enumerate(intensity_sums):
-        print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
     fake_pred_weighted = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
     # Compute weighted_accuracy as fraction of total intensity in the true fake cell.

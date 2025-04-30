@@ -13,24 +13,32 @@ from GradCam_evalnew import GradCamEvaluator
 from Utils_PointingGame import load_config, load_model
 
 # ─── PARAMETERS ────────────────────────────────────────────────────────────────
-N = 30  # total number of grids to evaluate
+N = 2  # total number of grids to evaluate
 model_configs = [
+    #{
+    #    "name":        "resnet34_bcos_v2",
+    #    "gridpath":    "resnet34_bcos_v2_1_25",
+    #    "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
+    #    "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "bcos",
+    #},
     {
         "name":        "resnet34_bcos_v2",
-        "gridpath":    "resnet34_bcos_v2_1_25",
-        "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
-        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
+        "gridpath":    "resnet34_bcos_v2_2",
+        "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml",
+        "run_yaml":    "results/test_bcos_res_2_config.yaml",
         "weights_key": "pretrained",
         "xai":         "bcos",
     },
-    {
-        "name":        "resnet34_bcos_v2",
-        "gridpath":    "resnet34_bcos_v2_2_5",
-        "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml",
-        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
-        "weights_key": "pretrained",
-        "xai":         "bcos",
-    },
+    #{
+    #    "name":        "resnet34_bcos_v2",
+    #    "gridpath":    "resnet34_bcos_v2_2_5",
+    #    "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml",
+    #    "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "bcos",
+    #},
     {
         "name":        "resnet34",
         "gridpath":    "resnet34_default",
@@ -146,16 +154,50 @@ for cfg in model_configs:
     elif cfg["xai"] == "lime":    evaluator = LIMEEvaluator(model, device)
     else: raise RuntimeError(f"Unknown XAI '{cfg['xai']}'")
 
-    # d) drop to 3 channels if needed
+    print(f"Preparing grids for XAI method: {cfg['xai']}")
+
+    # d) channel handling
     if cfg["xai"] in ("lime", "gradcam", "xgrad", "grad++", "layergrad"):
         grids = []
-        for g in shared_grids:
-            # if [1,6,H,W] or [6,H,W]
-            if g.ndim == 4: grids.append(g[:, :3, ...])
-            elif g.ndim == 3: grids.append(g[:3, ...])
-            else: raise ValueError(f"unexpected grid shape {g.shape}")
+        for i, g in enumerate(shared_grids):
+            print(f"  [LIME-family] Grid {i}: input shape {tuple(g.shape)}")
+            if g.ndim == 4:
+                g_out = g[:, :3, ...]
+            elif g.ndim == 3:
+                g_out = g[:3, ...]
+            else:
+                raise ValueError(f"unexpected grid shape {g.shape}")
+            print(f"    → reduced shape: {tuple(g_out.shape)}")
+            grids.append(g_out)
+    
+    elif cfg["xai"] == "bcos":
+        grids = []
+        for i, g in enumerate(shared_grids):
+            print(f"  [BCoS] Grid {i}: input shape {tuple(g.shape)}")
+            if g.ndim == 4:
+                if g.shape[1] == 3:
+                    pad = torch.zeros((g.shape[0], 3, *g.shape[2:]), device=g.device, dtype=g.dtype)
+                    g_out = torch.cat([g, pad], dim=1)
+                    print(f"    → padded to shape: {tuple(g_out.shape)}")
+                else:
+                    g_out = g
+                    print(f"    → unchanged (already >=6ch): {tuple(g_out.shape)}")
+            elif g.ndim == 3:
+                if g.shape[0] == 3:
+                    pad = torch.zeros((3, *g.shape[1:]), device=g.device, dtype=g.dtype)
+                    g_out = torch.cat([g, pad], dim=0)
+                    print(f"    → padded to shape: {tuple(g_out.shape)}")
+                else:
+                    g_out = g
+                    print(f"    → unchanged (already >=6ch): {tuple(g_out.shape)}")
+            else:
+                raise ValueError(f"unexpected grid shape {g.shape}")
+            grids.append(g_out)
+    
     else:
         grids = shared_grids
+        for i, g in enumerate(grids):
+            print(f"  [Other XAI] Grid {i}: using as-is → shape {tuple(g.shape)}")
 
     # e) run the pointing-game evaluation
     raw = evaluator.evaluate(
@@ -171,7 +213,7 @@ for cfg in model_configs:
         thr = entry.get("threshold", None)
         threshold_groups[thr].append(entry)
 
-    out_dir = os.path.join(OUTPUT_BASE_DIR, cfg["name"])
+    out_dir = os.path.join(OUTPUT_BASE_DIR)
     os.makedirs(out_dir, exist_ok=True)
 
     all_raw_path = os.path.join(

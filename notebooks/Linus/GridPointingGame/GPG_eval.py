@@ -21,11 +21,11 @@ from GradCam_evalnew import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
-
 #######################
 # set model path, config path and additional arguments
 
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
 CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
@@ -35,6 +35,7 @@ CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
 MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
 

@@ -96,11 +96,21 @@ class BCOSEvaluator:
         return to_numpy(heatmap), out, model_prediction
 
     def convert_to_numpy(self, tensor):
-        """Convert tensor to RGB numpy image."""
+        """Convert a torch tensor to a uint8 RGB NumPy image (H x W x 3)."""
         if tensor.dim() == 4 and tensor.shape[0] == 1:
-            tensor = tensor.squeeze(0)  # Remove batch dimension.
-        # Permute channels to HWC and scale.
-        return (to_numpy(tensor[:3].permute(1, 2, 0)) * 255).astype(np.uint8)
+            tensor = tensor.squeeze(0)  # remove batch dim
+    
+        tensor = tensor[:3]  # keep only first 3 channels
+        tensor = tensor.detach().cpu()
+    
+        # Normalize to [0, 1]
+        tensor = tensor - tensor.min()
+        if tensor.max() > 0:
+            tensor = tensor / tensor.max()
+    
+        # Convert to NumPy HWC and scale to [0, 255]
+        np_img = tensor.permute(1, 2, 0).numpy()
+        return (np_img * 255).clip(0, 255).astype(np.uint8)
 
     def extract_fake_position(self, path):
         """Extract fake position from filename."""

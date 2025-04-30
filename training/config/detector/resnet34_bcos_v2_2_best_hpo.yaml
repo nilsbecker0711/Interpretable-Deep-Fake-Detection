@@ -25,8 +25,8 @@ backbone_config:
   stochastic_depth_prob: 0.0
   logit_bias: #None
   logit_temperature: 1 #None
-  b: 1.25
-  norm: BatchNorm2d # choices: AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, 
+  b: 2
+  norm: "GNInstanceNormUncentered2d" # choices: AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, 
   # PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d
   norm_bias: false
 
