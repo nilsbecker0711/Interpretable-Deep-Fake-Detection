@@ -38,9 +38,9 @@ test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT, Celeb-DF-v2, DFD
 val_dataset: [FaceForensics++] # Celeb-DF-v2, DFDCP, DFDC,  FaceShifter, DeepFakeDetection, DFDC,
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
-val_batchSize: 64   # test batch size
-test_batchSize: 64   # test batch size
+train_batchSize: 128   # training batch size
+val_batchSize: 128 # test batch size
+test_batchSize: 128   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
@@ -76,24 +76,24 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000996078935452251  # learning rate
-    beta1: 0.8857320887149224  # beta1 for Adam optimizer
-    beta2: 0.932765694949952 # beta2 for Adam optimizer
-    eps: 0.0000012331828888389  # epsilon for Adam optimizer
-    weight_decay: 0.0002346178416398389  # weight decay for regularization
+    lr: 0.00107020978838504  # learning rate
+    beta1: 0.8988892796814306  # beta1 for Adam optimizer
+    beta2: 0.8636690764692863 # beta2 for Adam optimizer
+    eps: 0.00000141865278203464  # epsilon for Adam optimizer
+    weight_decay: 0.0004722910533581486  # weight decay for regularization
     amsgrad: true
   sgd:
-    lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
+    lr: 0.00107020978838504  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
   gradient_clipping: true
 
 # training config
 lr_scheduler: # step   # learning rate scheduler
-lr_eta_min: 0.00000000012206515815
-lr_T_max: 114.09580010752336
-lr_step: 6
-lr_gamma: 0.4646614376487336
+lr_eta_min: 0.00000000048320540891
+lr_T_max: 60.47527877421597
+lr_step: 8
+lr_gamma: 0.2840397713443781
 nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
