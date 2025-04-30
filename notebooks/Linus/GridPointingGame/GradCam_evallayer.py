@@ -155,7 +155,9 @@ class GradCamEvaluator:
 
         # normalize the RGB for overlay
         rgb_img = tensor.detach().cpu().permute(1,2,0).numpy()
-        rgb_img = (rgb_img - rgb_img.min()) / (rgb_img.max() - rgb_img.min() + 1e-8)
+        if rgb_img.shape[2] == 6:
+            rgb_img = rgb_img[:, :, :3]
+        rgb_img = (rgb_img - rgb_img.min())/(rgb_img.max()-rgb_img.min()+1e-8)
 
         # upsample when needed
         if self.method == "layergrad":
