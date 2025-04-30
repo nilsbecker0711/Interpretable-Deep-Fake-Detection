@@ -3,7 +3,8 @@ log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/vit
 
 # model setting -> old
 freeze: false
-pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
+pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/vit_bcos_1_75.pth 
+#/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
 #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: vit_bcos   # model name
