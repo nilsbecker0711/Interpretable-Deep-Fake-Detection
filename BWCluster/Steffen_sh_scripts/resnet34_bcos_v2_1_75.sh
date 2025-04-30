@@ -19,4 +19,4 @@ echo "Python version: $(python --version)"
 echo "Environment: $(conda info --envs)"
 
 
-python /BS/robust-architectures/work/bcos-df/training/train.py --detector_path /BS/robust-architectures/work/bcos-df/training/config/detector/resnet34_bcos_v2_1_75.yaml
+python /BS/robust-architectures/work/bcos-df/training/train.py --detector_path /BS/robust-architectures/work/bcos-df/training/config/detector/resnet34_bcos_v2_175_ffhq_final_version.yaml
