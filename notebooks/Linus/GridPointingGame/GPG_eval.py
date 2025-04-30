@@ -17,6 +17,7 @@ from Utils_PointingGame import load_model, load_config, preprocess_image, Analys
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
 from GradCam_evalnew import GradCamEvaluator
+#from GradCam_evallayer import GradCamEvaluator
 #from GradCam_evalbcos import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
