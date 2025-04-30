@@ -20,9 +20,9 @@ val_dataset: [df-tp-ffhq]
 test_dataset: [df-tp-ffhq]
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
-val_batchSize: 64
-test_batchSize: 64   # test batch size
+train_batchSize: 128   # training batch size
+val_batchSize: 128
+test_batchSize: 128   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'val': 32, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
@@ -55,11 +55,11 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.000025  # learning rate
-    beta1: 0.9  # beta1 for Adam optimizer
-    beta2: 0.999 # beta2 for Adam optimizer
-    eps: 0.00000001  # epsilon for Adam optimizer
-    weight_decay: 0.0005  # weight decay for regularization
+    lr: 0.0003357976756946627  # learning rate
+    beta1: 0.9384207123888684  # beta1 for Adam optimizer
+    beta2: 0.9627465434614796 # beta2 for Adam optimizer
+    eps: 0.00000924409777881459  # epsilon for Adam optimizer
+    weight_decay: 0.017419843301766182  # weight decay for regularization
     amsgrad: false
   sgd:
     lr: 0.0002  # learning rate
