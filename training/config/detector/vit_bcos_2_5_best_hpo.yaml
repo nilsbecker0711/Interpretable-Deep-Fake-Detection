@@ -46,7 +46,7 @@ val_batchSize: 64
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 224   # resolution of output image to network
-with_mask: false   # whether to include mask information in the input
+with_mask: true   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features

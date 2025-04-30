@@ -7,13 +7,13 @@ dataset_json_folder: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_expl
 
 ######################################################################################################################################################
 test_batchSize: 12
-xai_method: grad++
+xai_method: bcos
 overwrite: true
 quantitativ: false
-base_output_dir: results
+base_output_dir: "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsMPG"
 threshold_steps: 10
-max_images: 10
-mask_resolution: 256 #224 #224 for resminimal, 256 for resnet 34
+max_images: null #ran for res_1.25, 
+mask_resolution: 224 #256 #224 for resminimal, 256 for resnet 34
 ######################################################################################################################################################
 
 label_dict:
