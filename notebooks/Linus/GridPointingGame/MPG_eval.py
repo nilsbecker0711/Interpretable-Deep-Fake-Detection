@@ -16,7 +16,8 @@ from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_evalnew import GradCamEvaluator
+#from GradCam_evalnew import GradCamEvaluator
+from GradCam_evalbcos import GradCamEvaluator
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
@@ -24,12 +25,12 @@ import collections
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_layergrad.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_grad++.yaml")
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
@@ -37,7 +38,7 @@ CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_layergrad.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_1_75_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_5_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_best_hpo.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_best_hpo.yaml")
 
 
 #CHANGE MODEL YAML TO WITH_MASK = TRUE and DATASET_TYPE = 'bcos'
@@ -142,7 +143,9 @@ class MaskPointingGameCreator(Analyser):
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
                 elif self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                    image = image[:,:3]
+                    #image = image[:,:3]
+                    #CHANGE FOR BCOS GRADCAM RUNS:
+                    image = preprocess_image(image)
                 else:
                     raise ValueError(f"Unknown xai_method: {self.xai_method}")   
                 heatmap = self.generate_heatmap_for_method(self.xai_method,image)

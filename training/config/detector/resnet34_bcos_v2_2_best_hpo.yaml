@@ -3,7 +3,7 @@ log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/resne
 
 # model setting -> old
 freeze: false
-pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/resnet34_bcos_1_25.pth   # path to a pre-trained model, if using one
+pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/resnet34_bcos_2.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: resnet34_bcos_v2   # model name
 backbone_name: resnet34_bcos_v2  # backbone name
@@ -44,7 +44,7 @@ test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
-with_mask: false   # whether to include mask information in the input
+with_mask: true   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
