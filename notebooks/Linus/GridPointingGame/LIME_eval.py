@@ -112,7 +112,7 @@ class LIMEEvaluator:
     
         # Run LIME explainer
         explanation = self.explainer.explain_instance(
-            img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256
+            img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256, batch_size = 2
         )
     
         # Select the explanation for the 'fake' label (class 1)

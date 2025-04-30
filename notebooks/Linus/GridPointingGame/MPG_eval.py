@@ -24,17 +24,17 @@ import collections
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_bcos_2_5.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_lime.yaml")
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_1_25_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_1_75_best_hpo.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_5_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_5_best_hpo.yaml")
 
 
 #CHANGE MODEL YAML TO WITH_MASK = TRUE and DATASET_TYPE = 'bcos'
