@@ -190,8 +190,7 @@ class GradCamEvaluator:
 
             # 1) generate raw intensity map and the normalized image
             intensity_map, norm_img, _ = self.generate_heatmap(
-                tensor_grid[0], path, grid_split, true_fake_pos
-            )
+                tensor_grid[0])
             original_image   = self.convert_to_numpy(tensor_grid[0])
             model_prediction = 1  # still hard‐coded 
 

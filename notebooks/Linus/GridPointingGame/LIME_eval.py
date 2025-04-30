@@ -71,10 +71,9 @@ class LIMEEvaluator:
         fake_pred_unweighted = np.argmax(non_0_counts)
         
         grid_intensity_sums = [np.sum(section) for section in sections]  # sum of intensities
-        for i, grid_intensity in enumerate(grid_intensity_sums):
-            print("Intensitätssumme für Zelle {}: {}".format(i, grid_intensity))
-            
-        fake_pred_weighted = np.argmax(grid_intensity_sums)
+        for i, grid_intensity in enumerate(grid_intensity_sums):            
+            fake_pred_weighted = np.argmax(grid_intensity_sums)
+        
         return fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts
     
     def extract_fake_position(self, path):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 import sys
 import glob
 import pickle
@@ -12,7 +13,7 @@ from GradCam_evalnew import GradCamEvaluator
 from Utils_PointingGame import load_config, load_model
 
 # ─── PARAMETERS ────────────────────────────────────────────────────────────────
-N = 4  # total number of grids to evaluate
+N = 30  # total number of grids to evaluate
 model_configs = [
     {
         "name":        "resnet34_bcos_v2",
@@ -93,9 +94,13 @@ shared_grid_paths = []
 # 2) Für jeden eindeutigen gridpath: Grids einmalig sammeln
 for gridpath in unique_gridpaths:
     folder = f"/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG/{gridpath}/{grid_subpath}"
+
+
+    def natural_key(s):
+        return [int(text) if text.isdigit() else text.lower()
+                for text in re.split(r'(\d+)', s)]
     
-    print(f"\n🔍 Looking for .pt grids in: {folder}")
-    pts = sorted(glob.glob(os.path.join(folder, "*.pt")))
+    pts = sorted(glob.glob(os.path.join(folder, "*.pt")), key=natural_key)
     print(f"→ Found {len(pts)} files.")
 
     selected = pts[:K]
