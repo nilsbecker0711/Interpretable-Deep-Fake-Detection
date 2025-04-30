@@ -15,21 +15,21 @@ from Utils_PointingGame import load_config, load_model
 # ─── PARAMETERS ────────────────────────────────────────────────────────────────
 N = 2  # total number of grids to evaluate
 model_configs = [
-    #{
-    #    "name":        "resnet34_bcos_v2",
-    #    "gridpath":    "resnet34_bcos_v2_1_25",
-    #    "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
-    #    "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
-    #    "weights_key": "pretrained",
-    #    "xai":         "bcos",
-    #},
     {
         "name":        "resnet34_bcos_v2",
-        "gridpath":    "resnet34_bcos_v2_2",
-        "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml",
-        "run_yaml":    "results/test_bcos_res_2_config.yaml",
+        "gridpath":    "resnet34_bcos_v2_1_25",
+        "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
+        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
         "weights_key": "pretrained",
         "xai":         "bcos",
+    },
+    #{
+    #    "name":        "resnet34_bcos_v2",
+    #    "gridpath":    "resnet34_bcos_v2_2",
+    #    "model_yaml":  "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml",
+    #    "run_yaml":    "results/test_bcos_res_2_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "bcos",
     },
     #{
     #    "name":        "resnet34_bcos_v2",

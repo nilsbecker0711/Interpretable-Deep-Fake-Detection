@@ -2,6 +2,7 @@ import os
 import sys
 import pickle
 import numpy as np
+import torch 
 
 #set project path
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))

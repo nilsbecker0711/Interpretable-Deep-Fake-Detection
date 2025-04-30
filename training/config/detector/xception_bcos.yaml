@@ -2,7 +2,7 @@
 log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
 
 # model setting
-pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/xception_bcos/ckpt_best_b2_5.pth
+pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth 
 
 # model setting
 model_name: xception_bcos_detector   # model name
