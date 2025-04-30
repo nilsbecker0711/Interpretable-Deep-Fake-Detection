@@ -24,17 +24,20 @@ import collections
 
 #######################
 # set model path, config path and additional arguments
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_lime.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_MPG_layergrad.yaml")
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_minimal.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_1_25_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_1_75_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_5_best_hpo.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_bcos_2_best_hpo.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/vit_best_hpo.yaml")
 
 
 #CHANGE MODEL YAML TO WITH_MASK = TRUE and DATASET_TYPE = 'bcos'
@@ -167,14 +170,14 @@ class MaskPointingGameCreator(Analyser):
                     result = {
                         "threshold": threshold_value,
                         "path": image_path,
-                        "original_image": original_image,
-                        "heatmap": thresholded_map,
+                        #"original_image": original_image,
+                        #"heatmap": thresholded_map,
                         "unweighted_localization_score": acc,
                         "weighted_localization_score": intensity_acc,
                         "model_prediction": predicted_label,
                         "model_confidence": confidence,
                         "xai_method": self.xai_method,
-                        "mask" : mask
+                        #"mask" : mask
                     }
                     results.append(result)
                     processed_images += 1
