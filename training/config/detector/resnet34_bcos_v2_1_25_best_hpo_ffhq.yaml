@@ -33,10 +33,10 @@ backbone_config:
 
 
 # dataset
-all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
-train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
-val_dataset: [FaceForensics++]
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT,df-tp-ffhq] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
+train_dataset: [df-tp-ffhq]
+test_dataset: [df-tp-ffhq] #, FF-F2F, FF-DF, FF-FS, FF-NT]
+val_dataset: [df-tp-ffhq]
 
 compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size
