@@ -17,6 +17,7 @@ from .inception_bcos_detector import InceptionBcosDetector
 from .xception_detector import XceptionDetector
 #from .vgg19_v2_bcos_detector import VGGBcosDetector
 from .vit_bcos_detector import ViTBcosDetector
+from .vit_base_detector import ViTBaseDetector
 from .convnext_bcos_dector import Convnext_Bcos_Detector
 from .vgg19_v2_bcos_detector import VGGBcosDetector
 from .xception_bcos_detector import XceptionBcosDetector
