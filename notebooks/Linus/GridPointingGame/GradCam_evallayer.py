@@ -1,7 +1,15 @@
+#Layergrad 
+#choosing best performing layer 
+
 import os
 import sys
 
-# Set up project root and ensure it's in sys.path.
+### Sources 
+#Parts of the implementation below is inspired by:
+#- [layer_cam.py – pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam/blob/master/pytorch_grad_cam/layer_cam.py) by Jacob Gildenblat
+#- [captum.py – B-cos-v2](https://github.com/B-cos/B-cos-v2/blob/8a3281983d83e7ec734a6f96f1270fb4180e9508/interpretability/explanation_methods/explainers/captum.py) by the B-cos authors
+
+# Set up project root and ensure it's in sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -216,7 +224,7 @@ class GradCamEvaluator:
                 self.cam             = LayerGradCam(self.wrapped_model, self.target_layer)
                 logger.info(f"[AutoSearch] Picked layer “{best_name}” (index {best_idx}) with score {best_score:.3f}")
 
-        # ─── Full dataset evaluation ────────────────────────────────────
+        #full evaluation 
         results = []
         logger.info("Processing %d grids with grid_split=%d using CAM method=%s",
                     len(tensor_list), grid_split, self.method)
@@ -260,7 +268,6 @@ class GradCamEvaluator:
                     "model_prediction": model_prediction
                 }
 
-                # Now log the *chosen* layer name (if any)
                 logger.info(
                     "Method %s | Layer %s | Threshold %s | %s: "
                     "true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | "

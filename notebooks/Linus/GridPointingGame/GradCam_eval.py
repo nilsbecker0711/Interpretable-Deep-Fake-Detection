@@ -1,8 +1,14 @@
-# gradcam and variations 
+# Grad-CAM and variations 
+
+## Sources 
+#Parts of the implementation below is inspired by:
+#- [grad_cam.py – pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam/blob/master/pytorch_grad_cam/layer_cam.py) by Jacob Gildenblat
+#- [captum.py – B-cos-v2](https://github.com/B-cos/B-cos-v2/blob/8a3281983d83e7ec734a6f96f1270fb4180e9508/interpretability/explanation_methods/explainers/captum.py) by the B-cos authors
+
 import os
 import sys 
 
-# Set up project root and ensure it's in sys.path.
+# Set up project root and ensure it's in sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -36,16 +42,16 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     unweighted_accuracy = 0.0
     weighted_accuracy   = 0.0
 
-    # Calculate cell dimensions.
+    # calculate cell dimensions
     rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
     sec_cols = cols // grid_split
-    # Split into grid cells.
+    # split into grid
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
 
-    # unweighted prediction 
-    # Count of pixels with intensity in each cell.
+    ## unweighted prediction 
+    # count of pixels with intensity in each cell
     intensity_counts = [np.sum(section > background_pixel) for section in sections]
     fake_pred_unweighted = np.argmax(intensity_counts)
 
@@ -54,20 +60,18 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     if total_nonzero_count > 0 and 0 <= true_fake_pos < len(intensity_counts):
         unweighted_accuracy = intensity_counts[true_fake_pos] / total_nonzero_count
 
-    # weighted prediction 
-    # Sum intensity in each cell.
+    ## weighted prediction 
+    # sum intensity in each cell.
     intensity_sums = [np.sum(section) for section in sections]
     fake_pred_weighted = np.argmax(intensity_sums)
     total_intensity = np.sum(intensity_sums)
-    # Compute weighted_accuracy as fraction of total intensity in the true fake cell.
+    # compute weighted_accuracy as fraction of total intensity in the true fake cell
     weighted_accuracy = (intensity_sums[true_fake_pos] / total_intensity) if total_intensity > 0 else 0.0
-
 
     return fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy
 
 
 # Auto-find the last valid Conv2d layer in the backbone
-# Excludes layers with names containing 'adjust' or 'proj'
 def find_last_valid_conv_layer(module):
     last_conv = None
     for name, m in module.named_modules():
@@ -75,13 +79,13 @@ def find_last_valid_conv_layer(module):
             last_conv = m
     return last_conv
 
-# Wraps the detector so CAM methods receive tensor input
+# wraps the detector so CAM methods receive tensor input
 class WrappedModel(nn.Module):
     def __init__(self, model):
         super().__init__()
         self.model = model
     def forward(self, x):
-        # Detector expects dict with 'image'
+        # detector expects dict with 'image'
         return self.model({"image": x})["cls"]
 
 class GradCamEvaluator:
@@ -95,10 +99,6 @@ class GradCamEvaluator:
         if self.target_layer is None:
             raise ValueError("No valid Conv2d layer found in model backbone.")
         logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
-
-        #if auto doesnt work 
-        #self.target_layer = dict(self.model.backbone.named_modules())["resnet.7.2.conv2"]
-        #logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
 
         # wrap detector for CAM
         self.wrapped_model = WrappedModel(self.model)
@@ -133,13 +133,13 @@ class GradCamEvaluator:
         return np_img
 
     def generate_heatmap(self, tensor):
-        # First, get a 2D “grayscale_cam” of shape [H,W]:
+        # 2D “grayscale_cam” of shape [H,W]:
         if self.method == "layergrad":
             # Captum expects requires_grad on the inputs
             inp = tensor.unsqueeze(0).to(self.device).requires_grad_(True)
-            # target=1 because you’re hard-coding fake=1
+            # target=1 because hard-coding fake=1
             attributions = self.cam.attribute(inp, target=1)  # -> [1, C, H, W]
-            # collapse channels by mean (you could also use abs()+sum)
+            # collapse channels by mean
             grayscale_cam = attributions.squeeze(0).mean(dim=0).detach().cpu().numpy()
             # rectify and normalize to [0..1]
             grayscale_cam = np.maximum(grayscale_cam, 0)
@@ -157,7 +157,8 @@ class GradCamEvaluator:
         rgb_img = tensor.detach().cpu().permute(1,2,0).numpy()
         rgb_img = (rgb_img - rgb_img.min())/(rgb_img.max()-rgb_img.min()+1e-8)
         
-    # for layergrad upsample the CAM to match rgb_img
+    # for layergrad upsample the CAM to match rgb_img 
+    #layergrad can also be find in its own .py 
         if self.method == "layergrad":
             h, w, _ = rgb_img.shape
             grayscale_cam = cv2.resize(
@@ -192,7 +193,7 @@ class GradCamEvaluator:
             original_image   = self.convert_to_numpy(tensor_grid[0])
             model_prediction = 1  # still hard‐coded 
 
-        # 2) build list of thresholds to try
+        # 2) list of thresholds to try
             thresholds = [None]
             if threshold_steps > 0:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
@@ -202,7 +203,7 @@ class GradCamEvaluator:
                 t_desc = "none" if t is None else f"{t:.3f}"
                 logger.info("  Threshold = %s", t_desc)
 
-            # apply threshold in one line
+            # apply threshold
                 if t is None:
                     mask = intensity_map
                 else:
@@ -218,7 +219,7 @@ class GradCamEvaluator:
                     true_fake_pos=true_fake_pos,
                 )
 
-            # collect result
+            # results
                 result = {
                     "threshold": t if t is not None else 0,
                     "path": path,

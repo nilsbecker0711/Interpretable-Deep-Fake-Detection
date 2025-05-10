@@ -1,4 +1,7 @@
-# gradcam and variations 
+# GRAD-CAM and variations
+#testing on bcosifiyed model predictions 
+
+
 import os
 import sys 
 
@@ -36,16 +39,16 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     unweighted_accuracy = 0.0
     weighted_accuracy   = 0.0
 
-    # Calculate cell dimensions.
+    # calculate cell dimensions
     rows, cols = heatmap_intensity.shape
     sec_rows = rows // grid_split
     sec_cols = cols // grid_split
-    # Split into grid cells.
+    # split into grid
     sections = [heatmap_intensity[i*sec_rows:(i+1)*sec_rows, j*sec_cols:(j+1)*sec_cols]
                 for i in range(grid_split) for j in range(grid_split)]
 
     # unweighted prediction 
-    # Count of pixels with intensity in each cell.
+    # count of pixels with intensity in each cell
     intensity_counts = [np.sum(section > background_pixel) for section in sections]
     fake_pred_unweighted = np.argmax(intensity_counts)
 
@@ -55,7 +58,7 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
         unweighted_accuracy = intensity_counts[true_fake_pos] / total_nonzero_count
 
     # weighted prediction 
-    # Sum intensity in each cell.
+    # sum intensity in each cell
     intensity_sums = [np.sum(section) for section in sections]
     for i, intensity in enumerate(intensity_sums):
         print("Intensitätssumme für Zelle {}: {}".format(i, intensity))
@@ -68,8 +71,7 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     return fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy
 
 
-# Auto-find the last valid Conv2d layer in the backbone
-# Excludes layers with names containing 'adjust' or 'proj'
+# auto-find the last valid Conv2d layer in the backbone
 def find_last_valid_conv_layer(module):
     last_conv = None
     for name, m in module.named_modules():
@@ -77,13 +79,13 @@ def find_last_valid_conv_layer(module):
             last_conv = m
     return last_conv
 
-# Wraps the detector so CAM methods receive tensor input
+# wraping the detector so CAM methods receive tensor as input
 class WrappedModel(nn.Module):
     def __init__(self, model):
         super().__init__()
         self.model = model
     def forward(self, x):
-        # Detector expects dict with 'image'
+        # detector expects dict with 'image'
         return self.model({"image": x})["cls"]
 
 class GradCamEvaluator:
@@ -97,10 +99,6 @@ class GradCamEvaluator:
         if self.target_layer is None:
             raise ValueError("No valid Conv2d layer found in model backbone.")
         logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
-
-        #if auto doesnt work 
-        #self.target_layer = dict(self.model.backbone.named_modules())["resnet.7.2.conv2"]
-        #logger.info("Selected target layer for XAI: %s", self.target_layer.__class__.__name__)
 
         # wrap detector for CAM
         self.wrapped_model = WrappedModel(self.model)
@@ -135,16 +133,15 @@ class GradCamEvaluator:
         return np_img
 
     def generate_heatmap(self, tensor):
-        # First, get a 2D “grayscale_cam” of shape [H,W]:
+        # get a 2D “grayscale_cam” of shape [H,W]:
         if self.method == "layergrad":
             logger.info("⚡️ Running LayerGradCam branch ⚡️")
-            # Captum expects requires_grad on the inputs
             inp = tensor.unsqueeze(0).to(self.device).requires_grad_(True)
-            # target=1 because you’re hard-coding fake=1
+            # target=1 because fake=1
             attributions = self.cam.attribute(inp, target=1)  # -> [1, C, H, W]
-            # collapse channels by mean (you could also use abs()+sum)
+            # collapse channels by mean
             grayscale_cam = attributions.squeeze(0).mean(dim=0).detach().cpu().numpy()
-            # rectify and normalize to [0..1]
+            # rectify and normalize 
             grayscale_cam = np.maximum(grayscale_cam, 0)
             if grayscale_cam.max() > 0:
                  grayscale_cam = grayscale_cam / (grayscale_cam.max() + 1e-8)
@@ -223,7 +220,7 @@ class GradCamEvaluator:
                     true_fake_pos=true_fake_pos,
                 )
 
-            # collect result
+            # results
                 result = {
                     "threshold": t if t is not None else 0,
                     "path": path,
