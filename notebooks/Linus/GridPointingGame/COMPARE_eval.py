@@ -9,20 +9,22 @@ import collections
 from collections import defaultdict
 from B_COS_eval import BCOSEvaluator
 from LIME_eval import LIMEEvaluator  
-from GradCam_evalnew import GradCamEvaluator
+#from GradCam_evalnew import GradCamEvaluator
+from GradCam_evallayer import GradCamEvaluator
+#from GradCam_evalbcos import GradCamEvaluator
 from Utils_PointingGame import load_config, load_model
 
 # ─── PARAMETERS ────────────────────────────────────────────────────────────────
 N = 2  # total number of grids to evaluate
 model_configs = [
-    {
-        "name":        "resnet34_bcos_v2",
-        "gridpath":    "resnet34_bcos_v2_1_25",
-        "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
-        "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
-        "weights_key": "pretrained",
-        "xai":         "bcos",
-    },
+    #{
+    #    "name":        "resnet34_bcos_v2",
+    #    "gridpath":    "resnet34_bcos_v2_1_25",
+    #    "model_yaml":  "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml",
+    #    "run_yaml":    "results/test_bcos_res_2_5_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "bcos",
+    #},
     #{
     #    "name":        "resnet34_bcos_v2",
     #    "gridpath":    "resnet34_bcos_v2_2",
@@ -30,7 +32,7 @@ model_configs = [
     #    "run_yaml":    "results/test_bcos_res_2_config.yaml",
     #    "weights_key": "pretrained",
     #    "xai":         "bcos",
-    },
+    #},
     #{
     #    "name":        "resnet34_bcos_v2",
     #    "gridpath":    "resnet34_bcos_v2_2_5",
@@ -39,50 +41,100 @@ model_configs = [
     #    "weights_key": "pretrained",
     #    "xai":         "bcos",
     #},
+    #{
+    #    "name":        "resnet34",
+    #    "gridpath":    "resnet34_default",
+    #    "model_yaml":  "training/config/detector/resnet34.yaml",
+    #    "run_yaml":    "results/test_res_lime_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "lime",
+    #},
+    #{
+    #    "name":        "resnet34",
+    #    "gridpath":    "resnet34_default",
+    #    "model_yaml":  "training/config/detector/resnet34.yaml",
+    #    "run_yaml":    "results/test_res_gradcam_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "gradcam",
+    #},
+    #{
+    #    "name":        "resnet34",
+    #    "gridpath":    "resnet34_default",
+    #    "model_yaml":  "training/config/detector/resnet34.yaml",
+    #    "run_yaml":    "results/test_res_layergrad_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "layergrad",
+    #},
+    #{
+    #    "name":        "resnet34",
+    #    "gridpath":    "resnet34_default",
+    #    "model_yaml":  "training/config/detector/resnet34.yaml",
+    #    "run_yaml":    "results/test_res_xgrad_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "xgrad",
+    #},
+    #{
+    #    "name":        "resnet34",
+    #    "gridpath":    "resnet34_default",
+    #    "model_yaml":  "training/config/detector/resnet34.yaml",
+    #    "run_yaml":    "results/test_res_grad++_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "grad++",
+    #},
     {
-        "name":        "resnet34",
-        "gridpath":    "resnet34_default",
-        "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_res_lime_config.yaml",
+        "name":        "xception_bcos_detector",
+        "gridpath":    "xception_bcos_detector_2_5",
+        "model_yaml":  "training/config/detector/xception_bcos.yaml",
+        "run_yaml":    "results/test_bcos_xception_2_5_config.yaml",
         "weights_key": "pretrained",
-        "xai":         "lime",
+        "xai":         "bcos",
     },
     {
-        "name":        "resnet34",
-        "gridpath":    "resnet34_default",
-        "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_res_gradcam_config.yaml",
-        "weights_key": "pretrained",
-        "xai":         "gradcam",
-    },
-    {
-        "name":        "resnet34",
-        "gridpath":    "resnet34_default",
-        "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_res_layergrad_config.yaml",
+        "name":        "xception_detector",
+        "gridpath":    "xception_default",
+        "model_yaml":  "training/config/detector/xception.yaml",
+        "run_yaml":    "results/test_xception_layergrad_config.yaml",
         "weights_key": "pretrained",
         "xai":         "layergrad",
     },
-    {
-        "name":        "resnet34",
-        "gridpath":    "resnet34_default",
-        "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_res_xgrad_config.yaml",
-        "weights_key": "pretrained",
-        "xai":         "xgrad",
-    },
-    {
-        "name":        "resnet34",
-        "gridpath":    "resnet34_default",
-        "model_yaml":  "training/config/detector/resnet34.yaml",
-        "run_yaml":    "results/test_res_grad++_config.yaml",
-        "weights_key": "pretrained",
-        "xai":         "grad++",
-    },
+    #{
+    #    "name":        "xception_detector",
+    #    "gridpath":    "xception_default",
+    #    "model_yaml":  "training/config/detector/xception.yaml",
+    #    "run_yaml":    "results/test_xception_lime_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "lime",
+    #},
+    #{
+    #    "name":        "xception_detector",
+    #    "gridpath":    "xception_default",
+    #    "model_yaml":  "training/config/detector/xception.yaml",
+    #    "run_yaml":    "results/test_xception_gradcam_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "gradcam",
+    #},
+    #{
+    #    "name":        "xception_detector",
+    #    "gridpath":    "xception_default",
+    #    "model_yaml":  "training/config/detector/xception.yaml",
+    #    "run_yaml":    "results/test_xception_grad++_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "grad++",
+    #},
+    #{
+    #    "name":        "xception_detector",
+    #    "gridpath":    "xception_default",
+    #    "model_yaml":  "training/config/detector/xception.yaml",
+    #    "run_yaml":    "results/test_xception_xgrad_config.yaml",
+    #    "weights_key": "pretrained",
+    #    "xai":         "xgrad",
+    #}
+
+
     # … add more models here …
 ]
 grid_subpath = "3x3"      # relative inside each results folder
-OUTPUT_BASE_DIR = "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG/comparemode"
+OUTPUT_BASE_DIR = "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG/comparemodexeption2"
 # ────────────────────────────────────────────────────────────────────────────────
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

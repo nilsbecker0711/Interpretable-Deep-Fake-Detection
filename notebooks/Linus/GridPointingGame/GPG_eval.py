@@ -28,7 +28,7 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_75_config.yaml")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_75_config.yaml")
 
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_gradcam_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_xgrad_config.yaml")
@@ -46,17 +46,18 @@ from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_xgrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_layergrad_config.yaml")
 #CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_grad++_config.yaml")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_xception_2_5_config.yaml")
+#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_xception_2_5_config.yaml")
 
 
 
 
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
+MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_75_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
+#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
 #MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
 
 ADDITIONAL_ARGS = {
@@ -145,9 +146,9 @@ class GridPointingGameCreator(Analyser):
                 if self.xai_method == "bcos":
                     image = preprocess_image(image)
                 if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                    image = image[:, :3]
+                    #image = image[:, :3]
                 #if want to use with bcos 
-                    #image = preprocess_image(image)
+                    image = preprocess_image(image)
     
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
