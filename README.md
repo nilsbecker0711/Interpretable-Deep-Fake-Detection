@@ -1,4 +1,4 @@
-# Interpretable Deep-Fake Detection
+# Spot the Fake B-cos You Can?
 
 This repository provides an interpretable deepfake detection pipeline. The models are designed to be flexible and modular, consisting of a backbone and a detector. Model training is done via shell scripts located in the `BWCluster` folder, and the configuration parameters for each model are specified in YAML files.
 
