@@ -1,180 +1,192 @@
-import sys
 import os
+import sys
 import numpy as np
 import torch
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
 from PIL import Image
-import yaml
+from torchvision import transforms
 from lime import lime_image
-from skimage.segmentation import mark_boundaries  # Explicit import
+import logging
+from skimage.segmentation import mark_boundaries
 
-
-# Append the project path (adjust as needed)
-# sys.path.append("/Users/toby/Interpretable-Deep-Fake-Detection")
-sys.path.append("/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection")
-sys.argv = ["train.py"]
-
-# Import detectors configuration and models
-from training.detectors.xception_detector import XceptionDetector
-from training.detectors import DETECTOR
-
-
-def load_config(path, additional_args={}):
-    """
-    Loads the YAML configuration file and updates it with additional arguments.
-    """
-    with open(path, 'r') as f:
-        config = yaml.safe_load(f)
-    try:
-        with open('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/training/config/train_config.yaml', 'r') as f:
-            config2 = yaml.safe_load(f)
-    except FileNotFoundError:
-        with open(os.path.expanduser('/Users/Linus/Desktop/GIThubXAIFDEEPFAKE/Interpretable-Deep-Fake-Detection/training/config/train_config.yaml'), 'r') as f:
-            config2 = yaml.safe_load(f)
-    if 'label_dict' in config:
-        config2['label_dict'] = config['label_dict']
-    config.update(config2)
-    if config.get('dry_run', False):
-        config['nEpochs'] = 0
-        config['save_feat'] = False
-    for key, value in additional_args.items():
-        config[key] = value
-    return config
+# Setup logging and project root
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 class LIMEEvaluator:
-    """
-    LIMEEvaluator loads a detector model using the provided configuration
-    and provides methods for generating LIME explanations on pre-saved grid tensors.
-    This module is structured similarly to your BCos evaluator so that it can be 
-    seamlessly integrated in your GPG_eval pipeline when xai_method=="lime".
-    """
-    def __init__(self, config_path, additional_args, xai_method="lime"):
-        # Load configuration and initialize the model.
-        self.config = load_config(config_path, additional_args=additional_args)
-        print("Registered models:", DETECTOR.data.keys())
-        model_class = DETECTOR[self.config['model_name']]
-        self.model = model_class(self.config)
-        self.model.eval()
-        self.xai_method = xai_method
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.to(self.device)
-        print(f"[DEBUG] Loaded {self.model.__class__.__name__} model onto {self.device}")
-
-        # Define a transform for LIME processing (resize to 224x224 and convert to tensor)
-        self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()
-        ])
-        # Create a LIME explainer instance.
+    def __init__(self, model=None, device=None):
+        """Initialize the evaluator: set up model, device, transform, and LIME explainer."""
+        self.model = model
+        self.device = device
+        logger.info("Loaded model %s onto %s", self.model.__class__.__name__, self.device)
+        self.transform = transforms.ToTensor()
         self.explainer = lime_image.LimeImageExplainer()
 
     def batch_predict(self, images):
         """
         Prediction function for LIME.
-        Args:
-            images: List or numpy array of images in HWC format (values 0-255).
-        Returns:
-            Numpy array of prediction probabilities with shape [N, 2].
+        Converts perturbed images (HWC, 0-255) to tensors, runs the model, and returns prediction probabilities.
         """
-        processed_images = []
-        for img in images:
-            pil_img = Image.fromarray(img.astype(np.uint8))
-            tensor_img = self.transform(pil_img)  # Output: [C, 224, 224]
-            processed_images.append(tensor_img.numpy())
-        batch = np.stack(processed_images, axis=0)  # [N, C, 224, 224]
+        processed_images = [
+            self.transform(Image.fromarray(img.astype(np.uint8))).numpy()
+            for img in images
+        ]
+        batch = np.stack(processed_images, axis=0)
         batch = torch.from_numpy(batch).to(self.device)
         data = {'image': batch}
         with torch.no_grad():
             output = self.model(data)
             probs = output['prob'].cpu().numpy()  # [N]
-            # Convert to two-column probabilities: [negative, positive]
-            probs = np.vstack([1 - probs, probs]).T
+            probs = np.vstack([1 - probs, probs]).T  # Create two-column probability array
         return probs
 
-    def lime_grid_eval(self, heatmap, background_pixel=0):
-        """
-        Evaluates a grid image by splitting it into 4 sections.
-        Returns:
-            fake_pred_index: Index of the section with the highest count of non-background pixels.
-            non_0_pixel_count: List of counts per section.
-        """
-        heatmap_gray = np.mean(heatmap, axis=2)
-        if heatmap_gray.max() <= 1.0:
-            heatmap_gray = (heatmap_gray * 255).astype(np.uint8)
-        rows, cols = heatmap_gray.shape
-        if rows != cols:
-            raise ValueError("The heatmap must be square.")
-        if rows % 2 != 0:
-            raise ValueError("The heatmap dimensions must be divisible by 2.")
-        half = rows // 2
-        sections = [
-            heatmap_gray[:half, :half],
-            heatmap_gray[:half, half:],
-            heatmap_gray[half:, :half],
-            heatmap_gray[half:, half:]
-        ]
-        non_0_pixel_count = [np.sum(section > background_pixel) for section in sections]
-        fake_pred_index = np.argmax(non_0_pixel_count)
-        return fake_pred_index, non_0_pixel_count
+    def lime_grid_eval(self, heatmap, grid_split=3, background_pixel=0):
 
-    def evaluate(self, tensor_list, path_list, grid_split):
-        """
-        Main evaluation loop.
-        Iterates over pre-loaded grid tensors (from .pt files) and their paths,
-        generates LIME explanations, and displays side-by-side comparisons.
+        original_size = heatmap.shape  # (H, W)
+        logger.debug("[LIME] Original heatmap size: %s", original_size)
         
-        Args:
-            tensor_list (list): List of pre-loaded grid tensors.
-            path_list (list): List of corresponding file paths.
-            grid_split (int): Grid split parameter for evaluation.
-        """
+        # Resize if dimensions aren't divisible by grid_split
+        if original_size[1] % grid_split != 0 or original_size[0] % grid_split != 0:
+            new_size = (original_size[1] * grid_split, original_size[0] * grid_split)
+            import cv2
+            heatmap = cv2.resize(heatmap, new_size, interpolation=cv2.INTER_LINEAR)
+            logger.debug("[LIME] Resized heatmap to: %s", new_size)
+        else:
+            logger.debug("[LIME] No resizing needed.")
+        
+        # Split image into grid sections
+        rows, cols = heatmap.shape
+        section_size_row = rows // grid_split
+        section_size_col = cols // grid_split
+        sections = [
+            heatmap[i * section_size_row:(i + 1) * section_size_row,
+                         j * section_size_col:(j + 1) * section_size_col]
+            for i in range(grid_split) for j in range(grid_split)
+        ]
+        print(np.max(heatmap))
+
+        non_0_counts = [np.sum(section > background_pixel) for section in sections]
+        fake_pred_unweighted = np.argmax(non_0_counts)
+        
+        grid_intensity_sums = [np.sum(section) for section in sections]  # sum of intensities
+        for i, grid_intensity in enumerate(grid_intensity_sums):            
+            fake_pred_weighted = np.argmax(grid_intensity_sums)
+        
+        return fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts
+    
+    def extract_fake_position(self, path):
+        """Extract fake position from filename."""
+        try:
+            return int(os.path.basename(path).split('_fake_')[1].split('_conf_')[0])
+        except Exception as e:
+            logger.warning("Could not extract fake position from '%s': %s", path, e)
+            return -1
+            
+    def convert_to_numpy(self, tensor):
+        """Auto-rescale a tensor to HxW x 3 uint8."""
+        tensor = tensor.squeeze(0)
+        np_img = tensor.permute(1, 2, 0).detach().cpu().numpy()
+        np_img = np_img - np_img.min()
+        np_img = np_img / np_img.max()
+        np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
+        return np_img
+
+    def generate_heatmap(self, tensor):
+        """Generate LIME-based heatmap for a single tensor."""
+        img_np = self.convert_to_numpy(tensor)
+    
+        # Move tensor to device and enable gradients
+        img = tensor.to(self.device).requires_grad_(True)
+        logger.debug("Input tensor shape: %s", img.shape)
+    
+        self.model.zero_grad()
+    
+        data_dict = {'image': img, 'label': 0}  # <<<< Corrected here
+        out = self.model(data_dict)  # Pass data_dict
+    
+        logger.debug("Model output: %s", out)
+    
+        model_prediction = out['cls'][0].argmax().item()
+    
+        # Run LIME explainer
+        explanation = self.explainer.explain_instance(
+            img_np, self.batch_predict, top_labels=2, hide_color=0, num_samples=256, batch_size = 2
+        )
+    
+        # Select the explanation for the 'fake' label (class 1)
+        fake_label = 1
+        segments = explanation.segments
+        weights = dict(explanation.local_exp[fake_label])
+    
+        # Extract and rescale positive weights
+        positive_weights = [w for w in weights.values() if w >= 0]
+        max_positive_weight = max(positive_weights) if positive_weights else 0
+        scaled_weights = {k: (v / max_positive_weight) if v > 0 else 0 for k, v in weights.items()}
+    
+        # Build intensity map
+        intensity_map = np.zeros(segments.shape, dtype=np.float32)
+        for seg_val in np.unique(segments):
+            if seg_val in scaled_weights:
+                intensity_map[segments == seg_val] = scaled_weights[seg_val]
+    
+        logger.debug("Generated LIME heatmap: shape=%s, min=%.6f, max=%.6f", 
+                     intensity_map.shape, intensity_map.min(), intensity_map.max())
+    
+        return intensity_map, out, model_prediction, img_np
+    
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
+        results = []
+            
         for tensor, path in zip(tensor_list, path_list):
-            print(f"[DEBUG] Processing file: {path}")
-            # Expect tensor shape [1, 3, H, W] (loaded from .pt file)
-            img = tensor.to(self.device)  # Use the tensor as-is.
-            print(f"[DEBUG] Image tensor shape: {img.shape}")
-            # Convert tensor to numpy image in HWC format.
-            img_np = np.transpose(img[0, ...].cpu().numpy(), (1, 2, 0))
-            if img_np.max() <= 1.0:
-                img_np = (img_np * 255).astype(np.uint8)
-            img.requires_grad_(True)
+            intensity_map, out, model_prediction, img_np = self.generate_heatmap(tensor)
+    
+            thresholds = [None]
+            if threshold_steps > 0:
+                thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
+    
+            for t in thresholds:
+                threshold_value = t if t is not None else 0
 
-            data_dict = {'image': img, 'label': 0}  # Dummy label
-            self.model.zero_grad()
-            out = self.model(data_dict)
+                thresholded_map = intensity_map.copy()
 
-            # Generate LIME explanation for the image.
-            explanation = self.explainer.explain_instance(
-                img_np,
-                self.batch_predict,
-                top_labels=1,
-                hide_color=0,
-                num_samples=10
-            )
-            top_label = explanation.top_labels[0]
-            temp, mask = explanation.get_image_and_mask(
-                top_label,
-                positive_only=True,
-                num_features=10,
-                hide_rest=True
-            )
-            fake_pred, pixel_counts = self.lime_grid_eval(temp)
-            print(f"[DEBUG] LIME grid evaluation for {path}: fake_pred: {fake_pred}, pixel counts: {pixel_counts}")
-            print(f"[DEBUG] Top predicted label: {top_label}")
+                # Zero out values below the threshold
+                thresholded_map[thresholded_map < threshold_value] = 0
+                    
+                true_fake_pos = self.extract_fake_position(path)
 
-            # Display side-by-side: original image and LIME explanation.
-            fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-            try:
-                true_fake_pos = int(os.path.basename(path).split('_fake_')[1].split('.')[0])
-            except Exception as e:
-                true_fake_pos = -1
-            ax[0].imshow(img_np)
-            ax[0].axis('off')
-            ax[0].set_title(f"Original Image: {true_fake_pos}")
-            ax[1].imshow(mark_boundaries(temp, mask))
-            ax[1].axis('off')
-            ax[1].set_title(f'LIME Explanation Prediction: {fake_pred}')
-            plt.show()
+                # weighted prediction
+                fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts = self.lime_grid_eval(
+                    thresholded_map, grid_split=grid_split, background_pixel=0.0
+                )
+                total_intensity = sum(grid_intensity_sums)
+                if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
+                    weighted_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
+                else:
+                    weighted_accuracy = 0
+
+                # unweighted prediction 
+                total_nonzero_count = float(sum(non_0_counts))
+ 
+                if total_nonzero_count > 0 and 0 <= true_fake_pos < len(non_0_counts):
+                    unweighted_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
+
+                result = {
+                    "threshold": t if t is not None else 0,
+                    "path": path,
+                    "original_image": img_np,
+                    "heatmap": thresholded_map,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": unweighted_accuracy,
+                    "true_fake_position": true_fake_pos,
+                    "model_prediction": model_prediction,
+                }
+                results.append(result)
+
+                logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
+                            str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
+
+        return results

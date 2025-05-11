@@ -1,0 +1,55 @@
+mode: test
+lmdb: False
+rgb_dir: '' 
+lmdb_dir:  './datasets/lmdb'
+dataset_json_folder: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/dataset_json_v3'
+
+######################################################################################################################################################
+#to use xai on bcos resnet you have to uncomment in GPG eval line 131 and commentout line 128 
+#if only eval use only .run() in GPG_eval.py
+xai_method: bcos
+grid_split: 3
+max_grids: 150
+overwrite: true
+#Waring if overwrite: true is enabled the grid and results.pkl of the model gets overwritten so if they already exist from another XAI on the same model--> recomendet to use falseoverwrite: trueoverwrite: false
+quantitativ: false
+base_output_dir: "/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/resultsGPG"
+threshold_steps: 10
+######################################################################################################################################################
+
+label_dict:
+  # DFD
+  DFD_fake: 1
+  DFD_real: 0
+  # FF++ + FaceShifter(FF-real+FF-FH)
+  FF-SH: 1
+  FF-F2F: 1
+  FF-DF: 1
+  FF-FS: 1
+  FF-NT: 1
+  FF-FH: 1
+  FF-real: 0
+  # CelebDF
+  CelebDFv1_real: 0
+  CelebDFv1_fake: 1
+  CelebDFv2_real: 0
+  CelebDFv2_fake: 1
+  # DFDCP
+  DFDCP_Real: 0
+  DFDCP_FakeA: 1
+  DFDCP_FakeB: 1
+  # DFDC
+  DFDC_Fake: 1
+  DFDC_Real: 0
+  # DeeperForensics-1.0
+  DF_fake: 1
+  DF_real: 0
+  # UADFV
+  UADFV_Fake: 1
+  UADFV_Real: 0
+  # Roop
+  roop_Real: 0
+  roop_Fake: 1
+  #df-tp-ffhq
+  ffhq_imgs: 0
+  stylegan2_psi1.0: 1

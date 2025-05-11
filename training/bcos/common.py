@@ -192,6 +192,9 @@ class BcosUtilMixin:
         with torch.enable_grad(), self.explanation_mode():
             # fwd + prediction
             out = self(in_tensor)  # noqa
+            
+            #xeception bcos has a 2 outputs but resnet not (Linus)
+            out = out[0] if isinstance(out, tuple) else out
             pred_out = out.max(1)
             result["prediction"] = pred_out.indices.item()
 

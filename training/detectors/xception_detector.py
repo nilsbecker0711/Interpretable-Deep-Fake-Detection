@@ -65,21 +65,7 @@ class XceptionDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
-        '''
-        Nils: Commented out to resolve merge conflict
         
-        # if donot load the pretrained weights, fail to get good results
-        
-        ## CHANGE THIS HERE FOR THE CLUSTER TO NOT MAP LOCATION CPU
-        
-        state_dict = torch.load(config['pretrained'], map_location=torch.device('cpu'))
-        for name, weights in state_dict.items():
-            if 'pointwise' in name:
-                state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
-        backbone.load_state_dict(state_dict, False)
-        logger.info('Load pretrained model successfully!')
-        '''
         if config['pretrained']:
             # if donot load the pretrained weights, fail to get good results
             state_dict = torch.load(config['pretrained'])
@@ -89,11 +75,15 @@ class XceptionDetector(AbstractDetector):
             state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
             backbone.load_state_dict(state_dict, False)
             logger.info('Load pretrained model successfully!')
+            return backbone  # Hier den Rückgabewert hinzufügen!
         else:
             backbone.apply(backbone.initialize_weights)
             logger.info("Initialized backbone weights from scratch!")
             return backbone
+
+
     
+
     def build_loss(self, config):
         # prepare the loss function
         loss_class = LOSSFUNC[config['loss_func']]
@@ -101,7 +91,9 @@ class XceptionDetector(AbstractDetector):
         return loss_func
     
     def features(self, data_dict: dict) -> torch.tensor:
-        return self.backbone.features(data_dict['image']) #32,3,256,256
+        if isinstance(data_dict, dict):
+            data_dict = data_dict['image']  # Extract tensor if given a dictionary
+        return self.backbone.features(data_dict) #32,3,256,256
 
     def classifier(self, features: torch.tensor) -> torch.tensor:
         return self.backbone.classifier(features)
