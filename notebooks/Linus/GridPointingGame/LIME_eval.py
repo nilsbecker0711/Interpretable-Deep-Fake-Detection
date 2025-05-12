@@ -160,6 +160,9 @@ class LIMEEvaluator:
                 fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts = self.lime_grid_eval(
                     thresholded_map, grid_split=grid_split, background_pixel=0.0
                 )
+                weighted_accuracy= 0.0
+                unweighted_accuracy= 0.0
+                
                 total_intensity = sum(grid_intensity_sums)
                 if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
                     weighted_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
