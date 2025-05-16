@@ -348,7 +348,7 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
     def forward(self, input, id_feat=None):
         x = self.features(input)
         out = self.classifier(x, id_feat)
-        return out, x
+        return out
 
     def initialize_weights(self, module):
         if isinstance(module, nn.Conv2d):
