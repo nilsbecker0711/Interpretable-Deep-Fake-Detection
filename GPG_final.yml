@@ -1,0 +1,4 @@
+name: myenv
+channels:
+  - defaults
+prefix: /home/ma/ma_ma/ma_tofuchs/.conda/envs/myenv

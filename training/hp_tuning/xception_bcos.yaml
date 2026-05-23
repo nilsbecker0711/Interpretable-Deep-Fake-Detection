@@ -61,7 +61,7 @@ parameters:
     values: [true, false]
   # model parameters
   b:
-    values: [1.25]
+    values: [2.5]
   norm: 
     values: [DetachableLayerNorm] #[AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d]
   norm_bias:
