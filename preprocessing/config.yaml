@@ -4,10 +4,10 @@ preprocess:
     default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: '/pfs/work7/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb'
+    default: '/hkfs/work/workspace/scratch/ma_tischuet-einspace_ws/datasets'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
-    default: 'c40'
+    default: 'c23'
   mode: # based on the numbers of frame or skip the specific stride of frames.
     choices: ['fixed_num_frames', 'fixed_stride']
     default: 'fixed_num_frames'
@@ -16,18 +16,18 @@ preprocess:
     default: 10
   num_frames: # when 'mode' is 'fixed_num_frames', 'num_frames' is the number of frames to extract from each video.
     type: int
-    default: 32
+    default: 64 # 32 is default, Steffen told me to get more training data
 
 rearrange:
   dataset_name: # the name of dataset
     choices: ['FaceForensics++', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2','DFDCP', 'DFDC', 'DeeperForensics-1.0','UADFV','FaceShifter']
-    default: 'FaceShifter'
+    default: 'FaceForensics++'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/datasets/rgb'
+    default: '/home/hk-project-pai00137/ma_tischuet/Interpretable-Deep-Fake-Detection/datasets'
   output_file_path: # the json path to the dataset
     type: str
-    default: '/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/dataset_json_v3'
+    default: '/home/hk-project-pai00137/ma_tischuet/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
     default: 'c23'

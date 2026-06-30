@@ -18,3 +18,5 @@ BWCluster/
 BWCluster/
 weights
 wandb/
+results/explanations/
+*.sh
