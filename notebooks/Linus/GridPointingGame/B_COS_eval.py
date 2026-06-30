@@ -67,33 +67,23 @@ class BCOSEvaluator:
         self.device = device
 
     def generate_heatmap(self, tensor):
-        """Generate heatmap via forward and backward passes."""
-        # Move tensor to device and enable gradients.
+        """Generate B-cos explanation heatmap via explain() in explanation_mode."""
         img = tensor.to(self.device).requires_grad_(True)
         logger.debug("Input tensor shape: %s", img.shape)
 
-        self.model.zero_grad()  # Reset gradients.
-        out = self.model({'image': img})  # Forward pass.
-        
-        logger.debug("Model output: %s", out)
-        
-        scalar_out = out['prob'][0]  # Use first output probability.
-        scalar_out.backward()  # Backpropagate.
-        grad = img.grad[0]
-        logger.debug("Gradients: min=%s, max=%s, mean=%s",
-                     grad.min().item(), grad.max().item(), grad.mean().item())
-        
-        # Get explanation from model's backbone.
+        # explain() handles its own forward+backward inside explanation_mode,
+        # ensuring dynamic_scaling is detached so img.grad is the true B-cos
+        # linear mapping — not a non-linear gradient.
         explanation = self.model.backbone.explain(img, idx=1)
 
         heatmap = explanation.get("explanation")
         model_prediction = explanation.get("prediction")
-        
+
         if heatmap is None:
             logger.error("No heatmap found. Keys: %s", explanation.keys())
             raise ValueError("Heatmap extraction failed.")
         logger.debug("Heatmap: shape=%s, min=%s, max=%s", heatmap.shape, heatmap.min(), heatmap.max())
-        return to_numpy(heatmap), out, model_prediction
+        return to_numpy(heatmap), explanation, model_prediction
 
     def convert_to_numpy(self, tensor):
         """Convert a torch tensor to a uint8 RGB NumPy image (H x W x 3)."""
