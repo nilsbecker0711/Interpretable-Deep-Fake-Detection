@@ -2,7 +2,7 @@
 log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
 
 # model setting
-pretrained: /pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth 
+pretrained: #/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth
 
 # model setting
 model_name: xception_bcos_detector   # model name
@@ -77,20 +77,20 @@ optimizer:
 # training config
 lr_scheduler: warmup_cosine # step   # learning rate scheduler
 lr_eta_min: 0
-lr_T_max: 200 # 15
+lr_T_max: 100
 # lr_step: 4
 # lr_gamma: 0.2
-nEpochs: 15   # number of epochs to train for
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: true   # whether to save checkpoint
+save_ckpt: false   # whether to save checkpoint
 save_feat: true   # whether to save features
 
 # loss function
-loss_func: cross_entropy   # loss function to use
+loss_func: bce_off_labels   # loss function to use
 losstype: null
 
 # metric
