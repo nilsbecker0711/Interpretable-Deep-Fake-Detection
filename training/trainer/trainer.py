@@ -32,6 +32,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from sklearn import metrics
 from sklearn.metrics import precision_score, recall_score, f1_score
 from metrics.utils import get_test_metrics
+from utils.explanation_visualizer import has_explain, save_explanation_grid
 
 FFpp_pool=['FaceForensics++','FF-DF','FF-F2F','FF-FS','FF-NT']#
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -308,7 +309,7 @@ class Trainer(object):
             if torch.cuda.is_available():
                 # more elegant and more scalable way of moving data to GPU
                 for key in data_dict.keys():
-                    if data_dict[key]!=None and key!='name':
+                    if isinstance(data_dict[key], torch.Tensor):
                         data_dict[key]=data_dict[key].cuda()
 
             losses, predictions = self.train_step(data_dict)
@@ -381,6 +382,9 @@ class Trainer(object):
             ## store metric
             for name, value in batch_metrics.items():
                 train_recorder_metric[name].update(value)
+            train_recorder_metric['pred_fake_share'].update(
+                (predictions['prob'] >= 0.5).float().mean().item()
+            )
             ## store loss
             for name, value in losses.items():
                 train_recorder_loss[name].update(value)
@@ -502,7 +506,7 @@ class Trainer(object):
             data_dict['label'] = torch.where(data_dict['label']!=0, 1, 0)  # fix the label to 0 and 1 only
             # move data to GPU elegantly
             for key in data_dict.keys():
-                if data_dict[key]!=None:
+                if isinstance(data_dict[key], torch.Tensor):
                     data_dict[key]=data_dict[key].cuda()
             # model forward without considering gradient computation
             predictions = self.inference(data_dict)
@@ -634,6 +638,18 @@ class Trainer(object):
             self.save_best(epoch, iteration, step, None, 'avg', avg_metric, mode='val')
 
         self.logger.info('===> Val Done!')
+
+        n_explain = self.config.get("explanation_monitor_images", 0)
+        if n_explain > 0 and has_explain(self.model) and IS_MAIN_PROCESS:
+            explain_dir = os.path.join(self.log_dir, "val", "explanations")
+            model_device = next(self.model.parameters()).device
+            first_loader = next(iter(val_data_loaders.values()))
+            save_explanation_grid(
+                self.model, first_loader, explain_dir, model_device,
+                num_images=n_explain, step=step,
+            )
+            self.logger.info(f"Saved {n_explain} explanation images to {explain_dir}")
+
         return self.best_metrics_all_time_val  # return all types of mean metrics for determining the best ckpt
 
 
