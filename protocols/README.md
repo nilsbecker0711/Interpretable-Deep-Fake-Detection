@@ -1,1 +1,0 @@
-# Protokolle der Teammeetings
