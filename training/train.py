@@ -233,6 +233,7 @@ def choose_scheduler(config, optimizer):
             config['nEpochs'],
             int(config['nEpochs']/4),
         )
+        return scheduler
     elif config['lr_scheduler'] == 'warmup_cosine':
         warmup_epochs = 5  # Adjust as needed
         total_epochs = config['nEpochs']
@@ -380,14 +381,15 @@ def main():
         if test_best_metric is not None:
             logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {test_best_metric}!")
 
+        # step the (epoch-scale) LR scheduler once per epoch, after the epoch's
+        # optimizer steps
+        if scheduler is not None:
+            scheduler.step()
+        if 'svdd' in config['model_name']:
+            model.update_R(epoch)
+
     logger.info(f"Stop Training on best Validation metric {val_best_metric}")
     logger.info(f"Stop Training on best Testing metric {test_best_metric}")
-    
-    # update
-    if 'svdd' in config['model_name']:
-        model.update_R(epoch)
-    if scheduler is not None:
-        scheduler.step()
 
     # close the tensorboard writers
     for writer in trainer.writers.values():

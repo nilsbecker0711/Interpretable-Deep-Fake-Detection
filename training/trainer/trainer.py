@@ -39,7 +39,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IS_MAIN_PROCESS = not dist.is_initialized() or dist.get_rank() == 0
 
 import wandb
-os.environ["WANDB_API_KEY"] = "bcd0e878ee944f48096df279bea051e62defbb36"
 
 class Trainer(object):
     def __init__(
@@ -391,8 +390,6 @@ class Trainer(object):
 
             # run tensorboard to visualize the training process
             if iteration % 300 == 0 and self.config['local_rank']==0:
-                if self.config['SWA'] and (epoch>self.config['swa_start'] or self.config['dry_run']):
-                    self.scheduler.step()
                 # info for loss
                 loss_str = f"Iter: {step_cnt}    "
                 for k, v in train_recorder_loss.items():
