@@ -36,8 +36,6 @@ args.local_rank = local_rank
 if torch.cuda.is_available():
     torch.cuda.set_device(args.local_rank)
 
-os.environ["WANDB_API_KEY"] = "bcd0e878ee944f48096df279bea051e62defbb36"
-
 def load_config():
     """Loads and merges training configurations."""
     with open(args.detector_path, "r") as f:
