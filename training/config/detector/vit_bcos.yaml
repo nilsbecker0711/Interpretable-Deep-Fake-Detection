@@ -3,7 +3,7 @@ log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/vit
 
 # model setting -> old
 freeze: false
-pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
+pretrained: Null #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
 #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
 model_name: vit_bcos   # model name
@@ -16,7 +16,7 @@ backbone_config:
   #pretrained: false
   logit_bias: #0.0 #None
   logit_temperature: #10 #None
-  b: 1.25
+  b: 2.0
   max_out: 2
   # either set the model type
   model_type: vitc_ti_patch1_14
@@ -28,9 +28,12 @@ backbone_config:
   heads: 6
   mlp_dim: 1536
   conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
+  # norm_bias semantics (fixed 2026-07): false = bias-free via NoBias (B-cos
+  # recipe: NoBias(DetachableLayerNorm) + NoBias(DetachableGNLayerNorm2d) stem,
+  # as in B-cos-v2 vit_final), true = keep the learnable bias.
   norm: DetachableLayerNorm
   norm_bias: false
-  norm_2d: BatchNorm2d
+  norm_2d: DetachableGNLayerNorm2d
   norm_2d_bias: false
 
 # dataset
@@ -50,7 +53,7 @@ with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-# add_inverse_channels: true
+add_inverse_channels: true
 
 
 # data augmentation
@@ -92,7 +95,7 @@ optimizer:
 # training config
 lr_scheduler: # step, cosine, warmup_cosine, linear
 lr_eta_min: 0
-lr_T_max: 200
+lr_T_max: 100
 # lr_step: 4
 # lr_gamma: 0.2
 nEpochs: 100   # number of epochs to train for
@@ -101,10 +104,11 @@ save_epoch: 1   # interval epochs for saving models
 rec_iter: 500   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: false   # whether to save checkpoint
+# (duplicate `save_ckpt: false` removed here — it silently overrode the
+#  `save_ckpt: true` above via YAML last-key-wins, so no checkpoints were saved)
 
 # loss function
-loss_func: cross_entropy   # loss function to use
+loss_func: bce_off_labels   # loss function to use
 losstype: null
 
 # metric

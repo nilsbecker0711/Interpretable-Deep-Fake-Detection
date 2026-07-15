@@ -2,7 +2,7 @@
 log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
 
 # model setting
-pretrained: #/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth
+pretrained: Null #/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth
 
 # model setting
 model_name: xception_bcos_detector   # model name
@@ -17,8 +17,14 @@ backbone_config:
   dropout: false
   mode: original
   logit_bias: #None
-  logit_temperature: 1 #None
-  b: 2.5
+  logit_temperature: # None ≡ 1, matches the original.
+  b: 2.0
+  # norm is REQUIRED (no silent default in the backbone anymore).
+  # BatchNormUncentered2d aligns Xception with the resnet34_bcos_v2 recipe, so
+  # architecture comparisons are not confounded by the norm scheme.
+  # norm_bias semantics (fixed 2026-07): false = bias-free via NoBias, true = keep bias.
+  norm: BatchNormUncentered2d
+  norm_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV, df-tp-ffhq]
@@ -27,7 +33,7 @@ test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 val_dataset: [FaceForensics++]
 
 compression: c23  # compression-level for videos
-train_batchSize: 32   # training batch size
+train_batchSize: 32   # training batch size ! on debugging machine OOM at 64
 val_batchSize: 32   # test batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
@@ -40,7 +46,7 @@ add_inverse_channels: true
 
 # data augmentation
 dataset_type: 'bcos'
-use_data_augmentation: false  # Add this flag to enable/disable data augmentation
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
