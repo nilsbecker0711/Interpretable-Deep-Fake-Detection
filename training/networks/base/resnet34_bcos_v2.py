@@ -257,11 +257,15 @@ class ResNet34_bcos_v2(BcosUtilMixin, nn.Module):
         if norm_class is None:
             raise ValueError(f"Unknown norm type: {norm_name}")
 
-        # Apply norm bias if specified in config
+        # norm_bias: true keeps the learnable bias; false/absent removes it via
+        # NoBias. Bias-free norms are the B-cos default — additive terms break
+        # the completeness of the explanations.
+        # NOTE: this condition was inverted before 2026-07; configs written for
+        # the old semantics (e.g. the old best_hpo yamls) mean the opposite here.
         if resnet_config.get('norm_bias', False):
-            norm_layer = norms.NoBias(norm_class)
-        else:
             norm_layer = norm_class
+        else:
+            norm_layer = norms.NoBias(norm_class)
         self._norm_layer = norm_layer
 
 

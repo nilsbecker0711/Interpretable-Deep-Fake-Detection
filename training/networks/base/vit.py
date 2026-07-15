@@ -321,13 +321,15 @@ class SimpleViT(BcosUtilMixin, nn.Module):
         if norm_class is None:
             raise ValueError(f"Unknown norm type: {vit_config['norm']}")
 
-        # Apply norm bias if specified in config
+        # norm_bias: true keeps the learnable bias; false/absent removes it via
+        # NoBias. Bias-free norms are the B-cos default — additive terms break
+        # the completeness of the explanations.
+        # NOTE: this condition was inverted before 2026-07; configs written for
+        # the old semantics mean the opposite here.
         if vit_config.get('norm_bias', False):
-            norm_layer = norms.NoBias(norm_class)
-        else:
             norm_layer = norm_class
-
-        # norm2d_layer = norm_layer #norms.NoBias(norms.BatchNorm2d)
+        else:
+            norm_layer = norms.NoBias(norm_class)
 
         # Retrieve the norm class from the mapping based on config
         norm_2d_class = norm_mapping.get(vit_config['norm_2d'], None)
@@ -335,11 +337,11 @@ class SimpleViT(BcosUtilMixin, nn.Module):
         if norm_2d_class is None:
             raise ValueError(f"Unknown norm type: {vit_config['norm_2d']}")
 
-        # Apply norm bias if specified in config
+        # same semantics as norm_bias above (was inverted before 2026-07)
         if vit_config.get('norm_2d_bias', False):
-            norm2d_layer = norms.NoBias(norm_2d_class)
-        else:
             norm2d_layer = norm_2d_class
+        else:
+            norm2d_layer = norms.NoBias(norm_2d_class)
 
 
         act_layer = nn.Identity #vit_config.get('act_layer', None)
