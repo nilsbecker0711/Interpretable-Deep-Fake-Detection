@@ -63,6 +63,7 @@ def init_seed(config):
     if config['manualSeed'] is None:
         config['manualSeed'] = random.randint(1, 10000)
     random.seed(config['manualSeed'])
+    np.random.seed(config['manualSeed'])  # augmentations draw from numpy's RNG
     if config['cuda']:
         torch.manual_seed(config['manualSeed'])
         torch.cuda.manual_seed_all(config['manualSeed'])
@@ -367,8 +368,9 @@ def main():
     # prepare the trainer
     trainer = Trainer(config, model, optimizer, scheduler, logger, metric_scoring, time_now=timenow)
 
-    # start training
-    for epoch in range(config["start_epoch"], config["nEpochs"] + 1):
+    # start training. range end is exclusive: exactly nEpochs epochs
+    # (the former `nEpochs + 1` trained one extra epoch)
+    for epoch in range(config["start_epoch"], config["nEpochs"]):
         trainer.model.epoch = epoch
         val_best_metric, test_best_metric = trainer.train_epoch(
             epoch=epoch,
