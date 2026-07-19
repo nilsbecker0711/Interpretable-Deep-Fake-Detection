@@ -32,8 +32,6 @@ from metrics.registry import BACKBONE
 
 logger = logging.getLogger(__name__)
 
-#DEFAULT_NORM_LAYER = norms.NoBias(norms.DetachablePositionNorm2d)
-DEFAULT_NORM_LAYER = norms.NoBias(norms.AllNorm2d)
 
 
 class SeparableConv2d(nn.Module):
@@ -55,13 +53,13 @@ class SeparableConv2d(nn.Module):
 
 
 class Block(nn.Module):
-    def __init__(self, in_filters, out_filters, reps, strides=1, start_with_relu=True, grow_first=True, b=2):
+    def __init__(self, in_filters, out_filters, reps, strides=1, start_with_relu=True, grow_first=True, b=2, *, norm_layer):
         super(Block, self).__init__()
 
         if out_filters != in_filters or strides != 1:
             self.skip = BcosConv2d(in_filters, out_filters,
                                   1, stride=strides, bias=False, b=b)
-            self.skipbn = DEFAULT_NORM_LAYER(out_filters)
+            self.skipbn = norm_layer(out_filters)
         else:
             self.skip = None
 
@@ -73,28 +71,21 @@ class Block(nn.Module):
             #rep.append(self.relu)
             rep.append(SeparableConv2d(in_filters, out_filters,
                                        3, stride=1, padding=1, bias=False, b=b))
-            rep.append(DEFAULT_NORM_LAYER(out_filters))
+            rep.append(norm_layer(out_filters))
             filters = out_filters
 
         for i in range(reps-1):
             #rep.append(self.relu)
             rep.append(SeparableConv2d(filters, filters,
                                        3, stride=1, padding=1, bias=False, b=b))
-            rep.append(DEFAULT_NORM_LAYER(filters))
+            rep.append(norm_layer(filters))
 
         if not grow_first:
             #rep.append(self.relu)
             rep.append(SeparableConv2d(in_filters, out_filters,
                                        3, stride=1, padding=1, bias=False, b=b))
-            rep.append(DEFAULT_NORM_LAYER(out_filters))
+            rep.append(norm_layer(out_filters))
 
-        """ if not start_with_relu:
-            rep = rep[1:]
-        else:
-            rep[0] = nn.ReLU(inplace=False) """
-
-        """ if strides != 1:
-            rep.append(nn.MaxPool2d(3, strides, 1)) """
         if strides != 1:
             rep.append(nn.AvgPool2d(kernel_size=3, stride=strides, padding=1))
 
@@ -141,52 +132,81 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         inc = xception_config["in_chans"]
         #dropout = xception_config["dropout"]
 
+        # Norm selection (config-driven, same mapping and semantics as
+        # resnet34_bcos_v2/vit). 'norm' is REQUIRED — no silent default.
+        norm_mapping = {
+            'AllNormUncentered2d': norms.AllNormUncentered2d,
+            'BatchNormUncentered2d': norms.BatchNormUncentered2d,
+            'GroupNormUncentered2d': norms.GroupNormUncentered2d,
+            'GNInstanceNormUncentered2d': norms.GNInstanceNormUncentered2d,
+            'GNLayerNormUncentered2d': norms.GNLayerNormUncentered2d,
+            'PositionNormUncentered2d': norms.PositionNormUncentered2d,
+            'AllNorm2d': norms.AllNorm2d,
+            'BatchNorm2d': norms.BatchNorm2d,
+            'DetachableGroupNorm2d': norms.DetachableGroupNorm2d,
+            'DetachableGNInstanceNorm2d': norms.DetachableGNInstanceNorm2d,
+            'DetachableGNLayerNorm2d': norms.DetachableGNLayerNorm2d,
+            'DetachableLayerNorm': norms.DetachableLayerNorm,
+            'DetachablePositionNorm2d': norms.DetachablePositionNorm2d,
+        }
+        norm_class = norm_mapping.get(xception_config['norm'], None)
+        if norm_class is None:
+            raise ValueError(f"Unknown norm type: {xception_config['norm']}")
+        # norm_bias: true keeps the learnable bias; false/absent removes it via
+        # NoBias (bias-free norms are the B-cos default — additive terms break
+        # the completeness of the explanations).
+        if xception_config.get('norm_bias', False):
+            norm_layer = norm_class
+        else:
+            norm_layer = norms.NoBias(norm_class)
+        self._norm_layer = norm_layer
+
         # Entry flow
         self.conv1 = BcosConv2d(inc, 32, 3, 2, 0, bias=False, b=self.b)
-        
-        self.bn1 = DEFAULT_NORM_LAYER(32)
+
+        self.bn1 = norm_layer(32)
         #self.relu = nn.ReLU(inplace=True)
 
         self.conv2 = BcosConv2d(32, 64, 3, bias=False, b=self.b)
-        self.bn2 = DEFAULT_NORM_LAYER(64)
+        self.bn2 = norm_layer(64)
         # do relu here
 
         self.block1 = Block(
-            64, 128, 2, 2, start_with_relu=False, grow_first=True, b=self.b)
+            64, 128, 2, 2, start_with_relu=False, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block2 = Block(
-            128, 256, 2, 2, start_with_relu=True, grow_first=True, b=self.b)
+            128, 256, 2, 2, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block3 = Block(
-            256, 728, 2, 2, start_with_relu=True, grow_first=True, b=self.b)
+            256, 728, 2, 2, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
 
         # middle flow
         self.block4 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block5 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block6 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block7 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
 
         self.block8 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block9 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block10 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
         self.block11 = Block(
-            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b)
+            728, 728, 3, 1, start_with_relu=True, grow_first=True, b=self.b, norm_layer=norm_layer)
 
         # Exit flow
         self.block12 = Block(
-            728, 1024, 2, 2, start_with_relu=True, grow_first=False, b=self.b)
+            728, 1024, 2, 2, start_with_relu=True, grow_first=False, b=self.b, norm_layer=norm_layer)
 
         self.conv3 = SeparableConv2d(1024, 1536, 3, 1, 1, b=self.b)
-        self.bn3 = DEFAULT_NORM_LAYER(1536)
+        self.bn3 = norm_layer(1536)
 
         # do relu here
         self.conv4 = SeparableConv2d(1536, 2048, 3, 1, 1, b=self.b)
-        self.bn4 = DEFAULT_NORM_LAYER(2048)
+        self.bn4 = norm_layer(2048)
         # used for iid
         final_channel = 2048
         if self.mode == 'adjust_channel_iid':
@@ -200,7 +220,7 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
             ) """
         
         self.classifier_head = nn.Sequential(
-            DEFAULT_NORM_LAYER(final_channel), # B‑cos normalize
+            norm_layer(final_channel), # B‑cos normalize
             BcosConv2d(final_channel, self.num_classes, 1, bias=False, b=self.b),  # 1×1 B‑cos conv
         )
         self.logit_layer = LogitLayer(
@@ -209,11 +229,16 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         )
 
 
-        self.adjust_channel = nn.Sequential(
-            BcosConv2d(2048, 512, 1, 1, b=self.b),
-            DEFAULT_NORM_LAYER(512)
-            #nn.ReLU(inplace=False),
-        )
+        # Only build when actually used (mode == 'adjust_channel'); otherwise
+        # these ~1M parameters sit unused in the checkpoint and optimizer.
+        if self.mode == 'adjust_channel':
+            self.adjust_channel = nn.Sequential(
+                BcosConv2d(2048, 512, 1, 1, b=self.b),
+                norm_layer(512)
+                #nn.ReLU(inplace=False),
+            )
+        else:
+            self.adjust_channel = None
         """ for m in self.modules():
             if isinstance(m, (nn.Conv2d, nn.Linear)):
                 nn.init.trunc_normal_(m.weight, std=0.02)
@@ -351,26 +376,26 @@ class XceptionBcos(BcosUtilMixin, nn.Module):
         return out, x
 
     def initialize_weights(self, module):
+        # Meant to be used via `self.apply(self.initialize_weights)`, which
+        # already visits every descendant module — no manual recursion needed
+        # (the old explicit recursion into SeparableConv2d/Block/BcosConv2d
+        # re-initialized their children a second time). Weight/bias must be
+        # None-guarded: NoBias(...) norms set bias = None.
         if isinstance(module, nn.Conv2d):
             nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
         elif isinstance(module, nn.BatchNorm2d):
-            nn.init.constant_(module.weight, 1)
-            nn.init.constant_(module.bias, 0)
+            if module.weight is not None:
+                nn.init.constant_(module.weight, 1)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
         elif isinstance(module, nn.Linear):
             nn.init.xavier_normal_(module.weight)
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
-        # Recursively apply to custom modules
-        elif isinstance(module, SeparableConv2d) or isinstance(module, Block) or isinstance(module, BcosConv2d):
-            for submodule in module.children():
-                self.initialize_weights(submodule)
-        # Ignore activation, pooling, and sequential layers
-        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
-            pass  # Do nothing
-        else:
-            print(f'unknown module type {type(module)}')
+        # All other module types (activations, pooling, containers, norm
+        # variants without affine params) need no explicit initialization.
     
     @contextlib.contextmanager
     def explanation_mode(self):
