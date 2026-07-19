@@ -19,4 +19,4 @@ BWCluster/
 weights
 wandb/
 results/explanations/
-*.sh
+*.shresults/GPG_assets/**/*.pt
