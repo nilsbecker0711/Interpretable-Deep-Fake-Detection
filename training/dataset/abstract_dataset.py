@@ -525,13 +525,15 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             mask_path = image_path.replace('frames', 'masks')  # Use .png for mask
             landmark_path = image_path.replace('frames', 'landmarks').replace('.png', '.npy')  # Use .npy for landmark
 
-            # Load the image
+            # Load the image. Fail loudly: silently substituting another sample
+            # (the old `return self.__getitem__(0)` fallback) duplicates sample 0
+            # in the epoch and recurses infinitely when sample 0 is broken too.
             try:
                 image = self.load_rgb(image_path)
             except Exception as e:
-                # Skip this image and return the first one
-                print(f"Error loading image at index {index}: {e}")
-                return self.__getitem__(0)
+                raise RuntimeError(
+                    f"Failed to load image at index {index} ({image_path}): {e}"
+                ) from e
             image = np.array(image)  # Convert to numpy array for data augmentation
 
             # Load mask and landmark (if needed)
