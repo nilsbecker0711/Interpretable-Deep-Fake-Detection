@@ -2,11 +2,14 @@ import os
 import sys
 import numpy as np
 import torch
+import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
 from lime import lime_image
 import logging
 from skimage.segmentation import mark_boundaries
+
+from xai_common import smooth_map, normalize_max
 
 # Setup logging and project root
 logging.basicConfig(level=logging.INFO)
@@ -16,13 +19,39 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 class LIMEEvaluator:
-    def __init__(self, model=None, device=None):
-        """Initialize the evaluator: set up model, device, transform, and LIME explainer."""
+    def __init__(self, model=None, device=None, smooth=15, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
+        """Initialize the evaluator: set up model, device, transform, and LIME explainer.
+
+        mean/std: the model's training normalization, applied to LIME's perturbed
+        images for 3-channel (standard) models. Without this, batch_predict fed
+        raw [0,1] tensors to models trained on mean/std-normalized inputs, so
+        every perturbation forward pass ran out of distribution.
+        """
         self.model = model
         self.device = device
-        logger.info("Loaded model %s onto %s", self.model.__class__.__name__, self.device)
+        # shared smoothing kernel — must match the other evaluators for fair comparison
+        self.smooth = smooth
+        self.mean = list(mean)
+        self.std = list(std)
+        # Detect how many input channels the model expects (3 for standard, 6 for b-cos).
+        # LIME always builds 3-channel RGB perturbations, so for a 6-channel b-cos model
+        # we must append the inverse channels before the forward pass.
+        self.in_channels = self._infer_in_channels(model)
+        logger.info("Loaded model %s onto %s (expects %d input channels)",
+                    self.model.__class__.__name__, self.device, self.in_channels)
         self.transform = transforms.ToTensor()
-        self.explainer = lime_image.LimeImageExplainer()
+        # fixed random_state: LIME's perturbation sampling is stochastic and results
+        # would otherwise not be reproducible across runs
+        self.explainer = lime_image.LimeImageExplainer(random_state=42)
+
+    @staticmethod
+    def _infer_in_channels(model):
+        """Return the in_channels of the first Conv2d in the model (defaults to 3)."""
+        if model is not None:
+            for m in model.modules():
+                if isinstance(m, nn.Conv2d):
+                    return m.in_channels
+        return 3
 
     def batch_predict(self, images):
         """
@@ -35,6 +64,15 @@ class LIMEEvaluator:
         ]
         batch = np.stack(processed_images, axis=0)
         batch = torch.from_numpy(batch).to(self.device)
+        # match the model's input space:
+        # b-cos models expect [R,G,B,1-R,1-G,1-B] on raw [0,1] values;
+        # standard models expect their training mean/std normalization.
+        if self.in_channels == 6 and batch.shape[1] == 3:
+            batch = torch.cat([batch, 1.0 - batch], dim=1)
+        elif self.in_channels == 3:
+            mean_t = torch.as_tensor(self.mean, dtype=batch.dtype, device=batch.device).reshape(1, -1, 1, 1)
+            std_t = torch.as_tensor(self.std, dtype=batch.dtype, device=batch.device).reshape(1, -1, 1, 1)
+            batch = (batch - mean_t) / std_t
         data = {'image': batch}
         with torch.no_grad():
             output = self.model(data)
@@ -65,7 +103,6 @@ class LIMEEvaluator:
                          j * section_size_col:(j + 1) * section_size_col]
             for i in range(grid_split) for j in range(grid_split)
         ]
-        print(np.max(heatmap))
 
         non_0_counts = [np.sum(section > background_pixel) for section in sections]
         fake_pred_unweighted = np.argmax(non_0_counts)
@@ -85,11 +122,13 @@ class LIMEEvaluator:
             return -1
             
     def convert_to_numpy(self, tensor):
-        """Auto-rescale a tensor to HxW x 3 uint8."""
+        """Auto-rescale a tensor to HxW x 3 uint8 (b-cos 6ch input -> first 3 RGB channels)."""
         tensor = tensor.squeeze(0)
+        if tensor.shape[0] > 3:  # b-cos stacks [RGB, 1-RGB]; LIME perturbs RGB only
+            tensor = tensor[:3]
         np_img = tensor.permute(1, 2, 0).detach().cpu().numpy()
         np_img = np_img - np_img.min()
-        np_img = np_img / np_img.max()
+        np_img = np_img / (np_img.max() + 1e-8)
         np_img = (np_img * 255).clip(0, 255).astype(np.uint8)
         return np_img
 
@@ -100,9 +139,13 @@ class LIMEEvaluator:
         # Move tensor to device and enable gradients
         img = tensor.to(self.device).requires_grad_(True)
         logger.debug("Input tensor shape: %s", img.shape)
-    
+
         self.model.zero_grad()
-    
+
+        # match the model's expected input encoding (b-cos: [RGB, 1-RGB])
+        if self.in_channels == 6 and img.shape[1] == 3:
+            img = torch.cat([img, 1.0 - img], dim=1)
+
         data_dict = {'image': img, 'label': 0}  # <<<< Corrected here
         out = self.model(data_dict)  # Pass data_dict
     
@@ -130,8 +173,11 @@ class LIMEEvaluator:
         for seg_val in np.unique(segments):
             if seg_val in scaled_weights:
                 intensity_map[segments == seg_val] = scaled_weights[seg_val]
-    
-        logger.debug("Generated LIME heatmap: shape=%s, min=%.6f, max=%.6f", 
+
+        # apply the shared protocol smoothing (identical across all XAI methods)
+        intensity_map = normalize_max(smooth_map(intensity_map, self.smooth))
+
+        logger.debug("Generated LIME heatmap: shape=%s, min=%.6f, max=%.6f",
                      intensity_map.shape, intensity_map.min(), intensity_map.max())
     
         return intensity_map, out, model_prediction, img_np

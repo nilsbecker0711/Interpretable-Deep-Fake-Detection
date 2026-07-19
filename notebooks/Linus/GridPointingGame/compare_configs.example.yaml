@@ -1,0 +1,55 @@
+# Spec for COMPARE_eval.py — evaluate several (model, XAI-method) combos on the
+# SAME shared GPG grids. Copy this file, fill in the weights paths once
+# retraining has produced checkpoints, then run:
+#
+#   python COMPARE_eval.py --compare-config my_compare.yaml
+#
+# Paths may be absolute or relative to the repo root.
+
+num_grids: 2          # total number of grids to evaluate (split across unique gridpaths)
+grid_subpath: 3x3     # subfolder inside each <grids_root>/<gridpath>/
+grids_root: results/GPG          # folder containing <gridpath>/<grid_subpath>/*.pt
+output_dir: results/GPG/compare  # where the result pickles go
+
+# Each entry: one (model, XAI-method) evaluation on the shared grids.
+# 'gridpath' names the grid folder the model's grids were generated into
+# (models sharing a gridpath are evaluated on identical grids).
+# 'weights' — checkpoint to load; if empty, falls back to 'pretrained' from the yamls.
+models:
+  # architecture-vs-method decomposition for the b-cos resnet:
+  - name: resnet34_bcos_v2
+    gridpath: resnet34_bcos_v2_2_0
+    model_yaml: training/config/detector/resnet34_bcos_v2.yaml
+    run_yaml: results/test_bcos_res_2_config.yaml
+    weights:              # fill in after retraining, e.g. logs/training/<run>/test/avg/ckpt_best.pth
+    xai: bcos
+
+  - name: resnet34_bcos_v2
+    gridpath: resnet34_bcos_v2_2_0
+    model_yaml: training/config/detector/resnet34_bcos_v2.yaml
+    run_yaml: results/test_bcos_res_gradcam_config.yaml
+    weights:
+    xai: gradcam
+
+  # b-cos xception:
+  - name: xception_bcos_detector
+    gridpath: xception_bcos_detector_2_0
+    model_yaml: training/config/detector/xception_bcos.yaml
+    run_yaml: results/test_bcos_xception_2_5_config.yaml
+    weights:
+    xai: bcos
+
+  # standard xception baseline (post-hoc methods only):
+  - name: xception_detector
+    gridpath: xception_default
+    model_yaml: training/config/detector/xception.yaml
+    run_yaml: results/test_xception_gradcam_config.yaml
+    weights:
+    xai: gradcam
+
+  - name: xception_detector
+    gridpath: xception_default
+    model_yaml: training/config/detector/xception.yaml
+    run_yaml: results/test_xception_lime_config.yaml
+    weights:
+    xai: lime

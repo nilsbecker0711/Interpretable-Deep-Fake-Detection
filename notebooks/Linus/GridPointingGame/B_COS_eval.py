@@ -11,6 +11,8 @@ import numpy as np
 import torch
 from PIL import Image
 
+from xai_common import smooth_map, normalize_max
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -19,11 +21,10 @@ def to_numpy(t):
     return t.detach().cpu().numpy() if not isinstance(t, np.ndarray) else t
 
 def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel=0):
-    """Evaluate heatmap; returns guessed cell, cell intensity sums, and accuracy."""
-    # Convert heatmap to grayscale (average first 3 channels).
-    heatmap_intensity = heatmap[:,:,-1]
+    """Score a 2D attribution map on the grid pointing game."""
+    heatmap_intensity = heatmap
 
-        # needs to be defined 
+        # needs to be defined
     unweighted_accuracy = 0.0
     weighted_accuracy   = 0.0
 
@@ -61,13 +62,24 @@ def evaluate_heatmap(heatmap, grid_split=3, true_fake_pos=None, background_pixel
     return fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy
 
 class BCOSEvaluator:
-    def __init__(self, model=None, device=None):
-        """Initialize with model and device."""
+    def __init__(self, model=None, device=None, smooth=15):
+        """Initialize with model, device, and the shared smoothing kernel size."""
         self.model = model
         self.device = device
+        self.smooth = smooth
 
     def generate_heatmap(self, tensor):
-        """Generate B-cos explanation heatmap via explain() in explanation_mode."""
+        """Generate the B-cos attribution map via explain() in explanation_mode.
+
+        Returns (scored_map, visualization, explanation_dict, model_prediction):
+          scored_map    -- 2D [H,W] float map in [0,1]: the POSITIVE-clamped
+                           contribution map (x * dynamic-linear grad, summed over
+                           channels), smoothed per the original localisation
+                           protocol. This is the object all scores are computed on.
+          visualization -- the RGBA gradient_to_image rendering, for plots ONLY.
+                           Its alpha channel is a percentile-clipped |grad| image
+                           and must never be used for scoring.
+        """
         img = tensor.to(self.device).requires_grad_(True)
         logger.debug("Input tensor shape: %s", img.shape)
 
@@ -76,14 +88,22 @@ class BCOSEvaluator:
         # linear mapping — not a non-linear gradient.
         explanation = self.model.backbone.explain(img, idx=1)
 
-        heatmap = explanation.get("explanation")
+        contribs = explanation.get("contribution_map")
         model_prediction = explanation.get("prediction")
+        if contribs is None:
+            logger.error("No contribution map found. Keys: %s", explanation.keys())
+            raise ValueError("Contribution map extraction failed.")
 
-        if heatmap is None:
-            logger.error("No heatmap found. Keys: %s", explanation.keys())
-            raise ValueError("Heatmap extraction failed.")
-        logger.debug("Heatmap: shape=%s, min=%s, max=%s", heatmap.shape, heatmap.min(), heatmap.max())
-        return to_numpy(heatmap), explanation, model_prediction
+        # Original protocol order: smooth the SIGNED map, then keep positive
+        # attributions only, then rescale to [0,1] for the threshold sweep
+        # (the weighted cell/mask fraction itself is scale-invariant).
+        scored_map = smooth_map(contribs[0], self.smooth)
+        scored_map = np.clip(scored_map, 0, None)
+        scored_map = normalize_max(scored_map)
+
+        visualization = to_numpy(explanation.get("explanation"))
+        logger.debug("Scored map: shape=%s, max=%s", scored_map.shape, scored_map.max())
+        return scored_map, visualization, explanation, model_prediction
 
     def convert_to_numpy(self, tensor):
         """Convert a torch tensor to a uint8 RGB NumPy image (H x W x 3)."""
@@ -120,47 +140,34 @@ class BCOSEvaluator:
             # If tensor has 3 channels, add inverse channels.
             if tensor.shape[1] == 3:
                 tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
-            heatmap, output, model_prediction = self.generate_heatmap(tensor)
+            scored_map, visualization, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
             original_image = self.convert_to_numpy(tensor)
 
             thresholds = [None]  # No threshold
             if threshold_steps > 0:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
-                
-            def apply_threshold(heatmap, threshold):        
-                if threshold is None:
-                    return heatmap.copy()
-                thresholded = heatmap.copy()
-
-                # extract the alpha channel
-                alpha = thresholded[:, :, 3]
-                # zero-out anything under threshold
-                mask = alpha >= threshold
-                alpha_thresholded = alpha.copy()
-                alpha_thresholded[~mask] = 0.0
-                thresholded[:, :, 3] = alpha_thresholded
-                return thresholded
 
             for t in thresholds:
-                #logger.info("Evaluating with threshold: %s", t if t is not None else "no threshold")
-                thresholded_heatmap = apply_threshold(heatmap, t)
+                # threshold the 2D positive-contribution map (same semantics as CAM path)
+                thresholded_map = scored_map.copy() if t is None else np.where(scored_map < t, 0.0, scored_map)
 
-                fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy = evaluate_heatmap(thresholded_heatmap, grid_split=grid_split, true_fake_pos=true_fake_pos)
+                fake_pred_weighted, intensity_sums, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy = evaluate_heatmap(thresholded_map, grid_split=grid_split, true_fake_pos=true_fake_pos)
 
                 result = {
-                    "threshold": t if t is not None else 0,                    
+                    "threshold": t if t is not None else 0,
                     "path": path,
                     "original_image": original_image,
-                    "heatmap": thresholded_heatmap,
+                    "heatmap": thresholded_map,
+                    "visualization": visualization,
                     "weighted_guessed_fake_position": fake_pred_weighted,
-                    "unweighted_guess_fake_position": fake_pred_unweighted,                    
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
                     "weighted_localization_score": weighted_accuracy,
                     "unweighted_localization_score": unweighted_accuracy,
                     "true_fake_position": true_fake_pos,
                     "model_prediction": model_prediction
                 }
-                
+
                 results.append(result)
                 
                 #logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",

@@ -14,56 +14,58 @@ import pickle
 import random
 from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
+from xai_common import canonicalize_grid, adapt_for_model
 from B_COS_eval import BCOSEvaluator
-from LIME_eval import LIMEEvaluator  
+from LIME_eval import LIMEEvaluator
 from GradCam_eval import GradCamEvaluator
-#from GradCam_evallayer import GradCamEvaluator
-#from GradCam_evalbcos import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
 #######################
-# set model path, config path and additional arguments
-
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_5_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_2_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_25_config.yaml")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_1_75_config.yaml")
-
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_gradcam_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_xgrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_layergrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_res_grad++_config.yaml")
-
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_lime_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_gradcam_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_xgrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_layergrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_res_grad++_config.yaml")
-
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_lime_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_gradcam_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_xgrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_layergrad_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_xception_grad++_config.yaml")
-#CONFIG_PATH = os.path.join(PROJECT_PATH, "results/test_bcos_xception_2_5_config.yaml")
-
-
-
-
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_5_best_hpo.yaml")
-MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_75_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_1_25_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34_bcos_v2_2_best_hpo.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet34.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/xception_bcos.yaml")
-#MODEL_PATH = os.path.join(PROJECT_PATH, "training/config/detector/resnet_bcos_minimal.yaml")
-
-ADDITIONAL_ARGS = {
-    "test_batchSize": 20
-}
+# Model/config selection happens via CLI arguments (see parse_args below), e.g.:
+#   python GPG_eval.py --model-config training/config/detector/resnet34_bcos_v2.yaml \
+#                      --test-config results/test_bcos_res_2_config.yaml \
+#                      --weights path/to/ckpt_best.pth --xai-method bcos
 #######################
+
+import yaml
+
+
+def resolve_path(path):
+    """Interpret relative paths as relative to the repo root."""
+    return path if os.path.isabs(path) else os.path.join(PROJECT_PATH, path)
+
+
+def parse_cli_overrides(pairs):
+    """Turn repeated --set KEY=VALUE flags into a config-override dict."""
+    overrides = {}
+    for item in pairs:
+        key, sep, value = item.partition("=")
+        if not sep:
+            raise ValueError(f"--set expects KEY=VALUE, got: {item!r}")
+        overrides[key] = yaml.safe_load(value)
+    return overrides
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Grid Pointing Game evaluation")
+    parser.add_argument("--model-config", required=True,
+                        help="Detector yaml, e.g. training/config/detector/resnet34_bcos_v2.yaml")
+    parser.add_argument("--test-config", required=True,
+                        help="Run overlay yaml, e.g. results/test_bcos_res_2_config.yaml")
+    parser.add_argument("--weights", default=None,
+                        help="Checkpoint .pth to evaluate; overrides 'pretrained' from the yamls")
+    parser.add_argument("--xai-method", default=None,
+                        choices=["bcos", "gradcam", "xgrad", "grad++", "layergrad", "lime"],
+                        help="Overrides xai_method from the test config")
+    parser.add_argument("--output-dir", default=None,
+                        help="Overrides base_output_dir from the test config")
+    parser.add_argument("--batch-size", type=int, default=20,
+                        help="test_batchSize override")
+    parser.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
+                        help="Extra config overrides (repeatable), e.g. "
+                             "--set dataset_json_folder=preprocessing/dataset_json_v3")
+    return parser.parse_args()
 
 
 
@@ -81,6 +83,7 @@ class GridPointingGameCreator(Analyser):
         self.xai_method = xai_method
         self.max_grids = max_grids
         self.model = model
+        self.config = config or {}
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
         self.model_name = model_name
@@ -143,13 +146,11 @@ class GridPointingGameCreator(Analyser):
                 true_label = int(label.item())
                 image_path = path_of_image[j]
 
-                if self.xai_method == "bcos":
-                    image = preprocess_image(image)
-                if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                    #image = image[:, :3]
-                #if want to use with bcos 
-                    image = preprocess_image(image)
-    
+                # The image comes from the model's OWN dataloader and is already in
+                # the model's input space (bcos dataset: [0,1] + inverse channels;
+                # standard dataset: mean/std-normalized 3ch). No per-xai-method
+                # preprocessing here — the old preprocess_image calls fed 6-channel
+                # (or wrongly re-encoded) inputs to 3-channel standard models.
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
                 predicted_label = logit[0].argmax().item()
@@ -184,7 +185,7 @@ class GridPointingGameCreator(Analyser):
         for cls in [0, 1]:
             cls_list = self.sorted_confs.get(cls, [])
             filtered = [tup for tup in cls_list if get_conf_mask_v(tup)]
-            print(len(filtered))
+            logger.debug("Class %d: %d images pass the confidence filter.", cls, len(filtered))
             required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
             sorted_image_paths[cls] = filtered[:required]
         return sorted_image_paths
@@ -233,15 +234,26 @@ class GridPointingGameCreator(Analyser):
         grid_paths = [os.path.join(self.grid_dir, f) for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
         logger.info("Found %d grid tensors in %s.", len(grid_paths), self.grid_dir)
 
-        # Load each grid tensor.
-        preprocessed_tensors = [torch.load(path, map_location=self.device) for path in grid_paths]
+        # Load each grid tensor and adapt it to THIS model's input space:
+        # canonical [0,1] RGB grids get the model's own preprocessing (standard:
+        # mean/std normalization, b-cos: [x, 1-x] channels). Grids stored in a
+        # normalized value range are detected and denormalized with a warning.
+        mean = self.config.get('mean', [0.5, 0.5, 0.5])
+        std = self.config.get('std', [0.5, 0.5, 0.5])
+        preprocessed_tensors = [
+            adapt_for_model(
+                canonicalize_grid(torch.load(path, map_location=self.device),
+                                  mean=mean, std=std, warn_name=path),
+                self.model, mean=mean, std=std)
+            for path in grid_paths
+        ]
         logger.info("Loaded all grid tensors.")
 
         # Choose evaluator based on xai_method.
         if self.xai_method == "bcos":
             evaluator = BCOSEvaluator(self.model, self.device)
         elif self.xai_method == "lime":
-            evaluator = LIMEEvaluator(self.model, self.device)
+            evaluator = LIMEEvaluator(self.model, self.device, mean=mean, std=std)
         elif self.xai_method in ["gradcam", "xgrad", "grad++", "layergrad"]:
             evaluator = GradCamEvaluator(self.model, self.device, method=self.xai_method)
         else:
@@ -312,21 +324,27 @@ class GridPointingGameCreator(Analyser):
             logger.info("Selected fake image: %s with confidence %.4f", fake_tuple[0], fake_tuple[1])
             expected_label = 1
             fake_img = self.load_sample_by_path(fake_tuple[0], expected_label)
-            if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                fake_img = fake_img[:3]
+            # Grids are stored MODEL-AGNOSTICALLY as canonical raw [0,1] RGB (3ch):
+            # bcos samples are sliced to their RGB half, mean/std-normalized samples
+            # from the standard dataset are denormalized. Each evaluation then
+            # re-applies the target model's own preprocessing (adapt_for_model).
+            mean = self.config.get('mean', [0.5, 0.5, 0.5])
+            std = self.config.get('std', [0.5, 0.5, 0.5])
+            fake_img = canonicalize_grid(fake_img, mean=mean, std=std, warn_name=str(fake_tuple[0]))
             logger.debug("Fake image shape: %s", fake_img.shape if hasattr(fake_img, 'shape') else "N/A")
-            
+
             # Select first required_real real image tuples.
             selected_real_tuples = ranked_real[:required_real]
             logger.info("Selected real image paths: %s", selected_real_tuples)
             ranked_real = ranked_real[required_real:]  # Remove used entries.
-            
+
             # Retrieve real images using load_sample_by_path for consistency.
             expected_label = 0
-            selected_real = [self.load_sample_by_path(img_path, expected_label) for img_path, _, _ in selected_real_tuples]
-            if self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                selected_real = [img[:3] for img in selected_real]
-                
+            selected_real = [
+                canonicalize_grid(self.load_sample_by_path(img_path, expected_label),
+                                  mean=mean, std=std, warn_name=str(img_path))
+                for img_path, _, _ in selected_real_tuples
+            ]
             logger.debug("Retrieved %d real images.", len(selected_real))
             
             # Combine real and fake images.
@@ -362,20 +380,35 @@ class GridPointingGameCreator(Analyser):
 
 
 def main():
-    config = load_config(MODEL_PATH, CONFIG_PATH, additional_args=ADDITIONAL_ARGS)
+    args = parse_args()
+    model_path = resolve_path(args.model_config)
+    config_path = resolve_path(args.test_config)
+
+    additional_args = {"test_batchSize": args.batch_size}
+    additional_args.update(parse_cli_overrides(args.set))
+    if args.weights is not None:
+        additional_args["pretrained"] = resolve_path(args.weights)
+    if args.xai_method is not None:
+        additional_args["xai_method"] = args.xai_method
+    if args.output_dir is not None:
+        additional_args["base_output_dir"] = resolve_path(args.output_dir)
+
+    config = load_config(model_path, config_path, additional_args=additional_args)
 
     required_keys = ["grid_split", "overwrite", "quantitativ", "xai_method", "max_grids"]
     for key in required_keys:
         if key not in config:
             raise ValueError(f"Missing required config key: {key}")
 
-    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d", config['xai_method'], config['base_output_dir'], MODEL_PATH, config['grid_split'], config['grid_split'])
+    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d", config['xai_method'], config['base_output_dir'], model_path, config['grid_split'], config['grid_split'])
 
     model = load_model(config)
-    
+
     grid_size = (config['grid_split'], config['grid_split'])
 
     pretrained_path = config['pretrained']
+    if not pretrained_path:
+        raise ValueError("No checkpoint given: pass --weights or set 'pretrained' in a yaml")
     state_dict = torch.load(pretrained_path)
     # Remove "module." prefix from state_dict keys if necessary.
     from collections import OrderedDict
@@ -417,7 +450,7 @@ def main():
     logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
         
     model_name = config.get("model_name", "defaultModel")
-    config_name = os.path.basename(CONFIG_PATH).split('.')[0]
+    config_name = os.path.basename(config_path).split('.')[0]
     b_value_name = str(config.get("backbone_config", {}).get("b", "default")).replace(".", "_")
     
     # Prepare testing data.
@@ -438,6 +471,7 @@ def main():
         test_data_loaders=test_data_loaders,
         dataset=dataset,
         device=device,
+        config=config,  # needed for mean/std in grid canonicalization/adaptation
         grid_split=config["grid_split"],
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
