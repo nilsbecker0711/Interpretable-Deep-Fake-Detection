@@ -21,13 +21,13 @@ preprocess:
 rearrange:
   dataset_name: # the name of dataset
     choices: ['FaceForensics++', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2','DFDCP', 'DFDC', 'DeeperForensics-1.0','UADFV','FaceShifter']
-    default: 'FaceForensics++'
+    default: 'UADFV'
   dataset_root_path: # the root path to the dataset
     type: str
-    default: '/home/hk-project-pai00137/ma_tischuet/Interpretable-Deep-Fake-Detection/datasets'
+    default: '/home/ml-student-007/tilo_hiwi/Interpretable-Deep-Fake-Detection/datasets'
   output_file_path: # the json path to the dataset
     type: str
-    default: '/home/hk-project-pai00137/ma_tischuet/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++'
+    default: '/home/ml-student-007/tilo_hiwi/Interpretable-Deep-Fake-Detection/preprocessing/dataset_json_v3' # '/home/ml-student-007/tilo_hiwi/Interpretable-Deep-Fake-Detection/datasets/FaceForensics++'
   comp: # the compression level of videos, only in the dataset of FaceForensics++.
     choices: ['raw', 'c23', 'c40']
     default: 'c23'

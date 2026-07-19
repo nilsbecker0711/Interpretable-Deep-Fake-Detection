@@ -67,18 +67,19 @@ std: [0.5, 0.5, 0.5]
 optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
+  # unified recipe (2026-07, b-cos paper) — identical across all six models:
   adam:
-    lr: 0.0002  # learning rate
-    beta1: 0.9  # beta1 for Adam optimizer
+    lr: 0.00025  # learning rate -> bcos paper 2.5e-4
+    beta1: 0.8  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
-    eps: 0.00000001  # epsilon for Adam optimizer
-    weight_decay: 0.0005  # weight decay for regularization
-    amsgrad: false
+    eps: 0.000001  # epsilon for Adam optimizer
+    weight_decay: 0  # b-cos paper: unnecessary, weights normalized to unit norm
+    amsgrad: true
   sgd:
     lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
-  gradient_clipping: true
+  gradient_clipping: false
 
 # training config
 lr_scheduler: warmup_cosine # step   # learning rate scheduler
@@ -92,8 +93,13 @@ save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: false   # whether to save checkpoint
+save_ckpt: true   # whether to save checkpoint (was false — would have saved NO checkpoints)
 save_feat: true   # whether to save features
+
+# in-training XAI monitor (GPG on fixed shared val grids + MPG on val fakes)
+xai_monitor_every_n_epochs: 10   # 0 disables
+xai_monitor_grid_dir: results/GPG_assets/shared_random/FaceForensics++_val_256/3x3
+xai_monitor_mpg_images: 250
 
 # loss function
 loss_func: bce_off_labels   # loss function to use
