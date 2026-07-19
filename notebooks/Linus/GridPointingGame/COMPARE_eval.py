@@ -27,11 +27,11 @@ if PROJECT_PATH not in sys.path:
 
 import torch
 import yaml
-from B_COS_eval import BCOSEvaluator
-from LIME_eval import LIMEEvaluator
-from GradCam_eval import GradCamEvaluator
+from training.utils.xai.B_COS_eval import BCOSEvaluator
+from training.utils.xai.LIME_eval import LIMEEvaluator
+from training.utils.xai.GradCam_eval import GradCamEvaluator
 from Utils_PointingGame import load_config, load_model
-from xai_common import canonicalize_grid, adapt_for_model
+from training.utils.xai.xai_common import canonicalize_grid, adapt_for_model
 
 
 def resolve_path(path):

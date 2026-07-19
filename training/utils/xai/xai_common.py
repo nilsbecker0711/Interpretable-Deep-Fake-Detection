@@ -115,3 +115,40 @@ def adapt_for_model(tensor, model, mean=0.5, std=0.5):
     mean_t = torch.as_tensor(mean, dtype=tensor.dtype, device=tensor.device).reshape(-1, 1, 1)
     std_t = torch.as_tensor(std, dtype=tensor.dtype, device=tensor.device).reshape(-1, 1, 1)
     return (tensor - mean_t) / std_t
+
+
+def mpg_mask_game(mask, heatmap):
+    """Mask Pointing Game score for one heatmap vs. a ground-truth
+    manipulation mask. Single source of truth — used by both the MPG CLI
+    (notebooks/.../MPG_eval.py) and the in-training XAI monitor.
+
+    The mask is nearest-neighbor-resized to the heatmap resolution if needed.
+
+    Returns:
+        (unweighted_accuracy, intensity_accuracy):
+        unweighted — fraction of nonzero heatmap pixels inside the mask;
+        intensity  — fraction of total heatmap mass inside the mask.
+    """
+    import cv2
+
+    if isinstance(heatmap, torch.Tensor):
+        heatmap = heatmap.cpu().numpy()
+    if isinstance(mask, torch.Tensor):
+        mask = mask.cpu().numpy()
+    intensity_map = heatmap.copy()
+
+    if mask.shape != intensity_map.shape:
+        h, w = intensity_map.shape
+        mask = cv2.resize(mask.astype(np.float32), (w, h), interpolation=cv2.INTER_NEAREST)
+        mask = (mask > 0.5).astype(mask.dtype)
+
+    binary = (heatmap > 0).astype(np.uint8)
+    correct_pixels = np.sum((binary == 1) & (mask == 1))
+    total_predicted = np.sum(binary == 1)
+    accuracy = correct_pixels / total_predicted if total_predicted > 0 else 0
+
+    total_intensity = np.sum(intensity_map)
+    mask_intensity = np.sum(intensity_map[mask == 1])
+    intensity_accuracy = mask_intensity / total_intensity if total_intensity > 0 else 0
+
+    return round(float(accuracy), 4), round(float(intensity_accuracy), 4)

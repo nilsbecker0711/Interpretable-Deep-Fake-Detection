@@ -647,8 +647,81 @@ class Trainer(object):
             )
             self.logger.info(f"Saved {n_explain} explanation images to {explain_dir}")
 
+        # In-training XAI monitor: play the existing GPG/MPG games on the val
+        # split every Nth epoch (0/absent disables). A monitor failure must
+        # never kill the training run.
+        n_xai = self.config.get("xai_monitor_every_n_epochs", 0)
+        if n_xai > 0 and epoch % n_xai == 0 and IS_MAIN_PROCESS:
+            try:
+                self.run_xai_games(epoch, val_data_loaders)
+            except Exception:
+                self.logger.exception("XAI games failed (training continues)")
+
         return self.best_metrics_all_time_val  # return all types of mean metrics for determining the best ckpt
 
+
+    def run_xai_games(self, epoch, val_data_loaders):
+        """Every-Nth-epoch GPG/MPG on the val split, reusing the existing game
+        classes from notebooks/Linus/GridPointingGame unchanged.
+
+        GPG evaluates the FIXED SHARED grid folder given by
+        config['xai_monitor_grid_dir'] (pregenerated once with
+        GPG_eval.py --split val --selection random --grids-only), so every
+        model and every run sees the exact same grids. MPG scores the first N
+        val fakes with valid masks — deterministic and model-independent by
+        loader order. Results go to <log_dir>/val/xai_games/<...>_epochNNNN/.
+        """
+        import glob as _glob
+        games_dir = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), "..", "..",
+            "notebooks", "Linus", "GridPointingGame"))
+        if games_dir not in sys.path:
+            sys.path.insert(0, games_dir)
+        from GPG_eval import GridPointingGameCreator
+        from MPG_eval import MaskPointingGameCreator
+
+        cfg = self.config
+        grid_dir = cfg.get("xai_monitor_grid_dir")
+        if not grid_dir or not _glob.glob(os.path.join(grid_dir, "*.pt")):
+            raise FileNotFoundError(
+                f"xai_monitor_grid_dir ({grid_dir}) is unset or holds no grids — "
+                f"pregenerate the shared val grids with "
+                f"GPG_eval.py --split val --selection random --grids-only")
+
+        bb = cfg.get("backbone_config", {})
+        six_channels = bb.get("in_chans", bb.get("channels", 3)) == 6
+        methods = ["bcos", "gradcam"] if six_channels else ["gradcam"]
+        device = next(self.model.parameters()).device
+        out_dir = os.path.join(self.log_dir, "val", "xai_games")
+        dataset = next(iter(val_data_loaders.values())).dataset
+
+        was_training = self.model.training
+        self.model.eval()
+        try:
+            for method in methods:
+                common = dict(
+                    base_output_dir=out_dir, xai_method=method,
+                    model=self.model, model_name=cfg["model_name"],
+                    config_name=f"{method}_epoch{epoch:04d}",
+                    test_data_loaders=val_data_loaders, dataset=dataset,
+                    device=device, config=cfg, overwrite=True,
+                    quantitativ=True, threshold_steps=0,
+                )
+                gpg = GridPointingGameCreator(
+                    grid_dir=grid_dir, grid_split=3, max_grids=0,
+                    b_value_name=str(bb.get("b", "std")).replace(".", "_"),
+                    **common)
+                gpg.run()  # evaluation only — never creates/modifies shared grids
+
+                mpg = MaskPointingGameCreator(
+                    max_images=cfg.get("xai_monitor_mpg_images", 16),
+                    mask_resolution=cfg["resolution"], **common)
+                mpg.run()
+            self.logger.info(
+                f"XAI games done (epoch {epoch}, methods {methods}) -> {out_dir}")
+        finally:
+            if was_training:
+                self.model.train()
 
     def test_epoch(self, epoch, iteration, test_data_loaders, step):
         # set model to eval mode

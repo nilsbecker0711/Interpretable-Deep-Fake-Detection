@@ -30,7 +30,7 @@ from pytorch_grad_cam import GradCAM, GradCAMPlusPlus, XGradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
-from xai_common import smooth_map, normalize_max
+from .xai_common import smooth_map, normalize_max
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

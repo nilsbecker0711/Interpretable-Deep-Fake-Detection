@@ -15,9 +15,10 @@ import pickle
 import random
 from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
-from B_COS_eval import BCOSEvaluator
-from LIME_eval import LIMEEvaluator
-from GradCam_eval import GradCamEvaluator
+from training.utils.xai.B_COS_eval import BCOSEvaluator
+from training.utils.xai.LIME_eval import LIMEEvaluator
+from training.utils.xai.GradCam_eval import GradCamEvaluator
+from training.utils.xai.xai_common import mpg_mask_game
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
@@ -165,16 +166,12 @@ class MaskPointingGameCreator(Analyser):
                 logger.debug(f"image path: {image_path}")
                 original_image = image.clone()
                 original_image = original_image[:,:3].squeeze()
-                #preprocess image and then generate heatmap
-                if self.xai_method == "bcos":
-                    image = preprocess_image(image)
-                elif self.xai_method in ["lime", "gradcam", "xgrad", "grad++", "layergrad"]:
-                    image = image[:,:3]
-                    #CHANGE FOR BCOS GRADCAM RUNS:
-                    #image = preprocess_image(image)
-                else:
-                    raise ValueError(f"Unknown xai_method: {self.xai_method}")   
-                heatmap = self.generate_heatmap_for_method(self.xai_method,image)
+                # The image comes from the model's OWN dataloader and is already
+                # in the model's input space (bcos: 6ch [0,1]+inverse, standard:
+                # 3ch normalized). The input must match the MODEL, not the XAI
+                # method — the old per-method channel slicing broke CAM methods
+                # on 6-channel b-cos models (and needed manual toggling).
+                heatmap = self.generate_heatmap_for_method(self.xai_method, image)
 
                 #Model class and model confidence
                 output = self.model({'image': image, 'label': label})
@@ -251,64 +248,11 @@ class MaskPointingGameCreator(Analyser):
     def mask_game(self, mask, heatmap):
         """
         play the mask game for a given heatmap for both intensity-based and non-intensity based
-        return the respective accuracies
+        return the respective accuracies.
+        Delegates to the shared single-source implementation in
+        training.utils.xai.xai_common (also used by the in-training XAI monitor).
         """
-        #without intensity
-        if isinstance(heatmap, torch.Tensor):
-            heatmap = heatmap.cpu().numpy()  # Convert tensor to numpy array
-        if isinstance(mask, torch.Tensor):
-            mask = mask.cpu().numpy()  # Convert tensor to numpy array
-        # All evaluators now return a 2D scored map (for bcos: the positive-clamped
-        # contribution map, NOT the RGBA visualization's alpha channel).
-        intensity_map = heatmap.copy()
-
-        # Align the ground-truth mask to the heatmap resolution. The heatmap comes out
-        # at the model input resolution, which may differ from the mask's resolution
-        # (mask_resolution in config); without this, the boolean indexing below crashes.
-        if mask.shape != intensity_map.shape:
-            h, w = intensity_map.shape
-            mask = cv2.resize(mask.astype(np.float32), (w, h), interpolation=cv2.INTER_NEAREST)
-            mask = (mask > 0.5).astype(mask.dtype)
-        #logger.debug(f"Intensity map shape: {intensity_map.shape}")
-        # Ensure both are in the 0-1 range (binary)
-        # if np.max(heatmap) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
-        #     print("heatmap range may be wrong")
-        #     heatmap = np.where(heatmap > 0, 1, 0)
-    
-        # if np.max(mask) > 1:  # If values are in 0-255 (image format), threshold to 0 or 1
-        #     print("mask range may be wrong")
-        #     mask = np.where(mask > 0, 1, 0)
-            
-        #Without Intensity
-        heatmap = (heatmap > 0).astype(np.uint8)
-        correct_pixels = np.sum((heatmap == 1) & (mask == 1))  
-        total_predicted_pixels = np.sum(heatmap == 1) 
-        accuracy = correct_pixels / total_predicted_pixels if total_predicted_pixels > 0 else 0  # Accuracy based on mask region
-        logger.debug(f"mask game accuracy for unweighted: {accuracy}")
-        
-        # Optionally, calculate Intersection over Union (IoU) for better performance measurement
-        intersection = correct_pixels
-        union = np.sum((heatmap == 1) | (mask == 1))  # Union of predicted mask and ground truth mask
-        iou = intersection / union if union > 0 else 0  # IoU
-
-        #with intensity
-        total_intensity = np.sum(intensity_map)
-        mask_intensity = np.sum(intensity_map[mask ==1])
-        non_mask_intensity = np.sum(intensity_map[mask==0])
-        intensity_accuracy = mask_intensity/total_intensity if total_intensity > 0 else 0
-        logger.info(f"total intensity: {total_intensity}, mask_intensity: {mask_intensity}, non_mask_intensity: {non_mask_intensity}")
-        logger.debug(f"mask max: {np.max(mask)}")
-        try:
-            accuracy = round(accuracy, 4)
-        except TypeError:
-            pass  # if it's an int, do nothing
-        
-        try:
-            intensity_accuracy = round(intensity_accuracy, 4)
-        except TypeError:
-            pass
-        
-        return accuracy, intensity_accuracy
+        return mpg_mask_game(mask, heatmap)
             
             
     def load_sample_by_path(self, image_path, expected_label):
@@ -386,7 +330,13 @@ def main():
     config_name = os.path.basename(config_path).split('.')[0]
 
     # Prepare testing data.
-    from train import prepare_testing_data
+    # train.py runs argparse at import time — shield our argv from it.
+    _argv = sys.argv
+    sys.argv = [sys.argv[0]]
+    try:
+        from train import prepare_testing_data
+    finally:
+        sys.argv = _argv
     test_data_loaders = prepare_testing_data(config)
     test_loader = list(test_data_loaders.values())[0]
     dataset = test_loader.dataset

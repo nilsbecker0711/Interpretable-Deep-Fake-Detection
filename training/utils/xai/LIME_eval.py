@@ -9,7 +9,7 @@ from lime import lime_image
 import logging
 from skimage.segmentation import mark_boundaries
 
-from xai_common import smooth_map, normalize_max
+from .xai_common import smooth_map, normalize_max
 
 # Setup logging and project root
 logging.basicConfig(level=logging.INFO)

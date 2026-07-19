@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from xai_common import smooth_map, normalize_max
+from .xai_common import smooth_map, normalize_max
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

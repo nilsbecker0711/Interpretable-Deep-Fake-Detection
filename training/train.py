@@ -345,8 +345,11 @@ def main():
     # log the type
     logger.info(f"Train set type for '{config['train_dataset']}': {str(type(train_data_loader.dataset))}")
 
-    # prepare the testing data loader
-    val_data_loaders = prepare_testing_data(config, mode='val')
+    # prepare the testing data loader. The in-training XAI monitor plays the
+    # Mask Pointing Game on val fakes, which needs ground-truth masks — enable
+    # them for the val loaders only (train/test loaders stay untouched).
+    val_config = {**config, 'with_mask': True} if config.get('xai_monitor_every_n_epochs', 0) else config
+    val_data_loaders = prepare_testing_data(val_config, mode='val')
     test_data_loaders = prepare_testing_data(config, mode='test')
     # log the type
     for test_name, data_loader in test_data_loaders.items():

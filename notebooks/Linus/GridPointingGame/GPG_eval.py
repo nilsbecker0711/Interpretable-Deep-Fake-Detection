@@ -14,10 +14,10 @@ import pickle
 import random
 from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
-from xai_common import canonicalize_grid, adapt_for_model
-from B_COS_eval import BCOSEvaluator
-from LIME_eval import LIMEEvaluator
-from GradCam_eval import GradCamEvaluator
+from training.utils.xai.xai_common import canonicalize_grid, adapt_for_model
+from training.utils.xai.B_COS_eval import BCOSEvaluator
+from training.utils.xai.LIME_eval import LIMEEvaluator
+from training.utils.xai.GradCam_eval import GradCamEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
@@ -65,6 +65,23 @@ def parse_args():
     parser.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
                         help="Extra config overrides (repeatable), e.g. "
                              "--set dataset_json_folder=preprocessing/dataset_json_v3")
+    parser.add_argument("--split", choices=["test", "val"], default="test",
+                        help="Data split to build/evaluate grids from. Use 'val' for the "
+                             "fixed monitoring grids consumed during training — the test "
+                             "split must stay untouched until the final evaluation.")
+    parser.add_argument("--selection", choices=["confidence", "random"], default="confidence",
+                        help="confidence = original B-cos protocol (per-model, most-confident "
+                             "correct images; needs --weights). random = model-free seeded "
+                             "sampling for the fixed SHARED grid sets.")
+    parser.add_argument("--grids-only", action="store_true",
+                        help="Only create grids, skip the XAI evaluation. With "
+                             "--selection random no model/weights are needed at all.")
+    parser.add_argument("--seed", type=int, default=32,
+                        help="Seed for grid creation (image draw + fake placement). The same "
+                             "seed selects the same source images at any resolution.")
+    parser.add_argument("--grid-dir", default=None,
+                        help="Evaluate an existing (shared) grid folder instead of creating "
+                             "grids — e.g. the fixed random assets used by all models.")
     return parser.parse_args()
 
 
@@ -75,9 +92,16 @@ logger = logging.getLogger(__name__)
 class GridPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0, b_value_name=0):
+                 test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0, b_value_name=0,
+                 selection="confidence", grid_dir=None, seed=32):
         """
-
+        selection: "confidence" = original B-cos protocol (model's most-confident
+                   correctly-classified images); "random" = model-free seeded
+                   random sampling (for the fixed SHARED grid sets used by the
+                   in-training monitor and the cross-model comparison).
+        grid_dir:  optional override pointing at an existing (shared) grid
+                   folder — evaluation only, no ranking pass, no grid creation.
+        seed:      RNG seed for grid creation (image draw + fake placement).
         """
         self.grid_size = grid_size
         self.xai_method = xai_method
@@ -94,29 +118,52 @@ class GridPointingGameCreator(Analyser):
         self.quantitativ = quantitativ
         self.threshold_steps = threshold_steps
         self.b_value_name = b_value_name
+        self.selection = selection
+        self.seed = seed
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
         self.confidence_dir= os.path.join(base_output_dir, f"{model_name}_{b_value_name}")
-        self.grid_dir = os.path.join(base_output_dir, f"{model_name}_{b_value_name}", f"{grid_size[0]}x{grid_size[1]}")
+        self.grid_dir = grid_dir or os.path.join(base_output_dir, f"{model_name}_{b_value_name}", f"{grid_size[0]}x{grid_size[1]}")
         self.results_dir = os.path.join(self.output_folder, f"{grid_size[0]}x{grid_size[1]}")
 
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.confidence_dir, exist_ok=True)
         os.makedirs(self.grid_dir, exist_ok=True)
         os.makedirs(self.results_dir, exist_ok=True)
-        
 
-        # Load or compute sorted image rankings.
+        # Ranking is computed lazily in create_GPG_grids — evaluation of an
+        # existing (shared) grid folder needs neither a ranking nor a model pass.
         self.ranking_file = os.path.join(self.confidence_dir, "sorted_confs.pkl")
+        self.sorted_confs = None
 
+    def _ensure_ranking(self):
+        """Load or compute the image ranking used for grid creation."""
+        if self.sorted_confs is not None:
+            return
         if os.path.exists(self.ranking_file) and not self.overwrite:
             self.sorted_confs = self.load_ranking(self.ranking_file)
             logger.info("Loaded sorted confidences from %s", self.ranking_file)
+            return
+        if self.overwrite and os.path.exists(self.ranking_file):
+            logger.info("Overwrite is enabled. Recomputing and replacing %s", self.ranking_file)
+        if self.selection == "random":
+            self.sorted_confs = self.compute_random_ranking()
         else:
-            if self.overwrite and os.path.exists(self.ranking_file):
-                logger.info("Overwrite is enabled. Recomputing and replacing %s", self.ranking_file)
             self.sorted_confs = self.compute_sorted_confs()
-            self.save_ranking(self.sorted_confs, self.ranking_file)
-            logger.info("Saved sorted confidences to %s", self.ranking_file)
+        self.save_ranking(self.sorted_confs, self.ranking_file)
+        logger.info("Saved %s ranking to %s", self.selection, self.ranking_file)
+
+    def compute_random_ranking(self):
+        """Model-free ranking: every image of the split, confidence fixed at 1.0.
+        The seeded shuffle in create_GPG_grids then performs the random draw —
+        identical for every model, resolution and run (dataset order is stable)."""
+        ranking = {0: [], 1: []}
+        for path, label in zip(self.dataset.data_dict['image'],
+                               self.dataset.data_dict['label']):
+            binary = 0 if label == 0 else 1
+            ranking[binary].append((path, 1.0, binary))
+        logger.info("Random ranking: %d real, %d fake images.",
+                    len(ranking[0]), len(ranking[1]))
+        return ranking
 
     def compute_sorted_confs(self):
         """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
@@ -266,9 +313,14 @@ class GridPointingGameCreator(Analyser):
 
     def create_GPG_grids(self):
         """Create grids by combining ranked real and fake images."""
-        logger.info("=== Starting GPG grid creation in %s ===", self.output_folder)
-        random.seed(32) 
-        
+        logger.info("=== Starting GPG grid creation in %s (selection=%s, seed=%d) ===",
+                    self.output_folder, self.selection, self.seed)
+        random.seed(self.seed)
+        self._ensure_ranking()
+        manifest = {"selection": self.selection, "seed": self.seed,
+                    "model_name": self.model_name, "grid_split": self.grid_split,
+                    "grids": []}
+
         # Check if grids already exist.
         existing_files = [f for f in os.listdir(self.grid_dir) if f.endswith('.pt')]
         logger.debug("Found %d existing .pt files in %s.", len(existing_files), self.grid_dir)
@@ -373,18 +425,39 @@ class GridPointingGameCreator(Analyser):
             path_to_grid = os.path.join(self.grid_dir, base_name)
             torch.save(grid_tensor, path_to_grid)
             logger.info("Saved grid tensor: %s", path_to_grid)
-            
+
+            manifest["grids"].append({
+                "file": base_name,
+                "fake_position": int(final_fake_index),
+                "fake_image": fake_tuple[0] if not isinstance(fake_tuple[0], list) else fake_tuple[0][0],
+                "real_images": [p if not isinstance(p, list) else p[0]
+                                for p, _, _ in selected_real_tuples],
+            })
+
             grid_count += 1
-        
-        logger.info("=== Finished grid creation. Created %d grids. ===", grid_count)
+
+        # Provenance record: which images went into which grid, with which seed.
+        # The manifest (not the heavy tensors) is what gets committed/compared.
+        import json
+        with open(os.path.join(self.grid_dir, "manifest.json"), "w") as f:
+            json.dump(manifest, f, indent=1)
+
+        logger.info("=== Finished grid creation. Created %d grids (+ manifest.json). ===", grid_count)
 
 
 def main():
     args = parse_args()
+
+    # Seed BEFORE any dataset construction: the dataset classes shuffle their
+    # sample lists at build time with the global RNG (b_cos_pp.py), so without
+    # this the grid image selection would differ between runs/resolutions.
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
     model_path = resolve_path(args.model_config)
     config_path = resolve_path(args.test_config)
 
-    additional_args = {"test_batchSize": args.batch_size}
+    additional_args = {f"{args.split}_batchSize": args.batch_size}
     additional_args.update(parse_cli_overrides(args.set))
     if args.weights is not None:
         additional_args["pretrained"] = resolve_path(args.weights)
@@ -400,62 +473,60 @@ def main():
         if key not in config:
             raise ValueError(f"Missing required config key: {key}")
 
-    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d", config['xai_method'], config['base_output_dir'], model_path, config['grid_split'], config['grid_split'])
-
-    model = load_model(config)
+    logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d, selection=%s",
+                config['xai_method'], config['base_output_dir'], model_path,
+                config['grid_split'], config['grid_split'], args.selection)
 
     grid_size = (config['grid_split'], config['grid_split'])
-
-    pretrained_path = config['pretrained']
-    if not pretrained_path:
-        raise ValueError("No checkpoint given: pass --weights or set 'pretrained' in a yaml")
-    state_dict = torch.load(pretrained_path)
-    # Remove "module." prefix from state_dict keys if necessary.
-    from collections import OrderedDict
-    new_state_dict = OrderedDict()
-    for k, v in state_dict.items():
-        new_state_dict[k.replace("module.", "")] = v
-
- 
-     
-    ##########
-     
-     
-    # 2) Lade die Gewichte **einmal** und fange das Ergebnis ab
-    res = model.load_state_dict(new_state_dict, strict=False)
-     
-    # 3) Logge, was fehlt und was extra war
-    logger.info("Missing keys: %s", res.missing_keys)
-    logger.info("Unexpected keys: %s", res.unexpected_keys)
-     
-    # 4) quick‐check eines Backbone‐Weights
-    first_weight = next(model.backbone.parameters())
-    logger.info("Mean of first backbone weight tensor: %.6f", first_weight.mean().item())
- 
-    all_b = [m.b for m in model.backbone.modules() if hasattr(m, "b")]
-    print(f"Gefundene b-Werte im ResNet: {set(all_b)}")  
- 
- 
- 
- 
- 
-     ########
-
-    
-    # Set device and move model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
 
-    model.eval()  # Set model to evaluation mode.
-    logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
-        
-    model_name = config.get("model_name", "defaultModel")
+    # Model-free path: creating shared random grids needs no model/checkpoint.
+    model_free = args.grids_only and args.selection == "random"
+
+    if model_free:
+        model = None
+        # model-agnostic asset naming: <dataset>_<split>_<resolution>/3x3
+        dataset_names = config[f'{args.split}_dataset']
+        first_dataset = dataset_names[0] if isinstance(dataset_names, list) else dataset_names
+        model_name = f"{first_dataset}_{args.split}"
+        b_value_name = str(config["resolution"])
+    else:
+        model = load_model(config)
+
+        pretrained_path = config['pretrained']
+        if not pretrained_path:
+            raise ValueError("No checkpoint given: pass --weights or set 'pretrained' in a yaml")
+        state_dict = torch.load(pretrained_path)
+        # Remove "module." prefix from state_dict keys if necessary.
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            new_state_dict[k.replace("module.", "")] = v
+
+        res = model.load_state_dict(new_state_dict, strict=False)
+        logger.info("Missing keys: %s", res.missing_keys)
+        logger.info("Unexpected keys: %s", res.unexpected_keys)
+
+        model.to(device)
+        model.eval()  # Set model to evaluation mode.
+        logger.info("Loaded model %s on device %s", model.__class__.__name__, device)
+
+        model_name = config.get("model_name", "defaultModel")
+        b_value_name = ("random" if args.selection == "random"
+                        else str(config.get("backbone_config", {}).get("b", "default")).replace(".", "_"))
+
     config_name = os.path.basename(config_path).split('.')[0]
-    b_value_name = str(config.get("backbone_config", {}).get("b", "default")).replace(".", "_")
-    
-    # Prepare testing data.
-    from train import prepare_testing_data
-    test_data_loaders = prepare_testing_data(config)
+
+    # Prepare data from the requested split (test for final eval, val for the
+    # fixed in-training monitoring grids — keeps the test split untouched).
+    # train.py runs argparse at import time — shield our argv from it.
+    _argv = sys.argv
+    sys.argv = [sys.argv[0]]
+    try:
+        from train import prepare_testing_data
+    finally:
+        sys.argv = _argv
+    test_data_loaders = prepare_testing_data(config, mode=args.split)
     test_loader = list(test_data_loaders.values())[0]
     dataset = test_loader.dataset
 
@@ -476,11 +547,16 @@ def main():
         overwrite=config["overwrite"],
         quantitativ=config["quantitativ"],
         threshold_steps=config["threshold_steps"],
-        b_value_name=b_value_name
+        b_value_name=b_value_name,
+        selection=args.selection,
+        grid_dir=resolve_path(args.grid_dir) if args.grid_dir else None,
+        seed=args.seed,
     )
 
-    grid_creator.create_GPG_grids()  # Create new grids.
-    grid_creator.run()               # Run analysis.
+    if args.grid_dir is None:
+        grid_creator.create_GPG_grids()  # Create new grids (skipped for shared assets).
+    if not args.grids_only:
+        grid_creator.run()               # Run analysis.
 
 if __name__ == "__main__":
     main()
