@@ -82,6 +82,20 @@ def parse_args():
     parser.add_argument("--grid-dir", default=None,
                         help="Evaluate an existing (shared) grid folder instead of creating "
                              "grids — e.g. the fixed random assets used by all models.")
+    parser.add_argument("--real-selection", choices=["confident", "shuffle"], default="confident",
+                        help="How the REAL cells of a grid are drawn. 'confident' = "
+                             "most-confident-first, which is what B-cos-v2 does for every "
+                             "cell. 'shuffle' = random draw from the confidence-filtered "
+                             "pool, the previous behaviour. IGNORED for --selection random, "
+                             "which always shuffles so shared grid assets regenerate "
+                             "bit-identically.")
+    parser.add_argument("--dataset-mixing", choices=["single", "mixed"], default="mixed",
+                        help="With several entries in test_dataset: 'single' keeps every "
+                             "cell of a grid within ONE dataset (different grids use "
+                             "different datasets) so no cell is identifiable by domain "
+                             "signature; 'mixed' draws cells from the pooled ranking "
+                             "(harder, less saturated, but compression/colour cues "
+                             "become a possible shortcut). No effect with one dataset.")
     return parser.parse_args()
 
 
@@ -93,7 +107,9 @@ class GridPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
                  model=None, model_name="default", config_name="default",
                  test_data_loaders=None, dataset=None, device=None, config=None, grid_split=3, overwrite=False, quantitativ=False, threshold_steps=0, b_value_name=0,
-                 selection="confidence", grid_dir=None, seed=32):
+                 selection="confidence", grid_dir=None, seed=32, real_selection="confident",
+                 datasets=None, dataset_mixing="mixed",
+                 topn_fractions=(0.025,), store_images=True):
         """
         selection: "confidence" = original B-cos protocol (model's most-confident
                    correctly-classified images); "random" = model-free seeded
@@ -102,6 +118,22 @@ class GridPointingGameCreator(Analyser):
         grid_dir:  optional override pointing at an existing (shared) grid
                    folder — evaluation only, no ranking pass, no grid creation.
         seed:      RNG seed for grid creation (image draw + fake placement).
+        real_selection: how the REAL cells are drawn under selection="confidence".
+                   "confident" = most-confident-first (what B-cos-v2 does for every
+                   cell); "shuffle" = random draw from the confidence-filtered pool
+                   (the previous behaviour, kept so old results can be reproduced).
+        datasets:  {name: dataset} for ALL configured test datasets. `dataset` alone
+                   is kept for backward compatibility (single-dataset callers such
+                   as the in-training monitor).
+        dataset_mixing: how cells are drawn when several datasets are present.
+                   "single" = every cell of a grid comes from ONE dataset (different
+                              grids use different datasets). No within-grid domain
+                              cue, so a high score can only mean the manipulation
+                              was found.
+                   "mixed"  = cells drawn from the pooled multi-dataset ranking. Harder
+                              and less saturated, but a cell can stand out by
+                              compression/colour signature rather than manipulation —
+                              the gap to "single" measures exactly that confound.
         """
         self.grid_size = grid_size
         self.xai_method = xai_method
@@ -110,6 +142,17 @@ class GridPointingGameCreator(Analyser):
         self.config = config or {}
         self.test_data_loaders = test_data_loaders
         self.dataset = dataset
+        # All configured test datasets. Previously only the FIRST was ever used
+        # (list(...)[0] in three places), so extra entries in test_dataset were
+        # silently ignored.
+        self.datasets = datasets or ({"default": dataset} if dataset is not None else {})
+        self.dataset_mixing = dataset_mixing
+        # store_images=False keeps only the scalar scores. The in-training monitor
+        # uses it: a full monitor run wrote ~17 GB of rendered overlays that
+        # nothing reads (plot_training_log only opens overall_by_threshold.pkl).
+        self.topn_fractions = topn_fractions
+        self.store_images = store_images
+        self._path_index = None   # {image_path: (dataset_name, idx)}, built lazily
         self.model_name = model_name
         self.config_name = config_name
         self.device = device
@@ -120,6 +163,7 @@ class GridPointingGameCreator(Analyser):
         self.b_value_name = b_value_name
         self.selection = selection
         self.seed = seed
+        self.real_selection = real_selection
         self.output_folder = os.path.join(base_output_dir, f"{model_name}_{config_name}")
         self.confidence_dir= os.path.join(base_output_dir, f"{model_name}_{b_value_name}")
         self.grid_dir = grid_dir or os.path.join(base_output_dir, f"{model_name}_{b_value_name}", f"{grid_size[0]}x{grid_size[1]}")
@@ -152,25 +196,51 @@ class GridPointingGameCreator(Analyser):
         self.save_ranking(self.sorted_confs, self.ranking_file)
         logger.info("Saved %s ranking to %s", self.selection, self.ranking_file)
 
+    def _build_path_index(self):
+        """{image_path: (dataset_name, idx)} across ALL configured datasets.
+
+        Built once. Replaces the former `self.dataset.image_list.index(path)`
+        linear scan, which was both single-dataset and O(n) per lookup.
+        """
+        if self._path_index is not None:
+            return self._path_index
+        self._path_index = {}
+        for name, ds in self.datasets.items():
+            for i, p in enumerate(ds.image_list):
+                self._path_index.setdefault(p, (name, i))
+        logger.info("Path index: %d images across %d dataset(s): %s",
+                    len(self._path_index), len(self.datasets), list(self.datasets))
+        return self._path_index
+
+    def dataset_of(self, image_path):
+        """Which dataset an image belongs to ('' if unknown)."""
+        if isinstance(image_path, list) and len(image_path) == 1:
+            image_path = image_path[0]
+        entry = self._build_path_index().get(image_path)
+        return entry[0] if entry else ""
+
     def compute_random_ranking(self):
         """Model-free ranking: every image of the split, confidence fixed at 1.0.
         The seeded shuffle in create_GPG_grids then performs the random draw —
         identical for every model, resolution and run (dataset order is stable)."""
         ranking = {0: [], 1: []}
-        for path, label in zip(self.dataset.data_dict['image'],
-                               self.dataset.data_dict['label']):
-            binary = 0 if label == 0 else 1
-            ranking[binary].append((path, 1.0, binary))
-        logger.info("Random ranking: %d real, %d fake images.",
-                    len(ranking[0]), len(ranking[1]))
+        for name, ds in self.datasets.items():
+            for path, label in zip(ds.data_dict['image'], ds.data_dict['label']):
+                binary = 0 if label == 0 else 1
+                ranking[binary].append((path, 1.0, binary))
+        logger.info("Random ranking: %d real, %d fake images across %d dataset(s).",
+                    len(ranking[0]), len(ranking[1]), len(self.datasets))
         return ranking
 
     def compute_sorted_confs(self):
         """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
         ranking = {0: [], 1: []}
-        key = list(self.test_data_loaders.keys())[0]
-    
-        for data_dict in self.test_data_loaders[key]:
+        # Rank over EVERY configured test dataset, not just the first one. The
+        # image path carries the dataset identity (see dataset_of), so the
+        # ranking tuples stay 3-wide and old pickles remain readable.
+        for _ds_name, _loader in self.test_data_loaders.items():
+          logger.info("Ranking pass over dataset %s", _ds_name)
+          for data_dict in _loader:
             # Move all tensor values in data_dict to the device first.
             for k, value in data_dict.items():
                 if value is not None and hasattr(value, 'to'):
@@ -200,13 +270,17 @@ class GridPointingGameCreator(Analyser):
                 # (or wrongly re-encoded) inputs to 3-channel standard models.
                 output = self.model({'image': image, 'label': label})
                 logit = output['cls']  # Expected shape: [1, num_classes]
-                predicted_label = logit[0].argmax().item()
-    
-                # Compute confidence using softmax
-                probabilities = torch.nn.functional.softmax(logit, dim=1)
 
-                confidence = probabilities[0, predicted_label].item()
-    
+                # Rank by the RAW MAX LOGIT, mirroring B-cos-v2
+                # localisation.py:151-156 (`logits, classes = model(img).max(1)`).
+                # Their ImageNet baselines are cross-entropy trained as well, so
+                # this is the protocol they apply to BOTH model families.
+                # Previously we stored a softmax probability instead; in binary
+                # that tracks the logit MARGIN, which gives a different ordering.
+                max_logit, pred = logit[0].max(0)
+                predicted_label = int(pred.item())
+                confidence = float(max_logit.item())
+
                 # Only store if prediction is correct
                 if true_label == predicted_label:
                     ranking[true_label].append((image_path, confidence, true_label))
@@ -219,20 +293,35 @@ class GridPointingGameCreator(Analyser):
     
     def get_sorted_image_paths(self):
         """Select top image indices based on rankings for grid creation,
-        filtering each tuple by a confidence threshold (confidence > 0.5).
+        filtering each tuple by the B-cos-v2 confidence threshold.
         For class 0 (real), selects k * (grid_size[0] * grid_size[1] - 1) images,
         and for class 1 (fake), selects k images.
         """
-        # Helper function: returns True if confidence > 0.5 (confidence is already from softmax)
+        # Mirror B-cos-v2 localisation.py:186-192: sigmoid(raw max logit) > 0.5,
+        # which is simply logit > 0.
+        # NOTE: the previous test (softmax probability > 0.5) could never filter
+        # anything. For a correctly classified binary softmax model the predicted
+        # class probability is >= 0.5 by construction, and compute_sorted_confs
+        # already keeps only correctly classified images.
         def get_conf_mask_v(tup):
-            return tup[1] > 0.5
+            return torch.sigmoid(torch.tensor(float(tup[1]))).item() > 0.5
     
         k = self.max_grids
+        # With per-dataset pools the global "top k" cut would starve every dataset
+        # but the strongest one (a dataset could keep reals but lose all its fakes,
+        # so it can never form a grid). Keep the full confidence-sorted lists and
+        # let the per-pool round-robin take most-confident-first within each
+        # dataset; the truncation below is only an optimisation for the pooled case.
+        per_dataset_pools = self.dataset_mixing == "single" and len(self.datasets) > 1
+
         sorted_image_paths = {}
         for cls in [0, 1]:
             cls_list = self.sorted_confs.get(cls, [])
             filtered = [tup for tup in cls_list if get_conf_mask_v(tup)]
             logger.debug("Class %d: %d images pass the confidence filter.", cls, len(filtered))
+            if per_dataset_pools:
+                sorted_image_paths[cls] = filtered
+                continue
             required = k * (self.grid_size[0] * self.grid_size[1] - 1) if cls == 0 else k
             sorted_image_paths[cls] = filtered[:required]
         return sorted_image_paths
@@ -245,14 +334,16 @@ class GridPointingGameCreator(Analyser):
         # If image_path is a list of one element, get the string.
         if isinstance(image_path, list) and len(image_path) == 1:
             image_path = image_path[0]
-        
-        try:
-            idx = self.dataset.image_list.index(image_path)
-        except ValueError:
-            raise ValueError(f"Image path {image_path} not found in dataset.")
-        
+
+        # Resolve across ALL datasets via the prebuilt index (was a linear
+        # image_list.index() scan on a single dataset).
+        entry = self._build_path_index().get(image_path)
+        if entry is None:
+            raise ValueError(f"Image path {image_path} not found in any dataset.")
+        ds_name, idx = entry
+
         # Retrieve the sample from the dataset using its __getitem__.
-        sample = self.dataset[idx]  # Expected to be a tuple: (image, label, landmark, mask, stored_index)
+        sample = self.datasets[ds_name][idx]  # (image, label, landmark, mask, stored_index)
         sample_label = int(sample[1])
         if sample_label != expected_label:
             raise ValueError(f"Label mismatch at {image_path}: expected {expected_label} but got {sample_label}")
@@ -307,17 +398,37 @@ class GridPointingGameCreator(Analyser):
             raise ValueError(f"Unknown xai_method: {self.xai_method}")
 
         # Run evaluation with thresholding
-        raw_results = evaluator.evaluate(preprocessed_tensors, grid_paths, self.grid_split, threshold_steps=self.threshold_steps)
+        raw_results = evaluator.evaluate(
+            preprocessed_tensors, grid_paths, self.grid_split,
+            threshold_steps=self.threshold_steps,
+            topn_fractions=self.topn_fractions, store_images=self.store_images)
 
         return raw_results
 
     def create_GPG_grids(self):
         """Create grids by combining ranked real and fake images."""
-        logger.info("=== Starting GPG grid creation in %s (selection=%s, seed=%d) ===",
-                    self.output_folder, self.selection, self.seed)
+        # Log and record what ACTUALLY runs, not what was requested:
+        # selection="random" forces the real-cell shuffle (see below) and never
+        # consults a confidence ranking, so reporting the requested
+        # real_selection / a logit ranking key there would be misleading.
+        # This single value also drives the shuffle, so the two cannot drift.
+        effective_real_selection = (
+            "shuffle" if (self.real_selection == "shuffle" or self.selection == "random")
+            else "confident")
+        ranking_key = ("none (random selection: flat confidence 1.0)"
+                       if self.selection == "random"
+                       else "raw_max_logit")  # mirrors B-cos-v2 localisation.py
+
+        logger.info("=== Starting GPG grid creation in %s (selection=%s, "
+                    "real_selection=%s, ranking_key=%s, seed=%d) ===",
+                    self.output_folder, self.selection, effective_real_selection,
+                    ranking_key, self.seed)
         random.seed(self.seed)
         self._ensure_ranking()
+
         manifest = {"selection": self.selection, "seed": self.seed,
+                    "real_selection": effective_real_selection,
+                    "ranking_key": ranking_key,
                     "model_name": self.model_name, "grid_split": self.grid_split,
                     "grids": []}
 
@@ -346,30 +457,70 @@ class GridPointingGameCreator(Analyser):
         ranked_real = sorted_image_paths.get(0, []).copy()
         ranked_fake = sorted_image_paths.get(1, []).copy()
 
-        # wenn doch nicht das in if rein setzen
-        random.shuffle(ranked_real)
+        # B-cos-v2 fills EVERY cell most-confident-first (localisation.py
+        # get_sorted_indices walks down each class's confidence-sorted list).
+        # "shuffle" keeps the previous behaviour — a random draw from the
+        # confidence-filtered pool — so earlier results remain reproducible.
+        #
+        # selection="random" ALWAYS shuffles: real_selection is a choice WITHIN
+        # the confidence protocol and is meaningless for a model-free draw.
+        # Keeping the shuffle here also keeps regeneration of the shared grid
+        # assets bit-identical: skipping the call would remove one draw from the
+        # RNG stream and shift every later draw, including the shuffle that sets
+        # the fake position.
+        if effective_real_selection == "shuffle":
+            random.shuffle(ranked_real)
 
         if self.quantitativ:
             random.shuffle(ranked_fake)
 
         logger.debug("Ranked real: %d, Ranked fake: %d", len(ranked_real), len(ranked_fake))
-        
+
+        # Dataset mixing. "single": every cell of a grid comes from ONE dataset,
+        # so no cell can be singled out by compression/colour signature and a high
+        # score can only mean the manipulation was localized. "mixed": draw from
+        # the pooled ranking — harder and less saturated, but domain cues become a
+        # possible shortcut. The gap between the two measures that confound.
+        if self.dataset_mixing == "single" and len(self.datasets) > 1:
+            pools = {}
+            for tup in ranked_real:
+                pools.setdefault(self.dataset_of(tup[0]), {"real": [], "fake": []})["real"].append(tup)
+            for tup in ranked_fake:
+                pools.setdefault(self.dataset_of(tup[0]), {"real": [], "fake": []})["fake"].append(tup)
+        else:
+            pools = {"__all__": {"real": ranked_real, "fake": ranked_fake}}
+        pool_names = sorted(pools)
+        logger.info("Grid pools (dataset_mixing=%s): %s", self.dataset_mixing,
+                    {k: {"real": len(v["real"]), "fake": len(v["fake"])} for k, v in pools.items()})
+
         n_imgs = self.grid_size[0] * self.grid_size[1]
         logger.debug("Total images per grid: %d", n_imgs)
         side = int(np.sqrt(n_imgs))
         logger.debug("Calculated grid side length: %d", side)
         
         grid_count = 0
+        pool_cursor = 0
         while grid_count < self.max_grids:
             logger.info("--- Creating grid %d of %d ---", grid_count + 1, self.max_grids)
             required_real = n_imgs - 1  # Reserve 1 slot for fake image.
-            fake_count = len(ranked_fake)
-            real_count = len(ranked_real)
-            logger.debug("Need %d real, have %d; need 1 fake, have %d.", required_real, real_count, fake_count)
-            
-            if fake_count < 1 or real_count < required_real:
-                logger.warning("Not enough images: fake %d, real %d (required %d)", fake_count, real_count, required_real)
+
+            # Round-robin over the pools so dataset coverage is spread evenly
+            # instead of exhausting the first dataset before moving on.
+            chosen = None
+            for _ in range(len(pool_names)):
+                nm = pool_names[pool_cursor % len(pool_names)]
+                pool_cursor += 1
+                if len(pools[nm]["fake"]) >= 1 and len(pools[nm]["real"]) >= required_real:
+                    chosen = nm
+                    break
+            if chosen is None:
+                logger.warning("Not enough images left in any pool (need %d real + 1 fake): %s",
+                               required_real,
+                               {k: {"real": len(v["real"]), "fake": len(v["fake"])} for k, v in pools.items()})
                 break
+            ranked_real = pools[chosen]["real"]
+            ranked_fake = pools[chosen]["fake"]
+            logger.debug("Grid from pool %s (real %d, fake %d)", chosen, len(ranked_real), len(ranked_fake))
 
             # Get first fake tuple and remove it.
             fake_tuple = ranked_fake.pop(0)
@@ -388,7 +539,7 @@ class GridPointingGameCreator(Analyser):
             # Select first required_real real image tuples.
             selected_real_tuples = ranked_real[:required_real]
             logger.info("Selected real image paths: %s", selected_real_tuples)
-            ranked_real = ranked_real[required_real:]  # Remove used entries.
+            del ranked_real[:required_real]  # consume in place (ranked_real is the pool's list)
 
             # Retrieve real images using load_sample_by_path for consistency.
             expected_label = 0
@@ -428,6 +579,9 @@ class GridPointingGameCreator(Analyser):
 
             manifest["grids"].append({
                 "file": base_name,
+                "pool": chosen,          # source dataset ('__all__' when mixed)
+                "fake_dataset": self.dataset_of(fake_tuple[0]),
+                "real_datasets": sorted({self.dataset_of(p) for p, _, _ in selected_real_tuples}),
                 "fake_position": int(final_fake_index),
                 "fake_image": fake_tuple[0] if not isinstance(fake_tuple[0], list) else fake_tuple[0][0],
                 "real_images": [p if not isinstance(p, list) else p[0]
@@ -527,8 +681,11 @@ def main():
     finally:
         sys.argv = _argv
     test_data_loaders = prepare_testing_data(config, mode=args.split)
-    test_loader = list(test_data_loaders.values())[0]
-    dataset = test_loader.dataset
+    # Keep EVERY configured dataset. Previously only the first was used, so extra
+    # test_dataset entries were silently ignored.
+    all_datasets = {name: loader.dataset for name, loader in test_data_loaders.items()}
+    dataset = next(iter(all_datasets.values()))  # kept for single-dataset callers
+    logger.info("Test datasets in play (%d): %s", len(all_datasets), list(all_datasets))
 
     # Initialize grid creator with all required objects.
     grid_creator = GridPointingGameCreator(
@@ -551,6 +708,9 @@ def main():
         selection=args.selection,
         grid_dir=resolve_path(args.grid_dir) if args.grid_dir else None,
         seed=args.seed,
+        real_selection=args.real_selection,
+        datasets=all_datasets,
+        dataset_mixing=args.dataset_mixing,
     )
 
     if args.grid_dir is None:

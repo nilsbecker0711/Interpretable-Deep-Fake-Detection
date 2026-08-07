@@ -18,7 +18,7 @@ from Utils_PointingGame import load_model, load_config, preprocess_image, Analys
 from training.utils.xai.B_COS_eval import BCOSEvaluator
 from training.utils.xai.LIME_eval import LIMEEvaluator
 from training.utils.xai.GradCam_eval import GradCamEvaluator
-from training.utils.xai.xai_common import mpg_mask_game
+from training.utils.xai.xai_common import mpg_mask_game, topn_mask
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
@@ -79,12 +79,16 @@ logger = logging.getLogger(__name__)
 class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=224):
+                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=224,
+                 topn_fractions=(0.025,)):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
         xai_method: a valid xai method
         plotting_only: If True, load existing results.
+        topn_fractions: additionally score the top-k fraction of pixels
+            ('OursQ' in the B-cos paper). Pass () to disable — the in-training
+            monitor does, to keep its result payload small.
         """
         self.xai_method = xai_method.lower().strip()
         self.model = model
@@ -101,6 +105,7 @@ class MaskPointingGameCreator(Analyser):
         self.max_images = max_images
         self.results_dir = os.path.join(self.output_folder, f"MaskPointingGame")
         self.mask_resolution = mask_resolution
+        self.topn_fractions = topn_fractions
 
         if plotting_only:
             self.load_results()
@@ -206,6 +211,29 @@ class MaskPointingGameCreator(Analyser):
                         #"mask" : sample_mask
                     }
                     results.append(result)
+
+                # TOP-N variant ('OursQ' in the B-cos paper, Figs. 6+7): the same
+                # weighted metric on the map restricted to its strongest pixels.
+                # Rank-based, so every method gets the SAME pixel budget — a value
+                # threshold keeps a different number of pixels per method.
+                # Stored ADDITIONALLY under a string key, leaving the threshold
+                # results above untouched.
+                for frac in (self.topn_fractions or ()):
+                    topn_map = topn_mask(heatmap, frac)
+                    acc, intensity_acc = self.mask_game(sample_mask, topn_map)
+                    logger.info("TOP-%g (%d px): unweighted %.4f | weighted %.4f",
+                                frac, int((topn_map > 0).sum()), acc, intensity_acc)
+                    results.append({
+                        "threshold": f"top{frac:g}",
+                        "topn_fraction": float(frac),
+                        "topn_pixels": int((topn_map > 0).sum()),
+                        "path": image_path,
+                        "unweighted_localization_score": acc,
+                        "weighted_localization_score": intensity_acc,
+                        "model_prediction": predicted_label,
+                        "model_confidence": confidence,
+                        "xai_method": self.xai_method,
+                    })
                 # count once per image, not once per threshold; otherwise max_images
                 # is exhausted after max_images/len(thresholds) actual images
                 processed_images += 1
