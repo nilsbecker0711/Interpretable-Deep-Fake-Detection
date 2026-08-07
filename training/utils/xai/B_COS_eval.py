@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from .xai_common import smooth_map, normalize_max
+from .xai_common import smooth_map, normalize_max, topn_mask
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -130,7 +130,8 @@ class BCOSEvaluator:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
 
-    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0,
+                 topn_fractions=(0.025,), store_images=True):
         """Evaluate grid tensors and return metrics."""
         results = []
         logger.info("Processing %d grids with grid_split=%d.", len(tensor_list), grid_split)
@@ -142,7 +143,11 @@ class BCOSEvaluator:
                 tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
             scored_map, visualization, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
-            original_image = self.convert_to_numpy(tensor)
+            # store_images=False keeps only the scalar scores — the images dominate
+            # the pickle (GB vs the 549-byte summary that plotting reads).
+            original_image = self.convert_to_numpy(tensor) if store_images else None
+            if not store_images:
+                visualization = None
 
             thresholds = [None]  # No threshold
             if threshold_steps > 0:
@@ -158,7 +163,7 @@ class BCOSEvaluator:
                     "threshold": t if t is not None else 0,
                     "path": path,
                     "original_image": original_image,
-                    "heatmap": thresholded_map,
+                    "heatmap": thresholded_map if store_images else None,
                     "visualization": visualization,
                     "weighted_guessed_fake_position": fake_pred_weighted,
                     "unweighted_guess_fake_position": fake_pred_unweighted,
@@ -169,8 +174,36 @@ class BCOSEvaluator:
                 }
 
                 results.append(result)
-                
+
                 #logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
                             #str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
+
+            # TOP-N variant ('OursQ' in the B-cos paper, Figs. 6+7): the same
+            # weighted metric on the map restricted to its strongest pixels.
+            # Stored ADDITIONALLY under a string key, leaving the threshold
+            # results untouched.
+            for frac in (topn_fractions or ()):
+                mask = topn_mask(scored_map, frac)
+                (fake_pred_weighted, intensity_sums, weighted_accuracy,
+                 fake_pred_unweighted, unweighted_accuracy) = evaluate_heatmap(
+                    mask, grid_split=grid_split, true_fake_pos=true_fake_pos)
+                results.append({
+                    "threshold": f"top{frac:g}",
+                    "topn_fraction": float(frac),
+                    "topn_pixels": int((mask > 0).sum()),
+                    "path": path,
+                    "original_image": original_image,
+                    "heatmap": mask if store_images else None,
+                    "visualization": visualization,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": unweighted_accuracy,
+                    "true_fake_position": true_fake_pos,
+                    "model_prediction": model_prediction,
+                })
+                logger.info("TOP-%g (%d px) | %s: true pos %d, weighted acc %.3f",
+                            frac, int((mask > 0).sum()), os.path.basename(path),
+                            true_fake_pos, weighted_accuracy)
                 
         return results

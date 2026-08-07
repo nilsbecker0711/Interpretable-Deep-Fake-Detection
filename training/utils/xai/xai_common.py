@@ -36,6 +36,48 @@ def smooth_map(attribution, smooth):
     return t[0, 0].numpy().astype(np.float32)
 
 
+def topn_mask(map_2d, fraction):
+    """Keep only the highest-valued `fraction` of pixels, zero the rest.
+
+    This is the 'OursQ' variant of the B-cos paper (Figs. 6+7): the localisation
+    score is computed on a map restricted to the n most strongly contributing
+    pixels. Their caption gives "top 0.025 percentile ... roughly 11.3k pixels";
+    with 672x672 grids that is 11.3k/451584 = 2.5%, so 0.025 is a FRACTION, not
+    a percent. At our 768x768 grids 0.025 -> 14746 pixels.
+
+    Rank-based rather than value-based, which is the point: every method gets the
+    SAME pixel budget. A value threshold keeps a different number of pixels per
+    method (few for a peaked map, many for a diffuse one), so it does not compare
+    methods on equal terms.
+
+    Surviving pixels KEEP their values, so the metric stays weighted. Binarising
+    would turn it into the unweighted count metric, which is degenerate for CAM.
+
+    NOTE: the paper describes this but the released localisation.py does NOT
+    implement it, and the paper applies it only to the model-inherent b-cos
+    explanation. Applying it to every method (as we do) is our own extension —
+    fairer, but has to be labeled in paper.
+
+    Args:
+        map_2d: 2D non-negative array.
+        fraction: fraction of pixels to keep, in (0, 1].
+
+    Returns:
+        2D float32 array, same shape, all but the top pixels set to 0.
+    """
+    arr = np.asarray(map_2d, dtype=np.float32)
+    if not fraction or fraction >= 1.0:
+        return arr
+    n_keep = max(1, int(round(float(fraction) * arr.size)))
+    if n_keep >= arr.size:
+        return arr
+    # kth largest value; ties are kept, so the surviving count can slightly
+    # exceed n_keep on flat maps (e.g. a CAM plateau). That is intended: an
+    # arbitrary tie-break would fabricate structure the attribution does not have.
+    cutoff = np.partition(arr.ravel(), arr.size - n_keep)[arr.size - n_keep]
+    return np.where(arr >= cutoff, arr, 0.0).astype(np.float32)
+
+
 def normalize_max(map_2d):
     """Scale a non-negative 2D map to [0, 1] by its max (no-op if empty/all-zero).
 
