@@ -139,11 +139,30 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
 
         
     def init_data_aug_method(self):# IF you get a division by zero error, try installing the correct version (pip install albumentations==1.1.0) and maybe adjust the .yml file
-        trans = A.Compose([           
+        kp = A.KeypointParams(format='xy') if self.config['with_landmark'] else None
+        # aug_type selects which augmentation set the (3-channel) standard path uses:
+        #   'simple' -> the SAME augmentations as the b-cos path
+        #               (b_cos_pp.get_aug_trans_simple): random-resized-crop + h-flip.
+        #               Keeps b-cos and standard twins on identical augmentation so the
+        #               architecture comparison is not confounded (no inverse channels
+        #               here — this path stays 3-channel).
+        #   'full'   -> the original DeepfakeBench suite (rotate/blur/JPEG/colour/...).
+        # Defaults to 'full' so untouched configs keep their original behavior.
+        if self.config.get('aug_type', 'full') == 'simple':
+            res = self.config['resolution']
+            da = self.config['data_aug']
+            trans = A.Compose([
+                A.RandomResizedCrop(size=(res, res),
+                                    scale=tuple(da.get('crop_scale', [0.08, 1.0])),
+                                    ratio=tuple(da.get('crop_ratio', [0.75, 1.3333333333333333]))),
+                A.HorizontalFlip(p=da['flip_prob']),
+            ], keypoint_params=kp)
+            return trans
+        trans = A.Compose([
             A.HorizontalFlip(p=self.config['data_aug']['flip_prob']),
             A.Rotate(limit=self.config['data_aug']['rotate_limit'], p=self.config['data_aug']['rotate_prob']),
             A.GaussianBlur(blur_limit=self.config['data_aug']['blur_limit'], p=self.config['data_aug']['blur_prob']),
-            A.OneOf([                
+            A.OneOf([
                 IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_CUBIC),
                 IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_LINEAR),
                 IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_LINEAR, interpolation_up=cv2.INTER_LINEAR),
@@ -154,8 +173,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 A.HueSaturationValue()
             ], p=0.5),
             A.ImageCompression(quality_lower=self.config['data_aug']['quality_lower'], quality_upper=self.config['data_aug']['quality_upper'], p=0.5)
-        ], 
-            keypoint_params=A.KeypointParams(format='xy') if self.config['with_landmark'] else None
+        ],
+            keypoint_params=kp
         )
         return trans
 
@@ -193,10 +212,16 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             # with open(os.path.join(self.config['dataset_json_folder'], dataset_name + '.json'), 'r') as f:
             #     dataset_info = json.load(f)
             # ALTERNATIVELY, IF THERE IS AN ERROR HERE
-            prefix="~/Interpretable-Deep-Fake-Detection/"
+            # Resolve robustly: an absolute dataset_json_folder is used as-is; a
+            # relative one is taken relative to the repo root (independent of cwd
+            # and machine). The old hardcoded prefix "~/Interpretable-Deep-Fake-
+            # Detection/" produced /home/<user>/Interpretable-... and broke when
+            # the repo lives elsewhere (e.g. ~/<user_folder>/Interpretable-...).
             folder_path = os.path.join(self.config['dataset_json_folder'], dataset_name + '.json')
-            correct_path = os.path.expanduser(os.path.join(prefix, folder_path))
-            with open(correct_path, 'r') as f:
+            if not os.path.isabs(folder_path):
+                repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                folder_path = os.path.join(repo_root, folder_path)
+            with open(folder_path, 'r') as f:
                 dataset_info = json.load(f)
         except Exception as e:
             print(e)
@@ -366,8 +391,11 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         if file_path is None:
             return np.zeros((size, size, 1))
         if not self.lmdb:
-            if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+            # Only prefix RELATIVE paths. The old unconditional './{rgb_dir}\'
+            # prefix used a Windows separator and corrupted absolute POSIX paths,
+            # so every mask silently loaded as zeros.
+            if not os.path.isabs(file_path):
+                file_path = os.path.join('.', self.config["rgb_dir"], file_path)
             if os.path.exists(file_path):
                 mask = cv2.imread(file_path, 0)
                 if mask is None:

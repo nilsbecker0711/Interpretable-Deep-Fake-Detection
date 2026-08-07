@@ -272,12 +272,11 @@ def main():
     with open(args.detector_path, 'r') as f:
         print(f) #Nils: Ensure right detector path
         config = yaml.safe_load(f)
-    try:# KAI: added this, to ensure it finds the config file
-        with open('./training/config/train_config.yaml', 'r') as f:
-            config2 = yaml.safe_load(f)
-    except FileNotFoundError:
-        with open(os.path.expanduser('~/Interpretable-Deep-Fake-Detection/training/config/train_config.yaml'), 'r') as f:
-            config2 = yaml.safe_load(f)
+    # resolve relative to this file — independent of cwd and machine
+    train_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'config', 'train_config.yaml')
+    with open(train_config_path, 'r') as f:
+        config2 = yaml.safe_load(f)
     if 'label_dict' in config:
         config2['label_dict']=config['label_dict']
     config.update(config2)

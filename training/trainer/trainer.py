@@ -706,11 +706,12 @@ class Trainer(object):
                     test_data_loaders=val_data_loaders, dataset=dataset,
                     device=device, config=cfg, overwrite=True,
                     quantitativ=True, threshold_steps=0,
+                    topn_fractions=(),
                 )
                 gpg = GridPointingGameCreator(
                     grid_dir=grid_dir, grid_split=3, max_grids=0,
                     b_value_name=str(bb.get("b", "std")).replace(".", "_"),
-                    **common)
+                    store_images=False, **common)
                 gpg.run()  # evaluation only — never creates/modifies shared grids
 
                 mpg = MaskPointingGameCreator(
