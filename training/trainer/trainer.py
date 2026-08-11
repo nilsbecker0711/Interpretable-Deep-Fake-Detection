@@ -651,7 +651,13 @@ class Trainer(object):
         # split every Nth epoch (0/absent disables). A monitor failure must
         # never kill the training run.
         n_xai = self.config.get("xai_monitor_every_n_epochs", 0)
-        if n_xai > 0 and epoch % n_xai == 0 and IS_MAIN_PROCESS:
+        # Epochs are 0-based (train.py: `range(start_epoch, nEpochs)`), so with
+        # nEpochs=100 the last epoch is 99 and there is no epoch 100. A plain
+        # `epoch % n_xai == 0` therefore never measures the FINAL epoch, which
+        # is the one the reported checkpoint usually comes from — so fire on it
+        # explicitly as well.
+        is_last_epoch = epoch == self.config.get("nEpochs", 0) - 1
+        if n_xai > 0 and (epoch % n_xai == 0 or is_last_epoch) and IS_MAIN_PROCESS:
             try:
                 self.run_xai_games(epoch, val_data_loaders)
             except Exception:
