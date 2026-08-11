@@ -264,11 +264,19 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                     raise ValueError(f'Label {video_info["label"]} is not found in the configuration file.')
                 label = self.config['label_dict'][video_info['label']]
                 frame_paths = video_info['frames']
+                if not frame_paths:      # DF40 ships a few videos with empty frame lists
+                    continue
                 # sorted video path to the lists
-                if '\\' in frame_paths[0]:
-                    frame_paths = sorted(frame_paths, key=lambda x: int(x.split('\\')[-1].split('.')[0]))
-                else:
-                    frame_paths = sorted(frame_paths, key=lambda x: int(x.split('/')[-1].split('.')[0]))
+                # DF40 frame stems are not always integers (e.g. 'seed13203.png',
+                # 'sample-1494.png'), so fall back to a lexicographic sort for those
+                # instead of raising. Numeric stems keep the exact previous ordering.
+                sep = '\\' if '\\' in frame_paths[0] else '/'
+
+                def _frame_sort_key(x):
+                    stem = x.split(sep)[-1].rsplit('.', 1)[0]
+                    return (0, int(stem), '') if stem.isdigit() else (1, 0, stem)
+
+                frame_paths = sorted(frame_paths, key=_frame_sort_key)
 
                 # Consider the case when the actual number of frames (e.g., 270) is larger than the specified (i.e., self.frame_num=32)
                 # In this case, we select self.frame_num frames from the original 270 frames
