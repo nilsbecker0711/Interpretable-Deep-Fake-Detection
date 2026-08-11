@@ -53,10 +53,12 @@ save_feat: true   # whether to save features
 
 
 # data augmentation
-dataset_type: #'bcos'
+dataset_type: #'bcos'        # empty -> abstract_dataset.py (3-channel standard path)
 use_data_augmentation: true  # Add this flag to enable/disable data augmentation
+aug_type: simple             # simple = SAME augs as the vit_bcos twin (RandomResizedCrop + h-flip); full = DeepfakeBench suite
 data_aug:
   flip_prob: 0.5
+  crop_scale: [0.08, 1.0]    # RandomResizedCrop scale, matches the b-cos path (torchvision default)
   rotate_prob: 0.5
   rotate_limit: [-10, 10]
   blur_prob: 0.5

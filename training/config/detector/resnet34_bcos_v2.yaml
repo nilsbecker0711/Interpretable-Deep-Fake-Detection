@@ -25,7 +25,7 @@ backbone_config:
   stochastic_depth_prob: 0.0
   logit_bias: # None ≡ 0 = −log(C−1) for C=2 classes — the original B-cos recipe.
   logit_temperature: # None ≡ 1, matches the original.
-  b: 2.0
+  b: 1.00
   norm: BatchNormUncentered2d # choices: AllNormUncentered2d, BatchNormUncentered2d, GroupNormUncentered2d, GNInstanceNormUncentered2d, GNLayerNormUncentered2d, 
   # PositionNormUncentered2d, AllNorm2d, BatchNorm2d, DetachableGroupNorm2d, DetachableGNInstanceNorm2d, DetachableGNLayerNorm2d, DetachableLayerNorm, DetachablePositionNorm2d
   # norm_bias semantics (fixed 2026-07): false = bias-free via NoBias (B-cos
@@ -35,8 +35,8 @@ backbone_config:
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 val_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++]
 
 compression: c23  # compression-level for videos
 train_batchSize: 64   # training batch size

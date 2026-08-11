@@ -21,9 +21,9 @@ val_dataset: [FaceForensics++]
 test_dataset: [FaceForensics++] #, DeepFakeDetection]
 
 compression: c23  # compression-level for videos
-train_batchSize: 32   # training batch size (matched to xception_bcos twin)
-val_batchSize: 32
-test_batchSize: 32   # test batch size
+train_batchSize: 64   # training batch size (matched to xception_bcos twin)
+val_batchSize: 64
+test_batchSize: 64   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
@@ -34,10 +34,12 @@ save_feat: true   # whether to save features
 
 
 # data augmentation
-dataset_type:
+dataset_type:                # empty -> abstract_dataset.py (3-channel standard path)
 use_data_augmentation: true  # matched to xception_bcos twin (was false)
+aug_type: simple             # simple = SAME augs as the b-cos twin (RandomResizedCrop + h-flip); full = DeepfakeBench suite
 data_aug:
   flip_prob: 0.5
+  crop_scale: [0.08, 1.0]    # RandomResizedCrop scale, matches the b-cos path (torchvision default)
   rotate_prob: 0.5
   rotate_limit: [-10, 10]
   blur_prob: 0.5
