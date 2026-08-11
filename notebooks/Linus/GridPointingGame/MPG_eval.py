@@ -13,6 +13,7 @@ import numpy as np
 import cv2
 import pickle
 import random
+import json
 from PIL import Image
 from Utils_PointingGame import load_model, load_config, preprocess_image, Analyser
 from training.utils.xai.B_COS_eval import BCOSEvaluator
@@ -70,6 +71,21 @@ def parse_args():
     parser.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
                         help="Extra config overrides (repeatable), e.g. "
                              "--set dataset_json_folder=preprocessing/dataset_json_v3")
+    parser.add_argument("--image-list", default=None,
+                        help="JSON asset naming the exact fake images to score (the MPG "
+                             "analogue of --grid-dir). Selection then happens BY PATH, so "
+                             "every model and XAI method scores identical images regardless "
+                             "of dataset class or loader order. Without it, MPG takes the "
+                             "first N fakes in loader order, which depends on the dataset's "
+                             "construction-time shuffle and is NOT reproducible across runs.")
+    parser.add_argument("--images-only", action="store_true",
+                        help="Only WRITE the image-list asset (needs no model/weights), then "
+                             "exit — mirrors GPG_eval's --grids-only.")
+    parser.add_argument("--num-images", type=int, default=500,
+                        help="How many fake images to put in the list with --images-only.")
+    parser.add_argument("--seed", type=int, default=32,
+                        help="Seed for drawing the image list (also seeded before dataset "
+                             "construction, since the dataset shuffles at build time).")
     return parser.parse_args()
 
 #setpup logging
@@ -80,7 +96,7 @@ class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", config_name="default",
                  test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=224,
-                 topn_fractions=(0.025,)):
+                 topn_fractions=(0.025,), image_list=None):
         """
         Initialize grid creator with specified parameters.
         base_output_dir: Base directory for grids.
@@ -106,6 +122,10 @@ class MaskPointingGameCreator(Analyser):
         self.results_dir = os.path.join(self.output_folder, f"MaskPointingGame")
         self.mask_resolution = mask_resolution
         self.topn_fractions = topn_fractions
+        # Explicit image set (the MPG analogue of GPG's stored grid .pt files).
+        # Selection by PATH rather than by loader position: identical images for
+        # every model and method, independent of dataset class and shuffle order.
+        self.image_list = set(image_list) if image_list else None
 
         if plotting_only:
             self.load_results()
@@ -149,6 +169,15 @@ class MaskPointingGameCreator(Analyser):
                 logger.debug("Sample %d | Label: %s", j, label.item())
                 true_label = int(label.item())  # Convert label tensor to int.
                 image_path = path_of_image[j]
+                # collate wraps each path in a 1-element list — unwrap before any
+                # comparison (load_sample_by_path does the same).
+                path_str = image_path[0] if isinstance(image_path, (list, tuple)) and len(image_path) == 1 else image_path
+
+                # With an explicit image list, keep ONLY the listed images. This
+                # makes the sample independent of loader order, so every model and
+                # XAI method scores the same set (see --image-list).
+                if self.image_list is not None and str(path_str) not in self.image_list:
+                    continue
 
                 try:
                     # IMPORTANT: do NOT overwrite the batch-level `mask` tensor here.
@@ -238,10 +267,22 @@ class MaskPointingGameCreator(Analyser):
                 # is exhausted after max_images/len(thresholds) actual images
                 processed_images += 1
                 logger.info(f"{processed_images} images have been processed so far!")
-                if self.max_images is not None and processed_images >= self.max_images:
+                if self.image_list is not None:
+                    if processed_images >= len(self.image_list):
+                        logger.info("Scored all %d listed images.", len(self.image_list))
+                        return results
+                elif self.max_images is not None and processed_images >= self.max_images:
                     logger.info(f"Reached max_images={self.max_images}, exiting early.")
                     return results
 
+        if self.image_list is not None and processed_images < len(self.image_list):
+            # Loud, not silent: a short run means listed images were missing from the
+            # split or their masks failed validation, and the sample is then NOT the
+            # one the asset specifies — exactly the situation the list exists to prevent.
+            raise RuntimeError(
+                f"image list asks for {len(self.image_list)} images but only "
+                f"{processed_images} were scored — some listed paths are absent from "
+                f"this split or their masks did not validate.")
         return results
         
 
@@ -307,8 +348,60 @@ class MaskPointingGameCreator(Analyser):
         mask = sample[3]
         return image, mask
     
+def write_image_list(dataset, out_path, num_images, seed, dataset_name, split):
+    """Draw `num_images` FAKE image paths at random and store them as the MPG asset.
+
+    The MPG analogue of the shared GPG grid folder. Model-free (no confidence
+    ranking), seeded, and resolution-independent — MPG scores single images, so one
+    list serves 224 and 256 alike; only mask_resolution differs at scoring time.
+    """
+    fakes = [p for p, l in zip(dataset.data_dict["image"], dataset.data_dict["label"]) if l != 0]
+    if len(fakes) < num_images:
+        raise ValueError(f"only {len(fakes)} fake images available, need {num_images}")
+
+    # Only list images MPG can actually score. Some FF++ fakes (mostly
+    # NeuralTextures, whose edits are subtle) ship an all-zero mask, and
+    # "attribution mass inside the mask" is undefined when the mask is empty —
+    # analysis() skips them, which would leave a run short of the listed count.
+    # Validate while drawing so the asset is usable BY CONSTRUCTION, and the
+    # selection rule is statable: N random fakes with a non-empty mask, seed S.
+    rng = random.Random(seed)          # local RNG: cannot disturb global state
+    pool = list(fakes)
+    rng.shuffle(pool)
+    res = dataset.config["resolution"]
+    chosen, skipped = [], 0
+    for p in pool:
+        if len(chosen) >= num_images:
+            break
+        m = np.asarray(dataset.load_mask(p.replace("frames", "masks")))
+        if m.max() == 0 or m.shape[:2] != (res, res):
+            skipped += 1
+            continue
+        chosen.append(p)
+    if len(chosen) < num_images:
+        raise ValueError(
+            f"only {len(chosen)} fakes have a valid mask, need {num_images}")
+    if skipped:
+        logger.info("Skipped %d fake(s) with empty/mis-shaped masks while drawing", skipped)
+    chosen = sorted(chosen)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump({"seed": seed, "split": split, "dataset": dataset_name,
+                   "num_images": num_images, "selection": "random",
+                   "pool_size": len(fakes), "images": chosen}, f, indent=1)
+    logger.info("Wrote %d fake image paths (of %d available) to %s",
+                num_images, len(fakes), out_path)
+    return chosen
+
+
 def main():
     args = parse_args()
+    # Seed BEFORE any dataset construction: the dataset classes shuffle their
+    # sample list at build time with the global RNG, so the loader order — and
+    # therefore any selection derived from it — depends on this.
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
     model_path = resolve_path(args.model_config)
     config_path = resolve_path(args.test_config)
 
@@ -329,6 +422,29 @@ def main():
             raise ValueError(f"Missing required config key: {key}")
 
     logger.info("Parameters: XAI=%s, Base=%s, Model=%s", config['xai_method'], config['base_output_dir'], model_path)
+
+    def _import_prepare():
+        # train.py runs argparse at import time — shield our argv from it.
+        _argv = sys.argv
+        sys.argv = [sys.argv[0]]
+        try:
+            from train import prepare_testing_data
+        finally:
+            sys.argv = _argv
+        return prepare_testing_data
+
+    # --images-only writes the shared image-list asset and exits. Model-free, so
+    # no checkpoint is needed — same contract as GPG_eval's --grids-only.
+    if args.images_only:
+        loaders = _import_prepare()(config)
+        ds = list(loaders.values())[0].dataset
+        names = config["test_dataset"]
+        first = names[0] if isinstance(names, list) else names
+        out = resolve_path(args.image_list) if args.image_list else os.path.join(
+            PROJECT_PATH, "results", "MPG_assets", "shared_random",
+            f"{first}_test", "images.json")
+        write_image_list(ds, out, args.num_images, args.seed, first, "test")
+        return
 
     model = load_model(config)
 
@@ -358,16 +474,17 @@ def main():
     config_name = os.path.basename(config_path).split('.')[0]
 
     # Prepare testing data.
-    # train.py runs argparse at import time — shield our argv from it.
-    _argv = sys.argv
-    sys.argv = [sys.argv[0]]
-    try:
-        from train import prepare_testing_data
-    finally:
-        sys.argv = _argv
-    test_data_loaders = prepare_testing_data(config)
+    test_data_loaders = _import_prepare()(config)
     test_loader = list(test_data_loaders.values())[0]
     dataset = test_loader.dataset
+
+    # The shared image-list asset makes the sample independent of loader order,
+    # so every model and XAI method scores identical images.
+    image_list = None
+    if args.image_list:
+        with open(resolve_path(args.image_list)) as f:
+            image_list = json.load(f)["images"]
+        logger.info("Scoring the %d images named in %s", len(image_list), args.image_list)
 
     MPG_creator = MaskPointingGameCreator(
         base_output_dir=config.get("base_output_dir", "results"),
@@ -383,7 +500,8 @@ def main():
         quantitativ=config["quantitativ"],
         threshold_steps= config["threshold_steps"],
         max_images = config["max_images"],
-        mask_resolution = config["mask_resolution"]
+        mask_resolution = config["mask_resolution"],
+        image_list = image_list,
     )
     
     MPG_creator.run() # Run analysis.
