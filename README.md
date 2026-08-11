@@ -118,21 +118,19 @@ python notebooks/Linus/GridPointingGame/MPG_eval.py \
   --set 'test_dataset=[FaceForensics++]' # specifiy datasets here
 
 
-####
+#### GPG asset creation
 
-# GPG grids (model-free)
-python notebooks/Linus/GridPointingGame/GPG_eval.py \
-  --model-config training/config/detector/resnet34.yaml \
-  --test-config results/test_bcos_res_2_config.yaml \
-  --split test --selection random --grids-only --seed 32 \
-  --output-dir results/GPG_assets/shared_random \
-  --set dataset_json_folder=preprocessing/dataset_json_v3 \
-  --set 'test_dataset=[FaceForensics++]' --set max_grids=500
+cd $REPO   # only training/config/test_config yaml's rgb_dir needs to point here
 
-# MPG image list (model-free)
-python notebooks/Linus/GridPointingGame/MPG_eval.py \
-  --model-config training/config/detector/resnet34.yaml \
-  --test-config results/test_MPG_bcos_2_5.yaml \
-  --images-only --num-images 500 --seed 32 \
-  --set dataset_json_folder=preprocessing/dataset_json_v3 \
-  --set 'test_dataset=[FaceForensics++]' --set with_mask=true
+# test split, 500 grids
+python notebooks/Linus/GridPointingGame/GPG_eval.py --grids-only --selection random \
+  --split test --set resolution=256 --set max_grids=500
+python notebooks/Linus/GridPointingGame/GPG_eval.py --grids-only --selection random \
+  --split test --set resolution=224 --set max_grids=500
+
+# val split (monitoring grids), 100 each
+python notebooks/Linus/GridPointingGame/GPG_eval.py --grids-only --selection random \
+  --split val --set resolution=256 --set max_grids=100
+python notebooks/Linus/GridPointingGame/GPG_eval.py --grids-only --selection random \
+  --split val --set resolution=224 --set max_grids=100
+
