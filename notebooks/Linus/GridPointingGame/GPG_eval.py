@@ -36,6 +36,50 @@ def resolve_path(path):
     return path if os.path.isabs(path) else os.path.join(PROJECT_PATH, path)
 
 
+# Creating the SHARED grid assets involves no model at all (--grids-only
+# --selection random), so it should not need a detector yaml. These are the only
+# values the data loader and the grid writer actually consume in that path; the
+# machine-specific ones (rgb_dir, dataset_json_folder, label_dict) still come
+# from training/config/test_config.yaml, which is the single place they are
+# maintained. Overridable with --set.
+GRID_ASSET_DEFAULTS = {
+    "mode": "test",
+    "lmdb": False,
+    "dataset_type": None,        # abstract_dataset.py: 3-channel, model-agnostic
+    "resolution": 256,           # 256 for CNNs, 224 for ViT -> --set resolution=224
+    "test_dataset": ["FaceForensics++"],
+    "val_dataset": ["FaceForensics++"],
+    "frame_num": {"train": 32, "test": 32, "val": 32},
+    "compression": "c23",
+    "test_batchSize": 32,
+    "val_batchSize": 32,
+    "workers": 8,
+    "mean": [0.5, 0.5, 0.5],
+    "std": [0.5, 0.5, 0.5],
+    "with_mask": False,
+    "with_landmark": False,
+    "use_data_augmentation": False,
+    # init_data_aug_method() runs unconditionally in the dataset constructor, so
+    # these must exist even though nothing is augmented at test time. Mirrors
+    # resnet34/vit/xception.yaml, which all set aug_type: simple.
+    "aug_type": "simple",
+    "data_aug": {"flip_prob": 0.5, "crop_scale": [0.08, 1.0], "rotate_prob": 0.5,
+                 "rotate_limit": [-10, 10], "blur_prob": 0.5, "blur_limit": [3, 7],
+                 "brightness_prob": 0.5, "brightness_limit": [-0.1, 0.1],
+                 "contrast_limit": [-0.1, 0.1], "quality_lower": 40,
+                 "quality_upper": 100},
+    # grid writer
+    "grid_split": 3,
+    "max_grids": 500,
+    "overwrite": False,
+    "base_output_dir": "results/GPG_assets/shared_random",
+    # unused without an XAI pass, but the creator's signature wants them
+    "xai_method": None,
+    "quantitativ": False,
+    "threshold_steps": 0,
+}
+
+
 def parse_cli_overrides(pairs):
     """Turn repeated --set KEY=VALUE flags into a config-override dict."""
     overrides = {}
@@ -49,10 +93,14 @@ def parse_cli_overrides(pairs):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Grid Pointing Game evaluation")
-    parser.add_argument("--model-config", required=True,
-                        help="Detector yaml, e.g. training/config/detector/resnet34_bcos_v2.yaml")
-    parser.add_argument("--test-config", required=True,
-                        help="Run overlay yaml, e.g. results/test_bcos_res_2_config.yaml")
+    parser.add_argument("--model-config", default=None,
+                        help="Detector yaml, e.g. training/config/detector/resnet34_bcos_v2.yaml. "
+                             "Required for evaluation; optional when only creating shared grid "
+                             "assets (--grids-only --selection random), which builds no model.")
+    parser.add_argument("--test-config", default=None,
+                        help="Run overlay yaml, e.g. results/test_bcos_res_2_config.yaml. "
+                             "Defaults to training/config/test_config.yaml when creating shared "
+                             "grid assets.")
     parser.add_argument("--weights", default=None,
                         help="Checkpoint .pth to evaluate; overrides 'pretrained' from the yamls")
     parser.add_argument("--xai-method", default=None,
@@ -608,8 +656,8 @@ def main():
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    model_path = resolve_path(args.model_config)
-    config_path = resolve_path(args.test_config)
+    # Model-free path: creating shared random grids needs no model/checkpoint.
+    model_free = args.grids_only and args.selection == "random"
 
     additional_args = {f"{args.split}_batchSize": args.batch_size}
     additional_args.update(parse_cli_overrides(args.set))
@@ -620,12 +668,34 @@ def main():
     if args.output_dir is not None:
         additional_args["base_output_dir"] = resolve_path(args.output_dir)
 
-    config = load_config(model_path, config_path, additional_args=additional_args)
+    if model_free and args.model_config is None:
+        # No detector yaml: built-in defaults + the maintained machine config,
+        # so asset generation runs on flags alone.
+        model_path = "<GRID_ASSET_DEFAULTS>"
+        config_path = resolve_path(args.test_config or "training/config/test_config.yaml")
+        config = dict(GRID_ASSET_DEFAULTS)
+        with open(config_path, "r") as f:
+            config.update(yaml.safe_load(f))
+        config.update(additional_args)
+        # Assets must land in the same place regardless of the caller's cwd.
+        config["base_output_dir"] = resolve_path(config["base_output_dir"])
+    else:
+        if args.model_config is None or args.test_config is None:
+            raise SystemExit("--model-config and --test-config are required unless creating "
+                             "shared grid assets with --grids-only --selection random")
+        model_path = resolve_path(args.model_config)
+        config_path = resolve_path(args.test_config)
+        config = load_config(model_path, config_path, additional_args=additional_args)
 
-    required_keys = ["grid_split", "overwrite", "quantitativ", "xai_method", "max_grids"]
+    # xai_method/quantitativ/threshold_steps only matter once an XAI pass runs.
+    required_keys = (["grid_split", "overwrite", "max_grids"] if args.grids_only else
+                     ["grid_split", "overwrite", "quantitativ", "xai_method", "max_grids"])
     for key in required_keys:
         if key not in config:
             raise ValueError(f"Missing required config key: {key}")
+    config.setdefault("quantitativ", False)
+    config.setdefault("threshold_steps", 0)
+    config.setdefault("xai_method", None)
 
     logger.info("Parameters: XAI=%s, Base=%s, Model=%s, Grid=%dx%d, selection=%s",
                 config['xai_method'], config['base_output_dir'], model_path,
@@ -633,9 +703,6 @@ def main():
 
     grid_size = (config['grid_split'], config['grid_split'])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # Model-free path: creating shared random grids needs no model/checkpoint.
-    model_free = args.grids_only and args.selection == "random"
 
     if model_free:
         model = None
