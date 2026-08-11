@@ -52,3 +52,87 @@ To train a model, follow these steps:
    ```bash
    cd BWCluster
    bash train_model.sh --config /path/to/config.yaml
+
+
+### Example 2.0
+
+#### Training
+
+python training/train.py \
+  --detector_path training/config/detector/resnet34.yaml
+
+#### Testing
+
+python training/test.py \
+  --detector_path training/config/detector/resnet34.yaml \
+  --weights_path logs/training/resnet34_2026-07-28-22-22-48/val/avg/ckpt_best.pth \
+  --test_dataset FaceForensics++ Celeb-DF-v1 Celeb-DF-v2 DFDCP DFDC UADFV \
+  simswap_ff inswap_ff fsgan_ff blendface_ff e4s_cdf danet_cdf
+
+#### GPG
+
+###### shared grids
+
+python notebooks/Linus/GridPointingGame/GPG_eval.py \
+  --model-config training/config/detector/resnet34_bcos_v2.yaml \
+  --test-config results/test_bcos_res_2_config.yaml \
+  --weights logs/training/resnet34_bcos_v2_2026-07-29-20-50-31_b2/val/avg/ckpt_best.pth \
+  --xai-method bcos --split test \
+  --grid-dir results/GPG_assets/shared_per_dataset/FaceForensics++_test_256/3x3 \
+  --output-dir results/eval/gpg_perdataset_bcos_b2 \
+  --set 'backbone_config={"b": 2.0}' \
+  --set dataset_json_folder=preprocessing/dataset_json_v3 \
+  --set 'test_dataset=[FaceForensics++]'
+
+
+##### highest confidence per dataset
+
+python notebooks/Linus/GridPointingGame/GPG_eval.py \
+  --model-config training/config/detector/resnet34_bcos_v2.yaml \
+  --test-config results/test_bcos_res_2_config.yaml \
+  --weights logs/training/resnet34_bcos_v2_2026-07-29-20-50-31_b2/val/avg/ckpt_best.pth \
+  --xai-method bcos --split test \
+  --selection confidence --real-selection confident --dataset-mixing single \
+  --output-dir results/eval/gpg_conf_perdataset_bcos_b2 \
+  --set 'backbone_config={"b": 2.0}' \
+  --set dataset_json_folder=preprocessing/dataset_json_v3 \
+  --set 'test_dataset=[FaceForensics++, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, UADFV]' \
+  --set max_grids=500
+
+
+
+#### MPG on shared assets
+
+python notebooks/Linus/GridPointingGame/MPG_eval.py \
+  --model-config training/config/detector/resnet34_bcos_v2.yaml \
+  --test-config results/test_MPG_bcos_2_5.yaml \
+  --weights logs/training/resnet34_bcos_v2_2026-07-29-20-50-31_b2/val/avg/ckpt_best.pth \
+  --xai-method bcos \
+  --image-list results/MPG_assets/shared_random/FaceForensics++_test/images.json \
+  --output-dir results/eval/mpg_bcos_b2_bcos \
+  --batch-size 8 \
+  --set 'backbone_config={"b": 2.0}' \
+  --set mask_resolution=256 \
+  --set with_mask=true \
+  --set dataset_json_folder=preprocessing/dataset_json_v3 \
+  --set 'test_dataset=[FaceForensics++]' # specifiy datasets here
+
+
+####
+
+# GPG grids (model-free)
+python notebooks/Linus/GridPointingGame/GPG_eval.py \
+  --model-config training/config/detector/resnet34.yaml \
+  --test-config results/test_bcos_res_2_config.yaml \
+  --split test --selection random --grids-only --seed 32 \
+  --output-dir results/GPG_assets/shared_random \
+  --set dataset_json_folder=preprocessing/dataset_json_v3 \
+  --set 'test_dataset=[FaceForensics++]' --set max_grids=500
+
+# MPG image list (model-free)
+python notebooks/Linus/GridPointingGame/MPG_eval.py \
+  --model-config training/config/detector/resnet34.yaml \
+  --test-config results/test_MPG_bcos_2_5.yaml \
+  --images-only --num-images 500 --seed 32 \
+  --set dataset_json_folder=preprocessing/dataset_json_v3 \
+  --set 'test_dataset=[FaceForensics++]' --set with_mask=true
