@@ -194,10 +194,15 @@ def _to_rgb01(tensor):
 
 
 class GradCamEvaluator:
-    def __init__(self, model, device, method="gradcam", target_layer=None, smooth=0):
+    def __init__(self, model, device, method="gradcam", target_layer=None, smooth=0,
+                 reshape_transform=None):
         self.model = model.to(device)
         self.device = device
         self.method = method.lower()
+        # Token models (ViT) emit (B, N, D) instead of (B, C, H, W); the reshape
+        # folds the tokens back onto the patch grid. Resolved from the backbone
+        # in _resolve_target_layer when not passed explicitly.
+        self.reshape_transform = reshape_transform
         # NO smoothing for the CAM family, matching the B-cos paper (Sec. 4):
         # "all attribution maps (except for GradCAM, which is of much lower
         #  resolution to begin with) are smoothed by a 15x15 kernel to better
@@ -232,6 +237,20 @@ class GradCamEvaluator:
     def _resolve_target_layer(self, tensor):
         """Pick the final feature map as Grad-CAM target (see find_last_feature_map_layer)."""
         example = tensor.unsqueeze(0) if tensor.dim() == 3 else tensor
+        # A backbone may declare its own target (B-cos-v2 style) instead of
+        # relying on the shape heuristic. Required for token models, whose
+        # feature map is not 4-D and which the heuristic cannot identify.
+        backbone = getattr(self.model, "backbone", self.model)
+        if hasattr(backbone, "get_gradcam_target"):
+            layer = backbone.get_gradcam_target()
+            name = "<declared by backbone.get_gradcam_target()>"
+            if self.reshape_transform is None:
+                self.reshape_transform = getattr(
+                    backbone, "gradcam_reshape_transform", None)
+            logger.info("Grad-CAM target layer: %s (%s)", name, type(layer).__name__)
+            self.target_layer = layer
+            self.cam = self._build_cam(layer)
+            return
         layer, name = find_last_feature_map_layer(self.model, example.to(self.device))
         if layer is None:
             layer = find_last_valid_conv_layer(self.model.backbone)
@@ -244,9 +263,19 @@ class GradCamEvaluator:
 
     def _build_cam(self, layer):
         if self.method == "layergrad":
+            if self.reshape_transform is not None:
+                # captum's LayerGradCam has no reshape hook, so it would average
+                # a (B, N, D) token tensor as if D were the spatial axes.
+                raise ValueError(
+                    "layergrad does not support token models (ViT): captum's "
+                    "LayerGradCam cannot apply a reshape_transform. Use "
+                    "method='gradcam' for these backbones.")
             # Captum LayerGradCam expects positional args: (forward_func, layer)
             return LayerGradCam(self.wrapped_model, layer)
-        cam = _PGC_METHODS[self.method](model=self.wrapped_model, target_layers=[layer])
+        kwargs = ({} if self.reshape_transform is None
+                  else {"reshape_transform": self.reshape_transform})
+        cam = _PGC_METHODS[self.method](model=self.wrapped_model,
+                                        target_layers=[layer], **kwargs)
         # Suppress pytorch_grad_cam's internal cv2.resize (bilinear): returning
         # None as the target size makes scale_cam_image skip resizing, leaving
         # the CAM at feature-map resolution. _raw_cam then upsamples NEAREST,

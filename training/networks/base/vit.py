@@ -442,6 +442,35 @@ class SimpleViT(BcosUtilMixin, nn.Module):
         x = x + self.logit_bias
         return x
 
+    def get_gradcam_target(self) -> nn.Module:
+        """Grad-CAM target: the transformer output, i.e. the tensor `features()`
+        feeds to `x.mean(dim=1)` — the token-model analogue of the last feature
+        map entering global pooling on the CNN backbones.
+
+        Not `encoder[-1].attn.norm` (the pytorch-grad-cam tutorial's
+        `blocks[-1].norm1`): that recommendation exists because a CLS-token ViT
+        classifies from the CLS token alone, leaving zero gradient on the patch
+        tokens of the last block. This model mean-pools over ALL tokens, so the
+        gradients are non-zero and the later, more informative tensor is usable.
+        """
+        return self.transformer
+
+    @staticmethod
+    def gradcam_reshape_transform(tensor: Tensor) -> Tensor:
+        """(B, N, D) tokens -> (B, D, h, w) patch grid.
+
+        No CLS-token slice: this is a SimpleViT, every one of the N tokens is a
+        patch. Slicing `[:, 1:, :]` as the tutorial does would drop a real patch
+        and leave a non-square token count.
+        """
+        n = tensor.size(1)
+        h = w = int(math.isqrt(n))
+        if h * w != n:
+            raise ValueError(
+                f"{n} tokens do not form a square patch grid — cannot reshape "
+                f"for Grad-CAM.")
+        return tensor.reshape(tensor.size(0), h, w, tensor.size(2)).permute(0, 3, 1, 2)
+
     def initialize_weights(self, module):
         if isinstance(module, nn.Conv2d):
             nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
