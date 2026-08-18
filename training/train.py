@@ -293,9 +293,18 @@ def main():
     config['save_feat'] = args.save_feat
     if config['lmdb']:
         config['dataset_json_folder'] = 'preprocessing/dataset_json_v3'
+    # An explicit --task_target wins; otherwise B-cos runs tag themselves with
+    # their b value so that a b sweep launched in one sbatch burst cannot land
+    # every job in the same timestamped log dir. Same b_value_name convention as
+    # the XAI games (trainer.run_xai_games): 1.25 -> "1_25".
+    if args.task_target:
+        config['task_target'] = args.task_target
+    elif 'b' in config.get('backbone_config', {}):
+        b_value_name = str(config['backbone_config']['b']).replace('.', '_')
+        config['task_target'] = f"b{b_value_name}"
     # create logger
     timenow=datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    task_str = f"_{config['task_target']}" if config.get('task_target', None) is not None else ""
+    task_str = f"_{config['task_target']}" if config.get('task_target') else ""
     logger_path =  os.path.join(
                 config['log_dir'],
                 config['model_name'] + task_str + '_' + timenow
