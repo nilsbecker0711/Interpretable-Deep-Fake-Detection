@@ -73,8 +73,8 @@ class CNBlock(nn.Module):
             ),
             # Permute([0, 3, 1, 2]),
         )
-        print("dim:", dim, "type:", type(dim))
-        print("layer_scale:", layer_scale, "type:", type(layer_scale))
+        #print("dim:", dim, "type:", type(dim))
+        #print("layer_scale:", layer_scale, "type:", type(layer_scale))
         self.layer_scale = nn.Parameter(torch.ones(dim, 1, 1) * layer_scale)
         self.stochastic_depth = StochasticDepth(stochastic_depth_prob, "row")
 
@@ -157,10 +157,44 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         self.num_classes = convnext_config["num_classes"]
         in_chans = convnext_config["in_chans"]
         block = None
-        conv_layer = DEFAULT_CONV_LAYER
-        self.conv_layer = DEFAULT_CONV_LAYER
-        norm_layer = DEFAULT_NORM_LAYER
-        self.norm_layer = DEFAULT_NORM_LAYER
+        # b is plumbed through so ConvNeXt can join the b-sweep the other b-cos
+        # backbones run (resnet34_bcos_v2 / xception_bcos: b1.0 ... b2.5).
+        # Previously conv_layer was pinned to the bare DEFAULT_CONV_LAYER, which
+        # left b at BcosConv2d's own default of 2.0 with no way to change it.
+        # Default kept at 2.0 so configs without a `b:` key behave as before.
+        self.b = float(convnext_config.get("b", 2.0))
+        conv_layer = partial(DEFAULT_CONV_LAYER, b=self.b)
+        self.conv_layer = conv_layer
+        # Norm selection (config-driven, same mapping and semantics as
+        # resnet34_bcos_v2/xception_bcos/vit). 'norm' is REQUIRED — no silent
+        # default. B-cos v2 runs ConvNeXt both ways (convnext_*_bnu vs _pn);
+        # DEFAULT_NORM_LAYER above is only their library fallback.
+        norm_mapping = {
+            'AllNormUncentered2d': norms.AllNormUncentered2d,
+            'BatchNormUncentered2d': norms.BatchNormUncentered2d,
+            'GroupNormUncentered2d': norms.GroupNormUncentered2d,
+            'GNInstanceNormUncentered2d': norms.GNInstanceNormUncentered2d,
+            'GNLayerNormUncentered2d': norms.GNLayerNormUncentered2d,
+            'PositionNormUncentered2d': norms.PositionNormUncentered2d,
+            'AllNorm2d': norms.AllNorm2d,
+            'BatchNorm2d': norms.BatchNorm2d,
+            'DetachableGroupNorm2d': norms.DetachableGroupNorm2d,
+            'DetachableGNInstanceNorm2d': norms.DetachableGNInstanceNorm2d,
+            'DetachableGNLayerNorm2d': norms.DetachableGNLayerNorm2d,
+            'DetachableLayerNorm': norms.DetachableLayerNorm,
+            'DetachablePositionNorm2d': norms.DetachablePositionNorm2d,
+        }
+        norm_class = norm_mapping.get(convnext_config['norm'], None)
+        if norm_class is None:
+            raise ValueError(f"Unknown norm type: {convnext_config['norm']}")
+        # norm_bias: true keeps the learnable bias; false/absent removes it via
+        # NoBias (bias-free norms are the B-cos default — additive terms break
+        # the completeness of the explanations).
+        if convnext_config.get('norm_bias', False):
+            norm_layer = norm_class
+        else:
+            norm_layer = norms.NoBias(norm_class)
+        self.norm_layer = norm_layer
         self.logit_bias = convnext_config["logit_bias"]
         self.logit_temperature = convnext_config["logit_temperature"]
     #     **kwargs: Any,
@@ -288,26 +322,21 @@ class BcosConvNeXt(BcosUtilMixin, nn.Module):
         return out
     
     def initialize_weights(self, module):
+        # In line with the b-cos v2 initialization: only the weight-carrying
+        # leaves are initialized, everything else keeps its default.
         if isinstance(module, nn.Conv2d):
             nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
         elif isinstance(module, nn.BatchNorm2d):
-            nn.init.constant_(module.weight, 1)
-            nn.init.constant_(module.bias, 0)
+            if module.weight is not None:
+                nn.init.constant_(module.weight, 1)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)
         elif isinstance(module, nn.Linear):
             nn.init.xavier_normal_(module.weight)
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
-        # Recursively apply to custom modules
-        elif isinstance(module, SeparableConv2d) or isinstance(module, Block):
-            for submodule in module.children():
-                self.initialize_weights(submodule)
-        # Ignore activation, pooling, and sequential layers
-        elif isinstance(module, (nn.ReLU, nn.MaxPool2d, nn.Sequential)):
-            pass  # Do nothing
-        else:
-            print(f'unknown module type {type(module)}')
 
 
     def get_classifier(self) -> nn.Module:
