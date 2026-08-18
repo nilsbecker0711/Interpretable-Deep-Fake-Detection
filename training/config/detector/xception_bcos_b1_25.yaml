@@ -1,45 +1,54 @@
 # log dir 
-log_dir:  /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
+log_dir: /home/ma/ma_ma/ma_tischuet/Interpretable-Deep-Fake-Detection/logs/xception
 
 # model setting
-pretrained: Null # retraining campaign 2026-07: from scratch, like the b-cos twin.
-#/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_best.pth (pre-fix weights — do not fine-tune from these)
-model_name: xception   # model name
-backbone_name: xception  # backbone name
+pretrained: Null #/pfs/work9/workspace/scratch/ma_tischuet-team_project_explainable_deepfakes/weights/best_weights/xception_2_5_best.pth
+
+# model setting
+model_name: xception_bcos_detector   # model name
+backbone_name: xception_bcos  # backbone name
+
+eval: true
 
 #backbone setting
 backbone_config:
-  mode: original
   num_classes: 2
-  inc: 3
+  in_chans: 6
   dropout: false
+  mode: original
+  logit_bias: #None
+  logit_temperature: # None ≡ 1, matches the original.
+  b: 1.25
+  # norm is REQUIRED (no silent default in the backbone anymore).
+  # BatchNormUncentered2d aligns Xception with the resnet34_bcos_v2 recipe, so
+  # architecture comparisons are not confounded by the norm scheme.
+  # norm_bias semantics (fixed 2026-07): false = bias-free via NoBias, true = keep bias.
+  norm: BatchNormUncentered2d
+  norm_bias: false
 
 # dataset
-all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
+all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV, df-tp-ffhq]
 train_dataset: [FaceForensics++]
+test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 val_dataset: [FaceForensics++]
-test_dataset: [FaceForensics++] #, DeepFakeDetection]
 
 compression: c23  # compression-level for videos
-train_batchSize: 32   # training batch size (matched to xception_bcos twin)
-val_batchSize: 32
+train_batchSize: 32   # training batch size ! on debugging machine OOM at 64
+val_batchSize: 32   # test batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
-save_ckpt: true   # whether to save checkpoint
-save_feat: true   # whether to save features
+add_inverse_channels: true
 
 
 # data augmentation
-dataset_type:                # empty -> abstract_dataset.py (3-channel standard path)
-use_data_augmentation: true  # matched to xception_bcos twin (was false)
-aug_type: simple             # simple = SAME augs as the b-cos twin (RandomResizedCrop + h-flip); full = DeepfakeBench suite
+dataset_type: 'bcos'
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
-  crop_scale: [0.08, 1.0]    # RandomResizedCrop scale, matches the b-cos path (torchvision default)
   rotate_prob: 0.5
   rotate_limit: [-10, 10]
   blur_prob: 0.5
@@ -64,24 +73,28 @@ optimizer:
     beta1: 0.8  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.000001  # epsilon for Adam optimizer
-    weight_decay: 0  # unified with b-cos twin (documented change: was 0.0005)
+    weight_decay: 0  # b-cos paper: unnecessary, weights normalized to unit norm
     amsgrad: true
   sgd:
-    lr: 0.0002  # learning rate
+    lr: 0.0002  # learning rate, KAI: Lower LR may stabilize the results
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
   gradient_clipping: false
 
 # training config
-lr_scheduler: warmup_cosine   # learning rate scheduler (matched to twin)
+lr_scheduler: warmup_cosine # step   # learning rate scheduler
 lr_eta_min: 0
 lr_T_max: 100
-nEpochs: 100   # number of epochs to train for (matched to twin, was 60)
+# lr_step: 4
+# lr_gamma: 0.2
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
+save_ckpt: true   # whether to save checkpoint (was false — would have saved NO checkpoints)
+save_feat: true   # whether to save features
 
 # in-training XAI monitor (GPG on fixed shared val grids + MPG on val fakes)
 xai_monitor_every_n_epochs: 10   # 0 disables
@@ -89,13 +102,13 @@ xai_monitor_grid_dir: results/GPG_assets/shared_random/FaceForensics++_val_256/3
 xai_monitor_mpg_images: 250
 
 # loss function
-loss_func: cross_entropy   # loss function to use
+loss_func: bce_off_labels   # loss function to use
 losstype: null
 
 # metric
 metric_scoring: auc   # metric for evaluation (auc, acc, eer, ap)
 
 # cuda
-ddp: false
+ddp: true   # Kai: unnecessary, since it is overwritten anyway in train.py-> main() -> config['ddp']= args.ddp
 cuda: true   # whether to use CUDA acceleration
 cudnn: true   # whether to use CuDNN for convolution operations
