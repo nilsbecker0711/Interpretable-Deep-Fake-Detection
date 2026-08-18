@@ -50,7 +50,7 @@ test_batchSize: 64   # test batch size
 val_batchSize: 64
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
-resolution: 224   # resolution of output image to network
+resolution: 256   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
@@ -111,7 +111,7 @@ manualSeed: 1024   # manual seed for random number generation
 
 # in-training XAI monitor (GPG on fixed shared val grids + MPG on val fakes)
 xai_monitor_every_n_epochs: 10   # 0 disables
-xai_monitor_grid_dir: results/GPG_assets/shared_random/FaceForensics++_val_224/3x3
+xai_monitor_grid_dir: results/GPG_assets/shared_random/FaceForensics++_val_256/3x3
 xai_monitor_mpg_images: 250
 
 # loss function
