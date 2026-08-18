@@ -13,7 +13,7 @@ quantitativ: false
 base_output_dir: "results/"
 threshold_steps: 10
 max_images: null #ran for res_1.25, 
-mask_resolution: 256 #256 #224 for resminimal, 256 for resnet 34
+mask_resolution: 256   # every detector config runs at 256
 ######################################################################################################################################################
 
 label_dict:
