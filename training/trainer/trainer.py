@@ -686,8 +686,15 @@ class Trainer(object):
         from GPG_eval import GridPointingGameCreator
         from MPG_eval import MaskPointingGameCreator
 
+        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
         cfg = self.config
         grid_dir = cfg.get("xai_monitor_grid_dir")
+        # The yamls state the grid dir repo-relative, but training is launched
+        # from training/ (see the sbatch scripts), so resolve against the repo
+        # root instead of the cwd.
+        if grid_dir and not os.path.isabs(grid_dir):
+            grid_dir = os.path.join(repo_root, grid_dir)
         if not grid_dir or not _glob.glob(os.path.join(grid_dir, "*.pt")):
             raise FileNotFoundError(
                 f"xai_monitor_grid_dir ({grid_dir}) is unset or holds no grids — "

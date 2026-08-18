@@ -2,9 +2,9 @@ mode: train
 lmdb: False
 # changed lmdb:True to False
 dry_run: false
-rgb_dir: '/home/ml-student-007/tilo_hiwi/Interpretable-Deep-Fake-Detection/'  # repo root; MUST end with '/' (load_rgb concatenates). Dataset JSONs store repo-relative paths, so this is the ONLY value to change on another machine.
+rgb_dir: '/hkfs/work/workspace/scratch/ma_tischuet-einspace_ws/'  # repo root; MUST end with '/' (load_rgb concatenates). Dataset JSONs store repo-relative paths, so this is the ONLY value to change on another machine.
 lmdb_dir:  './datasets/lmdb'
-dataset_json_folder: 'preprocessing/dataset_json_v3' #'datasets/FaceForensics++'
+dataset_json_folder: '/hkfs/work/workspace/scratch/ma_tischuet-einspace_ws/dataset_json_v3' #'datasets/FaceForensics++'
 # removed prefix of ./
 SWA: False
 save_avg: True

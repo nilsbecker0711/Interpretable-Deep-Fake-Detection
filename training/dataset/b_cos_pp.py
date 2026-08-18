@@ -421,9 +421,12 @@ class DeepfakeBcosDataset(data.Dataset):
         if file_path is None:
             return np.zeros((size, size, 1))
         if not self.lmdb:
-            # if not file_path[0] == '.':
-            #     file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
-            # assert os.path.exists(file_path), f"{file_path} does not exist"
+            # Only prefix RELATIVE paths (same fix as abstract_dataset.load_mask).
+            # Without this the relative mask path is resolved against the cwd,
+            # never found, and every mask silently loads as zeros — which makes
+            # the Mask Pointing Game skip every image.
+            if not os.path.isabs(file_path):
+                file_path = os.path.join('.', self.config["rgb_dir"], file_path)
             if os.path.exists(file_path):
                 mask = cv2.imread(file_path, 0)
                 if mask is None:

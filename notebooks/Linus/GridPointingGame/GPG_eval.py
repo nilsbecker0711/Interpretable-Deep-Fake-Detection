@@ -2,9 +2,15 @@ import os
 import sys
 
 #set project path
+# training/ must come BEFORE site-packages: the repo ships its own 'bcos' package
+# (training/bcos) and an unrelated pip 'bcos' library may also be installed. The
+# detectors only sys.path.append(training/), which loses to site-packages.
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-if PROJECT_PATH not in sys.path:
-    sys.path.insert(0, PROJECT_PATH)
+TRAINING_PATH = os.path.join(PROJECT_PATH, "training")
+for _p in (PROJECT_PATH, TRAINING_PATH):
+    if _p in sys.path:
+        sys.path.remove(_p)
+    sys.path.insert(0, _p)
 
 import logging
 import torch
