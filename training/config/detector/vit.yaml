@@ -39,9 +39,9 @@ val_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 test_dataset: [FaceForensics++] #, FF-F2F, FF-DF, FF-FS, FF-NT]
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
-test_batchSize: 64   # test batch size
-val_batchSize: 64
+train_batchSize: 32   # training batch size
+test_batchSize: 32   # test batch size
+val_batchSize: 32
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32, 'val': 32}   # number of frames to use per video in training and testing
 resolution: 256   # resolution of output image to network
