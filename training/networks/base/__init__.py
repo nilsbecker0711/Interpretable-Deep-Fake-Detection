@@ -23,5 +23,6 @@ from .resnet34_bcos_v2_minimal import ResNet34_bcos_v2_minimal
 from .vit import SimpleViT
 from .vit_base import SimpleViT_base
 from .convnext_bcos import BcosConvNeXt
+from .convnext_std import ConvNeXt
 from .vgg19_v2_bcos import BcosVGG
 from .xception_bcos import XceptionBcos

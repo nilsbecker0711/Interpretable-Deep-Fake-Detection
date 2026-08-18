@@ -19,6 +19,7 @@ from .xception_detector import XceptionDetector
 from .vit_bcos_detector import ViTBcosDetector
 from .vit_base_detector import ViTBaseDetector
 from .convnext_bcos_dector import Convnext_Bcos_Detector
+from .convnext_detector import ConvnextDetector
 from .vgg19_v2_bcos_detector import VGGBcosDetector
 from .xception_bcos_detector import XceptionBcosDetector
 
