@@ -152,7 +152,9 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             res = self.config['resolution']
             da = self.config['data_aug']
             trans = A.Compose([
-                A.RandomResizedCrop(size=(res, res),
+                # height/width, not size=(h, w): the pinned albumentations==1.1.0
+                # (requirements.txt) only gained the `size` kwarg in 1.4.15.
+                A.RandomResizedCrop(height=res, width=res,
                                     scale=tuple(da.get('crop_scale', [0.08, 1.0])),
                                     ratio=tuple(da.get('crop_ratio', [0.75, 1.3333333333333333]))),
                 A.HorizontalFlip(p=da['flip_prob']),
