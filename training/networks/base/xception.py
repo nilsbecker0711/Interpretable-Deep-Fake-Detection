@@ -124,6 +124,16 @@ class Xception(nn.Module):
         
         self.bn1 = nn.BatchNorm2d(32)
         self.relu = nn.ReLU(inplace=True)
+        # A SEPARATE ReLU for the classifier, so the final feature map has a
+        # module of its own to hook. self.relu is shared across four executed
+        # call sites and is inplace=True: a Grad-CAM hook on it fires once per
+        # call, keeps only the last activation, pairs it with a gradient from a
+        # different invocation, and the saved tensor is then mutated in place.
+        # Measured cost: GPG weighted 0.1137 on shared FF++ grids against a
+        # 0.1111 chance floor, i.e. no signal at all. Carries no parameters, so
+        # existing checkpoints still load with strict=True, and inplace=False
+        # keeps it from mutating the caller's features tensor.
+        self.final_relu = nn.ReLU(inplace=False)
 
         self.conv2 = nn.Conv2d(32, 64, 3, bias=False)
         self.bn2 = nn.BatchNorm2d(64)
@@ -269,7 +279,13 @@ class Xception(nn.Module):
         if self.mode == 'adjust_channel':
             x = features
         else:
-            x = self.relu(features)
+            # final_relu, not the shared self.relu -- see __init__. Output is
+            # bit-identical (verified max|diff| = 0), but this ReLU is invoked
+            # exactly once so it can carry the Grad-CAM hook. inplace=False also
+            # means `features` is no longer mutated here, so a caller holding it
+            # (xception_detector puts it in pred_dict['feat']) now sees the
+            # pre-ReLU tensor; only trainer.py's unused accumulation reads it.
+            x = self.final_relu(features)
 
         if len(x.shape) == 4:
             x = F.adaptive_avg_pool2d(x, (1, 1))
@@ -286,6 +302,24 @@ class Xception(nn.Module):
         x = self.features(input)
         out = self.classifier(x)
         return out, x
+
+    def get_gradcam_target(self) -> nn.Module:
+        """Grad-CAM target: the tensor that global average pooling consumes.
+
+        Same convention as ResNet-34 (self.resnet -> avgpool) and ConvNeXt
+        (self.convnext -> avgpool), where the hooked module's output goes
+        straight into the pool. Xception is the one model with an op in
+        between -- classifier() applies a ReLU first -- so the equivalent point
+        is AFTER that ReLU, not features()/bn4.
+
+        Declared rather than discovered: the shape heuristic picked the shared
+        inplace self.relu and scored 0.1137 against a 0.1111 chance floor.
+        Measured on 40 shared FF++ grids (weighted, threshold 0 / top-2.5%):
+            self.relu  0.1137 / 0.1137   <- no signal
+            bn4        0.2054 / 0.6005   <- pre-ReLU, one op too early
+            final_relu 0.6010 / 0.8260   <- this
+        """
+        return self.adjust_channel if self.mode == 'adjust_channel' else self.final_relu
 
     def initialize_weights(self, module):
         if isinstance(module, nn.Conv2d):

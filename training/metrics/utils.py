@@ -42,8 +42,13 @@ def get_test_metrics(y_pred, y_true, img_names):
                 parts = s.split('\\')
             else:
                 parts = s.split('/')
-            a = parts[-2]
-            b = parts[-1]
+            # Key on the FULL directory path, not just the folder name. Several
+            # DF40 subsets name their fake folders after the source FF++ video
+            # ('953', '078', ...), which are exactly the real folders' names, so
+            # keying on parts[-2] merged real and fake frames into one "video".
+            # In EFSAll_ff that left 0 pure-fake groups -> no positive labels ->
+            # roc_curve returned all-NaN and nanargmin below raised.
+            a = '/'.join(parts[:-1])
 
             if a not in result_dict:
                 result_dict[a] = []
@@ -60,7 +65,16 @@ def get_test_metrics(y_pred, y_true, img_names):
                 label_sum += int(frame[2])
                 leng += 1
             new_pred.append(pred_sum / leng)
-            new_label.append(int(label_sum / leng))
+            # Majority label. With the grouping above every group is pure, so this
+            # equals the old int() truncation; it only matters if a dataset ever
+            # does mix labels inside one directory, where truncation would silently
+            # call any group that is not 100% fake 'real'.
+            new_label.append(int(round(label_sum / leng)))
+        if len(set(new_label)) < 2:
+            # Only one class at video level (e.g. a subset whose fakes all sit in a
+            # single folder): a video-level ROC is undefined. Report NaN instead of
+            # crashing the whole test run -- the frame-level metrics are still valid.
+            return float('nan'), float('nan')
         fpr, tpr, thresholds = metrics.roc_curve(new_label, new_pred)
         v_auc = metrics.auc(fpr, tpr)
         fnr = 1 - tpr

@@ -96,8 +96,13 @@ def choose_metric(config):
 
 
 def test_one_dataset(model, data_loader):
+    # NOTE: the per-sample 'feat' tensors are deliberately NOT collected. They are
+    # the full spatial feature map, not a pooled vector (xception: 2048x8x8 =
+    # 512 KB/sample), so on a large test set they exhaust RAM: DFDC's 132k samples
+    # need ~64 GB, and the np.array() copy at the end doubles that -> the OOM
+    # killer took every xception run with rc=137. Nothing consumes them:
+    # get_test_metrics() only ever sees y_pred and y_true.
     prediction_lists = []
-    feature_lists = []
     label_lists = []
     for i, data_dict in tqdm(enumerate(data_loader), total=len(data_loader)):
         # get data
@@ -115,9 +120,9 @@ def test_one_dataset(model, data_loader):
         predictions = inference(model, data_dict)
         label_lists += list(data_dict['label'].cpu().detach().numpy())
         prediction_lists += list(predictions['prob'].cpu().detach().numpy())
-        feature_lists += list(predictions['feat'].cpu().detach().numpy())
-    
-    return np.array(prediction_lists), np.array(label_lists),np.array(feature_lists)
+
+    # third element kept so the call site's 3-tuple unpacking still works
+    return np.array(prediction_lists), np.array(label_lists), np.array([])
     
 def test_epoch(model, test_data_loaders):
     # set model to eval mode
