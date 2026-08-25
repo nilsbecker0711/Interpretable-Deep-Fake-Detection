@@ -69,6 +69,12 @@ python training/test.py \
   --test_dataset FaceForensics++ Celeb-DF-v1 Celeb-DF-v2 DFDCP DFDC UADFV \
   simswap_ff inswap_ff fsgan_ff blendface_ff e4s_cdf danet_cdf
 
+
+python training/test.py \
+  --detector_path training/config/detector/xception_bcos_b1_75.yaml \
+  --weights_path  logs/training/xception_bcos_detector_b1_75_2026-08-15-13-58-12/val/avg/ckpt_best.pth \
+  --test_dataset FaceForensics++ Celeb-DF-v1 Celeb-DF-v2 DFDCP UADFV 
+
 #### GPG
 
 ###### shared grids
