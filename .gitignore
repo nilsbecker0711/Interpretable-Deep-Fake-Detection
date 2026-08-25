@@ -5,6 +5,7 @@
 *.pth
 *.pt
 *.dat
+*.sh
 datasets/
 BWCluster/logs/
 BWCluster/*.out
