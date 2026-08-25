@@ -20,3 +20,8 @@ weights
 wandb/
 results/explanations/
 *.shresults/GPG_assets/**/*.pt
+results/eval/
+results/MPG_assets/
+results/GPG_assets/
+preprocessing/dataset_json_v3/
+preprocessing/dataset_json_v3_stale/
