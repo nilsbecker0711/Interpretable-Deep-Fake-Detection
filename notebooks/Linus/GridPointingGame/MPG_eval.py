@@ -42,6 +42,24 @@ def resolve_path(path):
     return path if os.path.isabs(path) else os.path.join(PROJECT_PATH, path)
 
 
+def canon_image_path(path):
+    """Canonical form for comparing image paths: repo-relative, normalised.
+
+    The dataset JSONs store repo-relative paths ('datasets/FaceForensics++/...'),
+    but image-list assets written before that conversion hold absolute ones. A
+    literal comparison then matches nothing — the shared list scored 0 of 500
+    images — even though both sides name the very same files. Canonicalising both
+    sides makes the match independent of which form the asset happens to use.
+    """
+    p = str(path)
+    if os.path.isabs(p):
+        try:
+            p = os.path.relpath(p, PROJECT_PATH)
+        except ValueError:      # different drive/mount: keep as-is
+            pass
+    return os.path.normpath(p)
+
+
 def parse_cli_overrides(pairs):
     """Turn repeated --set KEY=VALUE flags into a config-override dict."""
     overrides = {}
@@ -95,7 +113,7 @@ logger = logging.getLogger(__name__)
 class MaskPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, xai_method=None, plotting_only=False,
                  model=None, model_name="default", config_name="default",
-                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=224,
+                 test_data_loaders=None, dataset=None, device=None, config=None, overwrite=False, quantitativ=False, threshold_steps=0, max_images = None, mask_resolution=None,
                  topn_fractions=(0.025,), image_list=None):
         """
         Initialize grid creator with specified parameters.
@@ -120,12 +138,18 @@ class MaskPointingGameCreator(Analyser):
         self.threshold_steps = threshold_steps
         self.max_images = max_images
         self.results_dir = os.path.join(self.output_folder, f"MaskPointingGame")
+        # No default: a wrong value makes every mask fail the shape check below
+        # and get skipped, which looks like an empty result rather than an error.
+        if mask_resolution is None:
+            raise ValueError("mask_resolution is required (pass config['resolution'])")
         self.mask_resolution = mask_resolution
         self.topn_fractions = topn_fractions
         # Explicit image set (the MPG analogue of GPG's stored grid .pt files).
         # Selection by PATH rather than by loader position: identical images for
         # every model and method, independent of dataset class and shuffle order.
-        self.image_list = set(image_list) if image_list else None
+        # canonicalised so an asset holding absolute paths still matches the
+        # loader's repo-relative ones (see canon_image_path)
+        self.image_list = {canon_image_path(p) for p in image_list} if image_list else None
 
         if plotting_only:
             self.load_results()
@@ -176,7 +200,7 @@ class MaskPointingGameCreator(Analyser):
                 # With an explicit image list, keep ONLY the listed images. This
                 # makes the sample independent of loader order, so every model and
                 # XAI method scores the same set (see --image-list).
-                if self.image_list is not None and str(path_str) not in self.image_list:
+                if self.image_list is not None and canon_image_path(path_str) not in self.image_list:
                     continue
 
                 try:
@@ -352,8 +376,8 @@ def write_image_list(dataset, out_path, num_images, seed, dataset_name, split):
     """Draw `num_images` FAKE image paths at random and store them as the MPG asset.
 
     The MPG analogue of the shared GPG grid folder. Model-free (no confidence
-    ranking), seeded, and resolution-independent — MPG scores single images, so one
-    list serves 224 and 256 alike; only mask_resolution differs at scoring time.
+    ranking), seeded, and resolution-independent — MPG scores single images, so the
+    same list serves any input resolution (everything runs at 256 since 2026-08).
     """
     fakes = [p for p, l in zip(dataset.data_dict["image"], dataset.data_dict["label"]) if l != 0]
     if len(fakes) < num_images:

@@ -52,7 +52,7 @@ GRID_ASSET_DEFAULTS = {
     "mode": "test",
     "lmdb": False,
     "dataset_type": None,        # abstract_dataset.py: 3-channel, model-agnostic
-    "resolution": 256,           # 256 for CNNs, 224 for ViT -> --set resolution=224
+    "resolution": 256,           # every model runs at 256 (unified 2026-08)
     "test_dataset": ["FaceForensics++"],
     "val_dataset": ["FaceForensics++"],
     "frame_num": {"train": 32, "test": 32, "val": 32},
@@ -157,6 +157,48 @@ def parse_args():
 #setpup logginglogging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+class _LazyGrids:
+    """Grid tensors loaded and preprocessed one at a time, on demand.
+
+    The eager version built the whole list on the GPU before evaluating any of
+    it (`torch.load(..., map_location=device)` inside a list comprehension). A
+    3x3 grid of 256px cells is 768x768x3 float32 = 7.1 MB, and adapt_for_model
+    DOUBLES that for b-cos models, which take [x, 1-x] as 6 channels. At the
+    ~1500 grids a 100-per-dataset run produces that is 22 GB of VRAM before the
+    model even runs: every standard (3ch) run fitted in a 24 GB card at ~10 GB
+    and every b-cos run died with CUDA OOM. Loading lazily caps it at one grid.
+
+    Deliberately a sequence, not a generator: the evaluators call len() for
+    progress logging and GradCam's layer auto-search slices the first k grids.
+    Nothing holds a reference between iterations, so each grid is freed once
+    scored.
+    """
+
+    def __init__(self, paths, model, mean, std, device):
+        self.paths = list(paths)
+        self.model = model
+        self.mean = mean
+        self.std = std
+        self.device = device
+
+    def __len__(self):
+        return len(self.paths)
+
+    def _load(self, path):
+        grid = torch.load(path, map_location=self.device)
+        grid = canonicalize_grid(grid, mean=self.mean, std=self.std, warn_name=path)
+        return adapt_for_model(grid, self.model, mean=self.mean, std=self.std)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return [self._load(p) for p in self.paths[idx]]
+        return self._load(self.paths[idx])
+
+    def __iter__(self):
+        for path in self.paths:
+            yield self._load(path)
+
+
 class GridPointingGameCreator(Analyser):
     def __init__(self, base_output_dir, grid_size=(3, 3), xai_method=None, max_grids=3,
                  model=None, model_name="default", config_name="default",
@@ -207,6 +249,7 @@ class GridPointingGameCreator(Analyser):
         self.topn_fractions = topn_fractions
         self.store_images = store_images
         self._path_index = None   # {image_path: (dataset_name, idx)}, built lazily
+        self._path_datasets = None  # {image_path: [dataset_name, ...]}, built lazily
         self.model_name = model_name
         self.config_name = config_name
         self.device = device
@@ -267,11 +310,46 @@ class GridPointingGameCreator(Analyser):
         return self._path_index
 
     def dataset_of(self, image_path):
-        """Which dataset an image belongs to ('' if unknown)."""
+        """Which dataset an image belongs to ('' if unknown).
+
+        First match wins. Fine for FAKES (unique to their subset) and for
+        labelling a grid's origin; use datasets_of() when an image may legitimately
+        belong to several datasets at once.
+        """
         if isinstance(image_path, list) and len(image_path) == 1:
             image_path = image_path[0]
         entry = self._build_path_index().get(image_path)
         return entry[0] if entry else ""
+
+    def datasets_of(self, image_path):
+        """EVERY configured dataset containing this image.
+
+        The DF40 '_ff' subsets (FSAll_ff, FRAll_ff, EFSAll_ff, e4e_ff, ...) are
+        built on the SAME FaceForensics++ originals, so their real frames are
+        literally the same files. dataset_of()'s first-match rule handed all of
+        them to whichever subset the index saw first, leaving the others with
+        fakes but zero reals — so they could never form a grid and silently
+        dropped out of the evaluation. Reals are shared, so every subset that
+        contains one gets it in its pool and draws its own sample.
+        """
+        if isinstance(image_path, list) and len(image_path) == 1:
+            image_path = image_path[0]
+        if self._path_datasets is None:
+            # A SET per path, not a list: the DF40 category datasets (FSAll_ff =
+            # 9 face-swap methods, FRAll_ff = 12, EFSAll_ff = 10) list the same
+            # real frame once per constituent method, so a plain append repeated
+            # the dataset name that many times and a pool ended up holding 9-12
+            # copies of every real -- enough for ranked_real[:8] to fill a grid
+            # with one image shown eight times.
+            acc = {}
+            for name, ds in self.datasets.items():
+                for p in ds.image_list:
+                    acc.setdefault(p, set()).add(name)
+            self._path_datasets = {p: sorted(names) for p, names in acc.items()}
+            shared = sum(1 for v in self._path_datasets.values() if len(v) > 1)
+            logger.info("Path->datasets index: %d images, %d shared by >1 dataset",
+                        len(self._path_datasets), shared)
+        return self._path_datasets.get(image_path, [])
 
     def compute_random_ranking(self):
         """Model-free ranking: every image of the split, confidence fixed at 1.0.
@@ -289,6 +367,14 @@ class GridPointingGameCreator(Analyser):
     def compute_sorted_confs(self):
         """Compute ranking by storing (image_path, confidence, label) for each correctly classified image."""
         ranking = {0: [], 1: []}
+        # Datasets can OVERLAP: the DF40 '_ff' subsets are all built on the same
+        # FaceForensics++ originals, so one real frame is yielded once per subset
+        # here. Without this guard it enters the ranking N times, N copies land in
+        # the same grid pool, and ranked_real[:8] can fill a grid with eight cells
+        # showing the SAME image (measured: 320 real slots drawn from 59 distinct
+        # frames, one of them used 34 times). The model output is identical for
+        # every copy, so keeping the first is lossless.
+        seen = set()
         # Rank over EVERY configured test dataset, not just the first one. The
         # image path carries the dataset identity (see dataset_of), so the
         # ranking tuples stay 3-wide and old pickles remain readable.
@@ -316,6 +402,10 @@ class GridPointingGameCreator(Analyser):
                 label = label_batch[j]
                 true_label = int(label.item())
                 image_path = path_of_image[j]
+                key = image_path[0] if isinstance(image_path, list) and len(image_path) == 1 else image_path
+                if key in seen:
+                    continue
+                seen.add(key)
 
                 # The image comes from the model's OWN dataloader and is already in
                 # the model's input space (bcos dataset: [0,1] + inverse channels;
@@ -432,14 +522,9 @@ class GridPointingGameCreator(Analyser):
         # normalized value range are detected and denormalized with a warning.
         mean = self.config.get('mean', [0.5, 0.5, 0.5])
         std = self.config.get('std', [0.5, 0.5, 0.5])
-        preprocessed_tensors = [
-            adapt_for_model(
-                canonicalize_grid(torch.load(path, map_location=self.device),
-                                  mean=mean, std=std, warn_name=path),
-                self.model, mean=mean, std=std)
-            for path in grid_paths
-        ]
-        logger.info("Loaded all grid tensors.")
+        preprocessed_tensors = _LazyGrids(grid_paths, self.model, mean, std, self.device)
+        logger.info("Grids will be loaded on demand (%d total, one at a time).",
+                    len(preprocessed_tensors))
 
         # Choose evaluator based on xai_method.
         if self.xai_method == "bcos":
@@ -536,11 +621,22 @@ class GridPointingGameCreator(Analyser):
         # the pooled ranking — harder and less saturated, but domain cues become a
         # possible shortcut. The gap between the two measures that confound.
         if self.dataset_mixing == "single" and len(self.datasets) > 1:
+            # An image goes into the pool of EVERY dataset that contains it, not
+            # just the first one (see datasets_of): the DF40 '_ff' subsets share
+            # one set of FF++ reals, and first-match attribution starved all but
+            # one of them of real cells. ranked_real was shuffled above, so each
+            # pool inherits an independent random order and every subset draws
+            # its own sample from the shared reals. Pools consume their lists in
+            # place, so a shared real may appear in several subsets' grids —
+            # intended, they are the same underlying frames — while within one
+            # grid the 8 reals stay distinct.
             pools = {}
             for tup in ranked_real:
-                pools.setdefault(self.dataset_of(tup[0]), {"real": [], "fake": []})["real"].append(tup)
+                for nm in self.datasets_of(tup[0]) or [self.dataset_of(tup[0])]:
+                    pools.setdefault(nm, {"real": [], "fake": []})["real"].append(tup)
             for tup in ranked_fake:
-                pools.setdefault(self.dataset_of(tup[0]), {"real": [], "fake": []})["fake"].append(tup)
+                for nm in self.datasets_of(tup[0]) or [self.dataset_of(tup[0])]:
+                    pools.setdefault(nm, {"real": [], "fake": []})["fake"].append(tup)
         else:
             pools = {"__all__": {"real": ranked_real, "fake": ranked_fake}}
         pool_names = sorted(pools)
@@ -784,6 +880,11 @@ def main():
         real_selection=args.real_selection,
         datasets=all_datasets,
         dataset_mixing=args.dataset_mixing,
+        # Config-driven so a CLI run can switch the rendered overlays off, the way
+        # the in-training monitor already does (trainer.py passes store_images=False).
+        # They dominate results_by_threshold.pkl: ~22 MB per grid per threshold
+        # sweep, i.e. ~7 GB for a 320-grid, 12-threshold run that nothing reads.
+        store_images=config.get("store_images", True),
     )
 
     if args.grid_dir is None:

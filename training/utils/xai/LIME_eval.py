@@ -9,7 +9,7 @@ from lime import lime_image
 import logging
 from skimage.segmentation import mark_boundaries
 
-from .xai_common import smooth_map, normalize_max
+from .xai_common import smooth_map, normalize_max, topn_mask
 
 # Setup logging and project root
 logging.basicConfig(level=logging.INFO)
@@ -182,60 +182,103 @@ class LIMEEvaluator:
     
         return intensity_map, out, model_prediction, img_np
     
-    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0):
+    def score_map(self, map_2d, grid_split, true_fake_pos):
+        """Score one 2D map on the grid pointing game.
+
+        Returns (pred_weighted, pred_unweighted, acc_weighted, acc_unweighted).
+        """
+        (fake_pred_weighted, grid_intensity_sums,
+         fake_pred_unweighted, non_0_counts) = self.lime_grid_eval(
+            map_2d, grid_split=grid_split, background_pixel=0.0)
+
+        weighted_accuracy = 0.0
+        unweighted_accuracy = 0.0
+        total_intensity = sum(grid_intensity_sums)
+        if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
+            weighted_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
+        total_nonzero_count = float(sum(non_0_counts))
+        if total_nonzero_count > 0 and 0 <= true_fake_pos < len(non_0_counts):
+            unweighted_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
+        return (fake_pred_weighted, fake_pred_unweighted,
+                weighted_accuracy, unweighted_accuracy)
+
+    def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0,
+                 topn_fractions=(0.025,), store_images=True):
+        """Run LIME on each grid and score localization.
+
+        Signature matches BCOSEvaluator/GradCamEvaluator so GPG_eval can call every
+        evaluator identically (it passes topn_fractions and store_images).
+        """
         results = []
-            
+
         for tensor, path in zip(tensor_list, path_list):
             intensity_map, out, model_prediction, img_np = self.generate_heatmap(tensor)
-    
+            true_fake_pos = self.extract_fake_position(path)
+
+            # Softmax confidence of the predicted class, so LIME results can be
+            # conditioned on correct classification like the other methods.
+            with torch.no_grad():
+                model_confidence = float(
+                    torch.softmax(out['cls'], dim=1)[0, model_prediction].item())
+
+            original_image = img_np if store_images else None
+
             thresholds = [None]
             if threshold_steps > 0:
                 thresholds += [i / threshold_steps for i in range(1, threshold_steps + 1)]
-    
+
             for t in thresholds:
                 threshold_value = t if t is not None else 0
-
                 thresholded_map = intensity_map.copy()
-
                 # Zero out values below the threshold
                 thresholded_map[thresholded_map < threshold_value] = 0
-                    
-                true_fake_pos = self.extract_fake_position(path)
 
-                # weighted prediction
-                fake_pred_weighted, grid_intensity_sums, fake_pred_unweighted, non_0_counts = self.lime_grid_eval(
-                    thresholded_map, grid_split=grid_split, background_pixel=0.0
-                )
-                weighted_accuracy= 0.0
-                unweighted_accuracy= 0.0
-                
-                total_intensity = sum(grid_intensity_sums)
-                if total_intensity > 0 and 0 <= true_fake_pos < len(grid_intensity_sums):
-                    weighted_accuracy = grid_intensity_sums[true_fake_pos] / total_intensity
-                else:
-                    weighted_accuracy = 0
+                (fake_pred_weighted, fake_pred_unweighted,
+                 weighted_accuracy, unweighted_accuracy) = self.score_map(
+                    thresholded_map, grid_split, true_fake_pos)
 
-                # unweighted prediction 
-                total_nonzero_count = float(sum(non_0_counts))
- 
-                if total_nonzero_count > 0 and 0 <= true_fake_pos < len(non_0_counts):
-                    unweighted_accuracy = non_0_counts[true_fake_pos] / total_nonzero_count
-
-                result = {
+                results.append({
                     "threshold": t if t is not None else 0,
                     "path": path,
-                    "original_image": img_np,
-                    "heatmap": thresholded_map,
+                    "original_image": original_image,
+                    "heatmap": thresholded_map if store_images else None,
                     "weighted_guessed_fake_position": fake_pred_weighted,
                     "unweighted_guess_fake_position": fake_pred_unweighted,
                     "weighted_localization_score": weighted_accuracy,
                     "unweighted_localization_score": unweighted_accuracy,
                     "true_fake_position": true_fake_pos,
                     "model_prediction": model_prediction,
-                }
-                results.append(result)
+                    "model_confidence": model_confidence,
+                })
 
                 logger.info("Threshold %s | %s: true pos %d, predicted (weighted) %d, accuracy (weighted): %.3f | predicted (unweighted) %d, accuracy (unweighted): %.3f",
                             str(t), os.path.basename(path), true_fake_pos, fake_pred_weighted, weighted_accuracy, fake_pred_unweighted, unweighted_accuracy)
+
+            # TOP-N variant ('OursQ' in the B-cos paper): the same weighted metric
+            # on the map restricted to its strongest pixels. Stored ADDITIONALLY
+            # under a string key, leaving the threshold results untouched.
+            for frac in (topn_fractions or ()):
+                mask = topn_mask(intensity_map, frac)
+                (fake_pred_weighted, fake_pred_unweighted,
+                 weighted_accuracy, unweighted_accuracy) = self.score_map(
+                    mask, grid_split, true_fake_pos)
+                results.append({
+                    "threshold": f"top{frac:g}",
+                    "topn_fraction": float(frac),
+                    "topn_pixels": int((mask > 0).sum()),
+                    "path": path,
+                    "original_image": original_image,
+                    "heatmap": mask if store_images else None,
+                    "weighted_guessed_fake_position": fake_pred_weighted,
+                    "unweighted_guess_fake_position": fake_pred_unweighted,
+                    "weighted_localization_score": weighted_accuracy,
+                    "unweighted_localization_score": unweighted_accuracy,
+                    "true_fake_position": true_fake_pos,
+                    "model_prediction": model_prediction,
+                    "model_confidence": model_confidence,
+                })
+                logger.info("TOP-%g (%d px) | %s: true pos %d, weighted acc %.3f",
+                            frac, int((mask > 0).sum()), os.path.basename(path),
+                            true_fake_pos, weighted_accuracy)
 
         return results
