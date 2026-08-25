@@ -180,7 +180,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         )
         return trans
 
-    def rescale_landmarks(self, landmarks, original_size=256, new_size=224):
+    def rescale_landmarks(self, landmarks, original_size=256, new_size=256):
         scale_factor = new_size / original_size
         rescaled_landmarks = landmarks * scale_factor
         return rescaled_landmarks
@@ -206,6 +206,10 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         
         # Record video name for video-level metrics
         video_name_list = []
+
+        # Videos whose 'frames' list is empty are skipped below; count them so a
+        # silently smaller dataset is visible in the log rather than invisible.
+        skipped_empty = 0
 
         # Try to get the dataset information from the JSON file
         if not os.path.exists(self.config['dataset_json_folder']):
@@ -267,6 +271,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 label = self.config['label_dict'][video_info['label']]
                 frame_paths = video_info['frames']
                 if not frame_paths:      # DF40 ships a few videos with empty frame lists
+                    skipped_empty += 1
                     continue
                 # sorted video path to the lists
                 # DF40 frame stems are not always integers (e.g. 'seed13203.png',
@@ -341,6 +346,10 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                     # video name save
                     video_name_list.extend([unique_video_name] * len(frame_paths))
             
+        if skipped_empty:
+            print(f"[{dataset_name}/{self.mode}] skipped {skipped_empty} videos with an "
+                  f"empty 'frames' list ({len(frame_path_list)} frames collected)")
+
         # Shuffle the label and frame path lists in the same order
         shuffled = list(zip(label_list, frame_path_list, video_name_list))
         random.shuffle(shuffled)
@@ -369,7 +378,16 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             assert os.path.exists(file_path), f"{file_path} does not exist"
             img = cv2.imread(file_path)
             if img is None:
-                raise ValueError('Loaded image is None: {}'.format(file_path))
+                # OpenCV cannot decode GIF at all, and DF40's MidJourney fakes
+                # ship 247 single-frame palette GIFs. PIL reads them; convert to
+                # BGR so the BGR2RGB below still produces the right channel order.
+                try:
+                    with Image.open(file_path) as pil_img:
+                        img = cv2.cvtColor(np.array(pil_img.convert('RGB')),
+                                           cv2.COLOR_RGB2BGR)
+                except Exception as exc:
+                    raise ValueError(
+                        'Loaded image is None: {}'.format(file_path)) from exc
         elif self.lmdb:
             with self.env.begin(write=False) as txn:
                 # transfer the path format from rgb-path to lmdb-key
