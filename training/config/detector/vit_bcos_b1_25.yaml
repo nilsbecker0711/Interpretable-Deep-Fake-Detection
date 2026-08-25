@@ -1,5 +1,6 @@
 # log dir 
-log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/vit
+log_dir: logs/training
+#log_dir: /home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/logs/vit   # cluster
 
 # model setting -> old
 freeze: false
@@ -16,7 +17,7 @@ backbone_config:
   #pretrained: false
   logit_bias: #0.0 #None
   logit_temperature: #10 #None
-  b: 2.0
+  b: 1.25
   max_out: 2
   # either set the model type (ViT-Small: 20.5M params — size-matched to
   # resnet34/xception baselines; ti=5M, b=81M, l=166M)

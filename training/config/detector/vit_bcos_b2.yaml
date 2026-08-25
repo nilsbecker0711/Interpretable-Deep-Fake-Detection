@@ -4,34 +4,40 @@ log_dir: logs/training
 
 # model setting -> old
 freeze: false
-pretrained: #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
+pretrained: Null #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/training/pretrained/resnet_34-a63425a03e.pth
 #/home/ma/ma_ma/ma_kreffert/Interpretable-Deep-Fake-Detection/weights/ResNet34_Bcos_v2/resnet_34-a63425a03e.pth   # path to a pre-trained model, if using one
 from_url: false
-model_name: vit   # model name
-backbone_name: vit  # backbone name
+model_name: vit_bcos   # model name
+backbone_name: vit_bcos  # backbone name
 
 #backbone setting
 backbone_config:
   num_classes: 2
-  channels: 3
+  channels: 6
   #pretrained: false
   logit_bias: #0.0 #None
   logit_temperature: #10 #None
-  # either set the model type (ViT-Small: size-matched to the vit_bcos twin
-  # and the resnet34/xception pairs; standard implementation from vit_base.py)
+  b: 2.0
+  max_out: 2
+  # either set the model type (ViT-Small: 20.5M params — size-matched to
+  # resnet34/xception baselines; ti=5M, b=81M, l=166M)
   model_type: vitc_s_patch1_14
-  # or the parameters directly, these values are only taken when model_type is not provided
-  # image_size: 14 #14 # Union[int, Tuple[int, int]],
-  # patch_size: 1 # Union[int, Tuple[int, int]],
-  # dim: 384 #192
-  # depth: 11 # 12-1
-  # heads: 6
-  # mlp_dim: 1536
-  # conv_stem: [48, 96, 192, 384] #[24, 48, 96, 192]
-  # norm: DetachableLayerNorm
-  # norm_bias: false
-  # norm_2d: BatchNorm2d
-  # norm_2d_bias: false
+  # or the parameters directly, these values are only taken when model_type is
+  # not provided. Kept in sync with vitc_s_patch1_14 for documentation:
+  image_size: 14 # Union[int, Tuple[int, int]],
+  patch_size: 1 # Union[int, Tuple[int, int]],
+  dim: 384
+  depth: 11
+  heads: 6
+  mlp_dim: 1536
+  conv_stem: [48, 96, 192, 384]
+  # norm_bias semantics (fixed 2026-07): false = bias-free via NoBias (B-cos
+  # recipe: NoBias(DetachableLayerNorm) + NoBias(DetachableGNLayerNorm2d) stem,
+  # as in B-cos-v2 vit_final), true = keep the learnable bias.
+  norm: DetachableLayerNorm
+  norm_bias: false
+  norm_2d: DetachableGNLayerNorm2d
+  norm_2d_bias: false
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT] #, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -50,16 +56,14 @@ with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
-# add_inverse_channels: true
+add_inverse_channels: true
 
 
 # data augmentation
-dataset_type: #'bcos'        # empty -> abstract_dataset.py (3-channel standard path)
+dataset_type: 'bcos'
 use_data_augmentation: true  # Add this flag to enable/disable data augmentation
-aug_type: simple             # simple = SAME augs as the vit_bcos twin (RandomResizedCrop + h-flip); full = DeepfakeBench suite
 data_aug:
   flip_prob: 0.5
-  crop_scale: [0.08, 1.0]    # RandomResizedCrop scale, matches the b-cos path (torchvision default)
   rotate_prob: 0.5
   rotate_limit: [-10, 10]
   blur_prob: 0.5
@@ -103,6 +107,8 @@ save_epoch: 1   # interval epochs for saving models
 rec_iter: 500   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
+# (duplicate `save_ckpt: false` removed here — it silently overrode the
+#  `save_ckpt: true` above via YAML last-key-wins, so no checkpoints were saved)
 
 # in-training XAI monitor (GPG on fixed shared val grids + MPG on val fakes)
 xai_monitor_every_n_epochs: 10   # 0 disables
@@ -110,7 +116,7 @@ xai_monitor_grid_dir: results/GPG_assets/shared_random/FaceForensics++_val_256/3
 xai_monitor_mpg_images: 250
 
 # loss function
-loss_func: cross_entropy   # loss function to use
+loss_func: bce_off_labels   # loss function to use
 losstype: null
 
 # metric
