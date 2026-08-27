@@ -50,7 +50,7 @@ BATCH_SIZE=12
 SHARED_ASSETS=0       # 1 = reuse results/MPG_assets/shared_random/<ds>_test/images.json
 RUNNING_THRESHOLD_MIN=30
 
-METHODS_DEFAULT="gradcam xgrad grad++ layergrad lime"
+METHODS_DEFAULT="gradcam xgrad grad++ layergrad ig lime"
 METHODS=""
 
 # Only the FF++ family has masks (see header). FaceForensics++ itself is the

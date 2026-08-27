@@ -130,6 +130,18 @@ class BCOSEvaluator:
             logger.warning("Could not extract fake position from '%s': %s", path, e)
             return -1
 
+    def prepare_input(self, tensor):
+        """Put a grid tensor into this evaluator's model input space.
+
+        A b-cos model always takes [RGB, 1-RGB], so a 3-channel grid gets its
+        inverse channels here. Split out as a hook because IGEvaluator inherits
+        this evaluate() but runs on BOTH families -- expanding unconditionally
+        would feed 6 channels to a 3-channel standard net.
+        """
+        if tensor.shape[1] == 3:
+            tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
+        return tensor
+
     def evaluate(self, tensor_list, path_list, grid_split, threshold_steps=0,
                  topn_fractions=(0.025,), store_images=True):
         """Evaluate grid tensors and return metrics."""
@@ -138,9 +150,7 @@ class BCOSEvaluator:
 
         for idx, (tensor, path) in enumerate(zip(tensor_list, path_list)):
             logger.info("Evaluating grid %d from file: %s", idx, path)
-            # If tensor has 3 channels, add inverse channels.
-            if tensor.shape[1] == 3:
-                tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
+            tensor = self.prepare_input(tensor)
             scored_map, visualization, output, model_prediction = self.generate_heatmap(tensor)
             true_fake_pos = self.extract_fake_position(path)
             # store_images=False keeps only the scalar scores — the images dominate

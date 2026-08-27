@@ -74,7 +74,7 @@ SHARED_DEFAULT="results/GPG_assets/shared_random/FaceForensics++_test_256/3x3"
 RUNNING_THRESHOLD_MIN=30
 
 # 'bcos' is appended automatically for b-cos configs (it needs a b-cos model).
-METHODS_DEFAULT="gradcam xgrad grad++ layergrad lime"
+METHODS_DEFAULT="gradcam xgrad grad++ layergrad ig lime"
 METHODS=""
 
 # run them later: FSAll_cdf FRAll_cdf EFSAll_cdf

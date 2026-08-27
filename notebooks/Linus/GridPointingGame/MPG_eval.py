@@ -19,6 +19,7 @@ from Utils_PointingGame import load_model, load_config, preprocess_image, Analys
 from training.utils.xai.B_COS_eval import BCOSEvaluator
 from training.utils.xai.LIME_eval import LIMEEvaluator
 from training.utils.xai.GradCam_eval import GradCamEvaluator
+from training.utils.xai.IG_eval import IGEvaluator
 from training.utils.xai.xai_common import mpg_mask_game, topn_mask
 from training.detectors.xception_detector import XceptionDetector
 from training.detectors import DETECTOR
@@ -80,7 +81,7 @@ def parse_args():
     parser.add_argument("--weights", default=None,
                         help="Checkpoint .pth to evaluate; overrides 'pretrained' from the yamls")
     parser.add_argument("--xai-method", default=None,
-                        choices=["bcos", "gradcam", "xgrad", "grad++", "layergrad", "lime"],
+                        choices=["bcos", "gradcam", "xgrad", "grad++", "layergrad", "lime", "ig"],
                         help="Overrides xai_method from the test config")
     parser.add_argument("--output-dir", default=None,
                         help="Overrides base_output_dir from the test config")
@@ -323,6 +324,8 @@ class MaskPointingGameCreator(Analyser):
         """  
         if xai_method == "bcos":
             evaluator = BCOSEvaluator(self.model, self.device)
+        elif xai_method == "ig":
+            evaluator = IGEvaluator(self.model, self.device)
         elif xai_method == "lime":
             evaluator = LIMEEvaluator(self.model, self.device,
                                       mean=self.config.get('mean', [0.5, 0.5, 0.5]),
