@@ -5,12 +5,16 @@
 #   scripts/test_all_detectors.sh --family resnet # only the resnet34 pair (std + b-cos sweep)
 #   scripts/test_all_detectors.sh --family vit --family convnext   # two families
 #   scripts/test_all_detectors.sh --family "resnet xception vit"   # same, one argument
+#   scripts/test_all_detectors.sh --detector vit_bcos_b2_5         # exactly one config
+#   scripts/test_all_detectors.sh --detector 'vit_bcos_b2*'        # glob -- quote it!
 #   scripts/test_all_detectors.sh --df40          # all usable DF40 subsets instead
 #   scripts/test_all_detectors.sh --datasets "FaceForensics++ Celeb-DF-v2"
 #   scripts/test_all_detectors.sh --dry-run       # print what would run, touch nothing
 #
 # Families: resnet, xception, vit, convnext (default: all). Each covers the
 # standard model and its whole b-cos b-value sweep.
+# --detector takes config names from training/config/detector/ (globs allowed,
+# repeatable, comma- or space-separated) and ANDs with --family.
 #
 # One `python training/test.py` invocation per detector, run sequentially. A
 # failing model does not stop the sweep; the summary at the end reports each one.
@@ -31,6 +35,7 @@ CKPT_SPLIT="val"          # val/avg/ckpt_best.pth ; --ckpt test to use the test 
 DRY_RUN=0
 INCLUDE_INCOMPLETE=0
 FAMILIES=""               # empty = every family
+DETECTORS=""              # empty = every config; else name globs, ANDed with FAMILIES
 # A run whose training.log changed this recently is assumed to be still training.
 RUNNING_THRESHOLD_MIN=30
 
@@ -49,7 +54,7 @@ df40_datasets() {
 }
 
 usage() {
-    sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
 
@@ -58,6 +63,7 @@ while [[ $# -gt 0 ]]; do
         --df40)               DATASETS="$(df40_datasets)"; shift ;;
         --datasets)           DATASETS="$2"; shift 2 ;;
         --family|--families)  FAMILIES="$FAMILIES ${2//,/ }"; shift 2 ;;
+        --detector|--detectors) DETECTORS="$DETECTORS ${2//,/ }"; shift 2 ;;
         --ckpt)               CKPT_SPLIT="$2"; shift 2 ;;
         --dry-run)            DRY_RUN=1; shift ;;
         --include-incomplete) INCLUDE_INCOMPLETE=1; shift ;;
@@ -102,12 +108,20 @@ done
 CONFIGS=()
 for cfg in "${ALL_CONFIGS[@]}"; do
     fam="$(config_family "$cfg")"
-    if [[ -z "$WANTED" ]] || [[ " $WANTED " == *" $fam "* ]]; then
-        CONFIGS+=("$cfg")
+    [[ -n "$WANTED" && " $WANTED " != *" $fam "* ]] && continue
+    if [[ -n "$DETECTORS" ]]; then
+        hit=0
+        for pat in $DETECTORS; do
+            # $pat is deliberately unquoted so 'vit_bcos_b2*' globs
+            [[ "$cfg" == $pat ]] && { hit=1; break; }
+        done
+        [[ $hit -eq 1 ]] || continue
     fi
+    CONFIGS+=("$cfg")
 done
 if [[ ${#CONFIGS[@]} -eq 0 ]]; then
-    echo "no detector configs match the requested families:$WANTED" >&2
+    echo "no detector configs match families:${WANTED:- all} detectors:${DETECTORS:- all}" >&2
+    echo "available: ${ALL_CONFIGS[*]}" >&2
     exit 1
 fi
 
@@ -176,7 +190,8 @@ echo "python    : $PYTHON"
 echo "checkpoint: <run>/$CKPT_SPLIT/avg/ckpt_best.pth"
 echo "datasets  : $n_ds  ($(cut -c1-90 <<< "$DATASETS")$([[ $n_ds -gt 8 ]] && echo ' ...'))"
 echo "families  : ${WANTED:-all}"
-echo "detectors : ${#CONFIGS[@]} candidates"
+[[ -n "$DETECTORS" ]] && echo "filter    :$DETECTORS"
+echo "detectors : ${#CONFIGS[@]} candidates (${CONFIGS[*]})"
 [[ $DRY_RUN -eq 0 ]] && echo "logs      : $LOG_DIR"
 echo
 
