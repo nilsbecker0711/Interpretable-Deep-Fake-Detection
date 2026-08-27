@@ -41,9 +41,9 @@ from detectors import DETECTOR                                   # noqa: E402
 # (config, checkpoint glob, methods) -- standard nets have no `bcos` explanation.
 PANELS = [
     ("xception",            "logs/training/xception_2*/val/avg/ckpt_best.pth",
-     ["gradcam", "grad++"]),
+     ["gradcam", "grad++", "ig"]),
     ("xception_bcos_b1_75", "logs/training/xception_bcos_detector_b1_75_*/val/avg/ckpt_best.pth",
-     ["bcos", "gradcam", "grad++"]),
+     ["bcos", "gradcam", "grad++", "ig"]),
 ]
 
 DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
