@@ -84,6 +84,19 @@ class IGEvaluator(BCOSEvaluator):
             tensor = torch.cat([tensor, 1.0 - tensor], dim=1)
         return tensor
 
+    def _postprocess(self, attributions):
+        """Turn a (1, C, H, W) attribution tensor into the scored [0,1] map.
+
+        Same protocol as the B-cos contribution map: sum the signed per-channel
+        attributions, smooth, THEN keep positives, then rescale to [0,1] for
+        the threshold sweep (the weighted cell/mask fraction is scale-free).
+        Shared with IxGEvaluator so the gradient methods cannot drift apart.
+        """
+        contribs = attributions.sum(dim=1)[0].detach().cpu().numpy()
+        scored_map = smooth_map(contribs, self.smooth)
+        scored_map = np.clip(scored_map, 0, None)
+        return normalize_max(scored_map)
+
     def generate_heatmap(self, tensor):
         """Return (scored_map, visualization, output, model_prediction).
 
@@ -138,13 +151,7 @@ class IGEvaluator(BCOSEvaluator):
             self.internal_batch_size = ibs   # remember, so later grids skip the retries
         logger.debug("IG convergence_delta: %.4e", float(delta.abs().max()))
 
-        # Same protocol as the B-cos contribution map: sum the signed per-channel
-        # attributions, smooth, THEN keep positives, then rescale to [0,1] for
-        # the threshold sweep (the weighted cell/mask fraction is scale-free).
-        contribs = attributions.sum(dim=1)[0].detach().cpu().numpy()
-        scored_map = smooth_map(contribs, self.smooth)
-        scored_map = np.clip(scored_map, 0, None)
-        scored_map = normalize_max(scored_map)
+        scored_map = self._postprocess(attributions)
 
         output = {"cls": logits, "convergence_delta": float(delta.abs().max())}
         return scored_map, None, output, model_prediction

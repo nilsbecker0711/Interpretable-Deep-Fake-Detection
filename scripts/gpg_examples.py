@@ -35,13 +35,14 @@ from detectors import DETECTOR                                          # noqa: 
 from training.utils.xai.B_COS_eval import BCOSEvaluator, evaluate_heatmap  # noqa: E402
 from training.utils.xai.GradCam_eval import GradCamEvaluator            # noqa: E402
 from training.utils.xai.IG_eval import IGEvaluator                      # noqa: E402
+from training.utils.xai.IxG_eval import IxGEvaluator                    # noqa: E402
 from training.utils.xai.xai_common import canonicalize_grid, adapt_for_model  # noqa: E402
 
 PANELS = [
     ("xception",            "logs/training/xception_2*/val/avg/ckpt_best.pth",
-     ["gradcam", "grad++", "ig"]),
+     ["gradcam", "grad++", "ig", "ixg"]),
     ("xception_bcos_b1_75", "logs/training/xception_bcos_detector_b1_75_*/val/avg/ckpt_best.pth",
-     ["bcos", "gradcam", "grad++", "ig"]),
+     ["bcos", "gradcam", "grad++", "ig", "ixg"]),
 ]
 
 GRID_DIR = "results/GPG_assets/shared_random/FaceForensics++_test_256/3x3"
@@ -70,6 +71,8 @@ def evaluator_for(method, model, cfg):
         return BCOSEvaluator(model, DEV)
     if method == "ig":
         return IGEvaluator(model, DEV)
+    if method == "ixg":
+        return IxGEvaluator(model, DEV)
     return GradCamEvaluator(model, DEV, method=method)
 
 

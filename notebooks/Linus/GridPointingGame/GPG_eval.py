@@ -25,6 +25,7 @@ from training.utils.xai.B_COS_eval import BCOSEvaluator
 from training.utils.xai.LIME_eval import LIMEEvaluator
 from training.utils.xai.GradCam_eval import GradCamEvaluator
 from training.utils.xai.IG_eval import IGEvaluator
+from training.utils.xai.IxG_eval import IxGEvaluator
 from dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 
 
@@ -111,7 +112,7 @@ def parse_args():
     parser.add_argument("--weights", default=None,
                         help="Checkpoint .pth to evaluate; overrides 'pretrained' from the yamls")
     parser.add_argument("--xai-method", default=None,
-                        choices=["bcos", "gradcam", "xgrad", "grad++", "layergrad", "lime", "ig"],
+                        choices=["bcos", "gradcam", "xgrad", "grad++", "layergrad", "lime", "ig", "ixg"],
                         help="Overrides xai_method from the test config")
     parser.add_argument("--output-dir", default=None,
                         help="Overrides base_output_dir from the test config")
@@ -532,6 +533,8 @@ class GridPointingGameCreator(Analyser):
             evaluator = BCOSEvaluator(self.model, self.device)
         elif self.xai_method == "ig":
             evaluator = IGEvaluator(self.model, self.device)
+        elif self.xai_method == "ixg":
+            evaluator = IxGEvaluator(self.model, self.device)
         elif self.xai_method == "lime":
             evaluator = LIMEEvaluator(self.model, self.device, mean=mean, std=std)
         elif self.xai_method in ["gradcam", "xgrad", "grad++", "layergrad"]:
