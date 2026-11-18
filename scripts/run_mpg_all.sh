@@ -83,6 +83,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# bcos is added to b-cos models automatically ONLY when --methods was not given.
+# With --methods, exactly the listed methods run (list 'bcos' to get it).
+AUTO_BCOS=0
+[[ -z "${METHODS// }" ]] && AUTO_BCOS=1
 METHODS="${METHODS:-$METHODS_DEFAULT}"
 
 # --- which detectors ---------------------------------------------------------
@@ -173,7 +177,9 @@ is_still_training() {
     [[ -n "$(find "$d/training.log" -mmin "-$RUNNING_THRESHOLD_MIN" 2>/dev/null)" ]]
 }
 
-STAMP="$(date +%Y-%m-%d-%H-%M-%S)"
+# Job id suffix: parallel SLURM jobs starting in the same second must not share
+# (and overwrite) one output directory.
+STAMP="$(date +%Y-%m-%d-%H-%M-%S)${SLURM_JOB_ID:+_$SLURM_JOB_ID}"
 OUT_DIR="results/eval/mpg/$STAMP"
 LOG_DIR="$OUT_DIR/logs"
 LIST_DIR="$OUT_DIR/image_lists"
@@ -214,7 +220,7 @@ echo "python      : $PYTHON"
 echo "checkpoint  : <run>/$CKPT_SPLIT/avg/ckpt_best.pth"
 echo "datasets    : $n_ds ($DATASETS)"
 echo "families    : ${WANTED:-all}"
-echo "methods     : $METHODS (+ bcos on b-cos models)"
+echo "methods     : $METHODS$([[ $AUTO_BCOS -eq 1 ]] && echo ' (+ bcos on b-cos models)')"
 echo "images      : $NUM_IMAGES per dataset, model-free seeded draw (seed=$SEED)"
 echo "              -> the SAME images for every model and method"
 echo "thresholds  : 0.0..1.0 in $THRESHOLD_STEPS steps + top-k"
@@ -268,11 +274,11 @@ for cfg in "${CONFIGS[@]}"; do
     fi
 
     # 'bcos' explanations call backbone.explain(), which only b-cos backbones
-    # have; drop it for standard models even when asked for explicitly, and add
-    # it for b-cos models when it was not listed.
+    # have; drop it for standard models even when asked for explicitly. For b-cos
+    # models it is added only on a default run (no --methods), see AUTO_BCOS.
     if [[ "$cfg" == *bcos* ]]; then
         cfg_methods="$METHODS"
-        [[ " $METHODS " == *" bcos "* ]] || cfg_methods="bcos $METHODS"
+        [[ $AUTO_BCOS -eq 1 && " $METHODS " != *" bcos "* ]] && cfg_methods="bcos $METHODS"
     else
         cfg_methods=""
         for m in $METHODS; do
