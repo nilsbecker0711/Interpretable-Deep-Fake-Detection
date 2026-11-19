@@ -118,6 +118,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# bcos is added to b-cos models automatically ONLY when --methods was not given.
+# With --methods, exactly the listed methods run (list 'bcos' to get it).
+AUTO_BCOS=0
+[[ -z "${METHODS// }" ]] && AUTO_BCOS=1
 METHODS="${METHODS:-$METHODS_DEFAULT}"
 
 if [[ -n "$SHARED_ASSETS" && ! -d "$SHARED_ASSETS" ]]; then
@@ -222,7 +226,9 @@ n_ds=$(wc -w <<< "$DATASETS")
 MAX_GRIDS=$(( GRIDS_PER_DATASET * n_ds ))
 [[ -n "$SHARED_ASSETS" ]] && MAX_GRIDS=$(ls "$SHARED_ASSETS"/*.pt 2>/dev/null | wc -l)
 
-STAMP="$(date +%Y-%m-%d-%H-%M-%S)"
+# Job id suffix: parallel SLURM jobs starting in the same second must not share
+# (and overwrite) one output directory.
+STAMP="$(date +%Y-%m-%d-%H-%M-%S)${SLURM_JOB_ID:+_$SLURM_JOB_ID}"
 OUT_DIR="results/eval/xai/$STAMP"
 LOG_DIR="$OUT_DIR/logs"
 [[ $DRY_RUN -eq 0 ]] && mkdir -p "$LOG_DIR"
@@ -268,7 +274,7 @@ echo "python      : $PYTHON"
 echo "checkpoint  : <run>/$CKPT_SPLIT/avg/ckpt_best.pth"
 echo "datasets    : $n_ds ($(cut -c1-80 <<< "$DATASETS")$([[ $n_ds -gt 6 ]] && echo ' ...'))"
 echo "families    : ${WANTED:-all}"
-echo "methods     : $METHODS (+ bcos on b-cos models)"
+echo "methods     : $METHODS$([[ $AUTO_BCOS -eq 1 ]] && echo ' (+ bcos on b-cos models)')"
 if [[ -n "$SHARED_ASSETS" ]]; then
     echo "grids       : SHARED assets, $MAX_GRIDS grids <- $SHARED_ASSETS"
 else
@@ -297,8 +303,19 @@ for cfg in "${CONFIGS[@]}"; do
     fi
 
     # 'bcos' explanations need a b-cos model; everything else is architecture-agnostic.
-    cfg_methods="$METHODS"
-    [[ "$cfg" == *bcos* ]] && cfg_methods="bcos $METHODS"
+    # Drop bcos for standard models even when listed; add it to b-cos models only
+    # on a default run (no --methods), see AUTO_BCOS.
+    if [[ "$cfg" == *bcos* ]]; then
+        cfg_methods="$METHODS"
+        [[ $AUTO_BCOS -eq 1 && " $METHODS " != *" bcos "* ]] && cfg_methods="bcos $METHODS"
+    else
+        cfg_methods=""
+        for m in $METHODS; do
+            [[ "$m" == bcos ]] && continue
+            cfg_methods="$cfg_methods $m"
+        done
+    fi
+    [[ -z "${cfg_methods// }" ]] && { echo "SKIP  $cfg -- no applicable methods"; continue; }
 
     model_out="$OUT_DIR/$cfg"
 
